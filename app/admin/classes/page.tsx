@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type ClassItem = {
   id: string;
@@ -13,6 +14,28 @@ type ClassItem = {
 };
 
 export default function AdminClassesPage() {
+  const router = useRouter();
+const [allowed, setAllowed] = useState(false);
+
+useEffect(() => {
+  const raw = localStorage.getItem("mock_logged_user");
+  const user = raw ? JSON.parse(raw) : null;
+
+  if (!user || user.role !== "admin") {
+    router.replace("/login");
+    return;
+  }
+
+  setAllowed(true);
+}, [router]);
+
+if (!allowed) {
+  return (
+    <main className="min-h-screen bg-slate-950 p-6 text-white">
+      Yetki kontrol ediliyor...
+    </main>
+  );
+}
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [name, setName] = useState("");
   const [level, setLevel] = useState<"A1" | "A2" | "B1">("A1");

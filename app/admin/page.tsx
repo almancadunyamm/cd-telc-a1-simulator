@@ -1,3 +1,6 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const adminCards = [
@@ -77,6 +80,28 @@ const adminCards = [
 ];
 
 export default function AdminHomePage() {
+  const router = useRouter();
+const [allowed, setAllowed] = useState(false);
+
+useEffect(() => {
+  const raw = localStorage.getItem("mock_logged_user");
+  const user = raw ? JSON.parse(raw) : null;
+
+  if (!user || user.role !== "admin") {
+    router.replace("/login");
+    return;
+  }
+
+  setAllowed(true);
+}, [router]);
+
+if (!allowed) {
+  return (
+    <main className="min-h-screen bg-slate-950 p-6 text-white">
+      Yetki kontrol ediliyor...
+    </main>
+  );
+}
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
       <div className="mx-auto max-w-7xl">

@@ -1,6 +1,6 @@
 "use client";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Level = "A1" | "A2" | "B1";
 
@@ -50,6 +50,28 @@ function addDays(days: number) {
 }
 
 export default function ManualActivatePage() {
+  const router = useRouter();
+const [allowed, setAllowed] = useState(false);
+
+useEffect(() => {
+  const raw = localStorage.getItem("mock_logged_user");
+  const user = raw ? JSON.parse(raw) : null;
+
+  if (!user || user.role !== "admin") {
+    router.replace("/login");
+    return;
+  }
+
+  setAllowed(true);
+}, [router]);
+
+if (!allowed) {
+  return (
+    <main className="min-h-screen bg-slate-950 p-6 text-white">
+      Yetki kontrol ediliyor...
+    </main>
+  );
+}
   const [email, setEmail] = useState("");
   const [studentName, setStudentName] = useState("");
   const [productSlug, setProductSlug] = useState("live-a1");

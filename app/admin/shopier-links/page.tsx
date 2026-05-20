@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   getShopierLinks,
   saveShopierLinks,
@@ -28,6 +29,28 @@ const products = [
 ];
 
 export default function ShopierLinksPage() {
+  const router = useRouter();
+const [allowed, setAllowed] = useState(false);
+
+useEffect(() => {
+  const raw = localStorage.getItem("mock_logged_user");
+  const user = raw ? JSON.parse(raw) : null;
+
+  if (!user || user.role !== "admin") {
+    router.replace("/login");
+    return;
+  }
+
+  setAllowed(true);
+}, [router]);
+
+if (!allowed) {
+  return (
+    <main className="min-h-screen bg-slate-950 p-6 text-white">
+      Yetki kontrol ediliyor...
+    </main>
+  );
+}
   const [links, setLinks] = useState<ShopierLinkMap>({});
 
   useEffect(() => {
