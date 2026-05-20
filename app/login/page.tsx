@@ -70,8 +70,8 @@ const users = rawUsers ? JSON.parse(rawUsers) : [];
 
 const foundStudent = users.find(
   (u: any) =>
-    u.role === "student" &&
-    u.email?.toLowerCase() === normalizedEmail &&
+    (u.email?.toLowerCase() === normalizedEmail ||
+      u.username?.toLowerCase() === normalizedEmail) &&
     u.password === password.trim()
 );
 
@@ -80,15 +80,17 @@ const foundStudent = users.find(
       return;
     }
 
-    localStorage.setItem(
-      "mock_logged_user",
-      JSON.stringify({
-        username: foundStudent.email || foundStudent.username || normalizedEmail,
-        role: "student",
-        label: foundStudent.name || foundStudent.email || normalizedEmail,
-        name: foundStudent.name,
-      })
-    );
+    const isAdminEmail = normalizedEmail === "almancadunyamm@gmail.com";
+
+localStorage.setItem(
+  "mock_logged_user",
+  JSON.stringify({
+    username: foundStudent.email || foundStudent.username || normalizedEmail,
+    role: isAdminEmail ? "admin" : foundStudent.role || "student",
+    label: foundStudent.name || foundStudent.email || normalizedEmail,
+    name: foundStudent.name,
+  })
+);
 
     const pendingSlug =
       localStorage.getItem("pending_payment_slug") ||
