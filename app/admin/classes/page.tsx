@@ -29,13 +29,6 @@ useEffect(() => {
   setAllowed(true);
 }, [router]);
 
-if (!allowed) {
-  return (
-    <main className="min-h-screen bg-slate-950 p-6 text-white">
-      Yetki kontrol ediliyor...
-    </main>
-  );
-}
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [name, setName] = useState("");
   const [level, setLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -44,6 +37,7 @@ if (!allowed) {
   const [isDefaultSalesClass, setIsDefaultSalesClass] = useState(false);
   const [classType, setClassType] = useState<"live" | "digital">("live");
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
+  
 
   useEffect(() => {
     const savedClasses = localStorage.getItem("admin_classes");
@@ -56,6 +50,13 @@ if (!allowed) {
       }
     }
   }, []);
+  if (!allowed) {
+  return (
+    <main className="min-h-screen bg-slate-950 p-6 text-white">
+      Yetki kontrol ediliyor...
+    </main>
+  );
+}
 
   const liveClasses = classes.filter(
   (classItem) => (classItem.classType || "live") === "live"
