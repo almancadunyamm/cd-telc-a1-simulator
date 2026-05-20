@@ -1,5 +1,6 @@
 "use client";
 
+import { getShopierLink } from "@/lib/billing/shopier-links";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -1159,8 +1160,7 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
   ? packageType
   : "practice";
   const slug = `${selectedLevel.toLowerCase()}-${finalPackageType}`;
-  const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
-  const link = links[slug];
+  const link = getShopierLink(slug);
 
   if (!link) {
     alert("Bu paket için Shopier linki eklenmemiş.");
@@ -1196,8 +1196,7 @@ window.open(link, "_blank");
   function handleStartPendingPayment() {
   if (!currentUser || !pendingPaymentSlug) return;
 
-  const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
-  const link = links[pendingPaymentSlug];
+  const link = getShopierLink(pendingPaymentSlug);
 
   if (!link) {
     alert("Bu ürün için Shopier linki henüz eklenmemiş.");
@@ -1218,8 +1217,7 @@ window.open(link, "_blank");
 }
   function handleContinuePayment() {
     const pendingOrder = pendingOrders[0];
-    const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
-    const link = pendingOrder ? links[pendingOrder.productSlug] : "";
+    const link = pendingOrder ? getShopierLink(pendingOrder.productSlug) : "";
 
     if (!link) {
       alert("Bu paket için ödeme linki bulunamadı.");
