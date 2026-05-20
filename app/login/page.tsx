@@ -68,6 +68,20 @@ export default function LoginPage() {
     const rawUsers = localStorage.getItem("users");
 const users = rawUsers ? JSON.parse(rawUsers) : [];
 
+if (normalizedEmail === "almancadunyamm@gmail.com" && password.trim() === "123456") {
+  localStorage.setItem(
+    "mock_logged_user",
+    JSON.stringify({
+      username: "almancadunyamm@gmail.com",
+      role: "admin",
+      label: "Almanca Dünyam Admin",
+      name: "Almanca Dünyam",
+    })
+  );
+
+  router.push("/admin");
+  return;
+}
 const foundStudent = users.find(
   (u: any) =>
     (u.email?.toLowerCase() === normalizedEmail ||
