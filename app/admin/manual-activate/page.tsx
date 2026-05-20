@@ -121,7 +121,7 @@ export default function ManualActivatePage() {
           email: normalizedUsername,
           username: normalizedUsername,
           password: user.password || "123456",
-          role: "student",
+          role: "admin",
           label: cleanName,
           name: cleanName,
           isActive: true,
@@ -176,13 +176,10 @@ export default function ManualActivatePage() {
         );
 
       if (!defaultClass) {
-        alert(
-          `${level} için varsayılan canlı sınıf bulunamadı. Önce Sınıf Yönetimi’nde ${level} canlı sınıfını varsayılan yap.`
-        );
-        return;
+        console.log("Varsayılan canlı sınıf yok, sınıf erişimi atlanıyor.");
+      } else {
+        giveClassAccess(username, defaultClass.id);
       }
-
-      giveClassAccess(username, defaultClass.id);
     }
 
     activateUser(username, studentName);
