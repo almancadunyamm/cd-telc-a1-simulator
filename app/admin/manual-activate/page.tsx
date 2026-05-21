@@ -53,7 +53,11 @@ export default function ManualActivatePage() {
   const router = useRouter();
 const [allowed, setAllowed] = useState(false);
 
-useEffect(() => {
+  const [email, setEmail] = useState("");
+  const [studentName, setStudentName] = useState("");
+  const [productSlug, setProductSlug] = useState("live-a1");
+  const [message, setMessage] = useState("");
+  useEffect(() => {
   const raw = localStorage.getItem("mock_logged_user");
   const user = raw ? JSON.parse(raw) : null;
 
@@ -72,10 +76,6 @@ if (!allowed) {
     </main>
   );
 }
-  const [email, setEmail] = useState("");
-  const [studentName, setStudentName] = useState("");
-  const [productSlug, setProductSlug] = useState("live-a1");
-  const [message, setMessage] = useState("");
 
   function giveClassAccess(username: string, classId: string) {
     const rawAccess = localStorage.getItem(ACCESS_KEY);
