@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 type ClassItem = {
   id: string;
@@ -40,16 +41,22 @@ useEffect(() => {
   
 
   useEffect(() => {
-    const savedClasses = localStorage.getItem("admin_classes");
+  async function loadClasses() {
+    const { data, error } = await supabase
+      .from("classes")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    if (savedClasses) {
-      try {
-        setClasses(JSON.parse(savedClasses));
-      } catch {
-        setClasses([]);
-      }
+    if (error) {
+      console.error(error);
+      return;
     }
-  }, []);
+
+    setClasses(data || []);
+  }
+
+  loadClasses();
+}, []);
   if (!allowed) {
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
@@ -65,7 +72,7 @@ useEffect(() => {
 const digitalClasses = classes.filter(
   (classItem) => classItem.classType === "digital"
 );
-  function handleAddClass() {
+  async function handleAddClass() {
     if (!name || !teacherName || !teacherId) {
       alert("Sınıf adı, öğretmen adı ve öğretmen ID zorunlu.");
       return;
@@ -106,7 +113,45 @@ const digitalClasses = classes.filter(
   : [...updatedClasses, newClass];
 
     setClasses(updatedClasses);
-    localStorage.setItem("admin_classes", JSON.stringify(updatedClasses));
+    if (editingClassId) {
+  const { error } = await supabase
+    .from("classes")
+    .update({
+      name,
+      level,
+      teacher_id: teacherId,
+      teacher_name: teacherName,
+      is_default_sales_class: isDefaultSalesClass,
+      class_type: classType,
+    })
+    .eq("id", editingClassId);
+
+  if (error) {
+    alert("Sınıf güncellenemedi.");
+    return;
+  }
+} else {
+  const { error } = await supabase.from("classes").insert({
+    name,
+    level,
+    teacher_id: teacherId,
+    teacher_name: teacherName,
+    is_default_sales_class: isDefaultSalesClass,
+    class_type: classType,
+  });
+
+  if (error) {
+    alert("Sınıf oluşturulamadı.");
+    return;
+  }
+}
+
+const { data } = await supabase
+  .from("classes")
+  .select("*")
+  .order("created_at", { ascending: false });
+
+setClasses(data || []);
 
     setName("");
     setLevel("A1");
