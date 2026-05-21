@@ -175,38 +175,75 @@ setEditingClassId(null);
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-  function handleDeleteClass(id: string) {
-    const updatedClasses = classes.filter((item) => item.id !== id);
-    setClasses(updatedClasses);
-    localStorage.setItem("admin_classes", JSON.stringify(updatedClasses));
+  async function handleDeleteClass(id: string) {
+  const confirmed = confirm("Bu sınıfı silmek istediğinizden emin misiniz?");
+  if (!confirmed) return;
+
+  const { data, error } = await supabase
+    .from("classes")
+    .delete()
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    alert("Sınıf silinemedi: " + error.message);
+    return;
   }
 
-  function handleMakeDefault(id: string) {
-    const targetClass = classes.find((item) => item.id === id);
-
-    if (!targetClass) {
-      return;
-    }
-
-    const updatedClasses = classes.map((classItem) => {
-      if (
-  classItem.level === targetClass.level &&
-  classItem.classType === targetClass.classType
-) {
-        return {
-          ...classItem,
-          isDefaultSalesClass: classItem.id === id,
-        };
-      }
-
-      return classItem;
-    });
-
-    setClasses(updatedClasses);
-    localStorage.setItem("admin_classes", JSON.stringify(updatedClasses));
-
-    alert(`${targetClass.level} için varsayılan satış sınıfı güncellendi.`);
+  if (!data || data.length === 0) {
+    alert("Silinecek sınıf bulunamadı. ID eşleşmedi.");
+    return;
   }
+
+  const { data: freshClasses, error: loadError } = await supabase
+    .from("classes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (loadError) {
+    alert("Sınıflar yeniden yüklenemedi: " + loadError.message);
+    return;
+  }
+
+  setClasses(freshClasses || []);
+  alert("Sınıf veritabanından silindi.");
+}
+
+  async function handleMakeDefault(id: string) {
+  const targetClass = classes.find((item) => item.id === id);
+
+  if (!targetClass) return;
+
+  const { error: resetError } = await supabase
+    .from("classes")
+    .update({ is_default_sales_class: false })
+    .eq("level", targetClass.level)
+    .eq("class_type", targetClass.classType || "live");
+
+  if (resetError) {
+    alert("Varsayılan sınıflar sıfırlanamadı.");
+    return;
+  }
+
+  const { error: updateError } = await supabase
+    .from("classes")
+    .update({ is_default_sales_class: true })
+    .eq("id", id);
+
+  if (updateError) {
+    alert("Varsayılan sınıf güncellenemedi.");
+    return;
+  }
+
+  const { data } = await supabase
+    .from("classes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  setClasses(data || []);
+
+  alert(`${targetClass.level} için varsayılan satış sınıfı güncellendi.`);
+}
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-10">
