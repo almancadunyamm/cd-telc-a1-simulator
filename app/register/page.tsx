@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 type UserItem = {
   id: string;
@@ -70,7 +71,7 @@ export default function RegisterPage() {
       ? localStorage.getItem("selected_product_slug") || ""
       : "";
 
-  function handleRegister() {
+  async function handleRegister() {
     if (!name.trim() || !email.trim() || !password.trim()) {
       alert("Lütfen tüm alanları doldurun.");
       return;
@@ -83,29 +84,33 @@ export default function RegisterPage() {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const rawUsers = localStorage.getItem(USERS_KEY);
-    const users: UserItem[] = rawUsers ? JSON.parse(rawUsers) : [];
+    const { data: existingUsers, error: existingError } = await supabase
+  .from("users")
+  .select("*")
+  .eq("email", normalizedEmail);
 
-    const alreadyExists = users.some(
-      (user) => user.email.trim().toLowerCase() === normalizedEmail
-    );
+if (existingError) {
+  alert("Kullanıcı kontrolü yapılamadı.");
+  return;
+}
 
-    if (alreadyExists) {
-      alert("Bu email ile daha önce kayıt yapılmış.");
-      return;
-    }
+if (existingUsers && existingUsers.length > 0) {
+  alert("Bu email ile daha önce kayıt yapılmış.");
+  return;
+}
 
-    const newUser: UserItem = {
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      email: normalizedEmail,
-      password: password.trim(),
-      role: "student",
-      isActive: false,
-      createdAt: new Date().toISOString(),
-    };
+    const { error: insertError } = await supabase.from("users").insert({
+  name: name.trim(),
+  email: normalizedEmail,
+  password: password.trim(),
+  role: "student",
+  is_active: false,
+});
 
-    localStorage.setItem(USERS_KEY, JSON.stringify([...users, newUser]));
+if (insertError) {
+  alert("Kayıt oluşturulamadı.");
+  return;
+}
 
     const selectedSlug =
       localStorage.getItem("selected_product_slug") ||
