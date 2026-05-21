@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 type TeacherItem = {
   teacherType?: "teacher" | "expertTeacher";
   id: string;
@@ -14,6 +15,8 @@ type TeacherItem = {
 const TEACHERS_KEY = "admin_teachers";
 
 export default function AdminTeachersPage() {
+    const router = useRouter();
+  const [allowed, setAllowed] = useState(false);
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,7 +32,25 @@ export default function AdminTeachersPage() {
     const rawTeachers = localStorage.getItem(TEACHERS_KEY);
     setTeachers(rawTeachers ? JSON.parse(rawTeachers) : []);
   }, []);
+  useEffect(() => {
+    const raw = localStorage.getItem("mock_logged_user");
+    const user = raw ? JSON.parse(raw) : null;
 
+    if (!user || user.role !== "admin") {
+      router.replace("/login");
+      return;
+    }
+
+    setAllowed(true);
+  }, [router]);
+
+  if (!allowed) {
+    return (
+      <main className="min-h-screen bg-slate-950 p-6 text-white">
+        Yetki kontrol ediliyor...
+      </main>
+    );
+  }
   function handleAddTeacher() {
     if (!name || !email || !teacherId || !password || !whatsapp) {
   alert("Tüm alanları doldurun.");
