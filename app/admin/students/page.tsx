@@ -18,47 +18,8 @@ type StudentAccess = {
 };
 
 export default function AdminStudentsPage() {
-  const router = useRouter();
-const [allowed, setAllowed] = useState(false);
-
-useEffect(() => {
-  const raw = localStorage.getItem("mock_logged_user");
-  const user = raw ? JSON.parse(raw) : null;
-
-  if (!user || user.role !== "admin") {
-    router.replace("/login");
-    return;
-  }
-
-  setAllowed(true);
-}, [router]);
-  useEffect(() => {
-    const raw = localStorage.getItem("mock_logged_user");
-    const user = raw ? JSON.parse(raw) : null;
-
-    if (!user || user.role !== "admin") {
-      router.replace("/login");
-      return;
-    }
-
-    setAllowed(true);
-  }, [router]);
-
-  if (!allowed) {
-    return (
-      <main className="min-h-screen bg-slate-950 p-6 text-white">
-        Yetki kontrol ediliyor...
-      </main>
-    );
-  }
-
-if (!allowed) {
-  return (
-    <main className="min-h-screen bg-slate-950 p-6 text-white">
-      Yetki kontrol ediliyor...
-    </main>
-  );
-}
+    const router = useRouter();
+  const [allowed, setAllowed] = useState(false);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [username, setUsername] = useState("ogrenci");
   const [mainClassId, setMainClassId] = useState("");
@@ -81,6 +42,25 @@ if (!allowed) {
       setStudentAccessList(JSON.parse(savedAccess));
     }
   }, []);
+    useEffect(() => {
+    const raw = localStorage.getItem("mock_logged_user");
+    const user = raw ? JSON.parse(raw) : null;
+
+    if (!user || user.role !== "admin") {
+      router.replace("/login");
+      return;
+    }
+
+    setAllowed(true);
+  }, [router]);
+
+  if (!allowed) {
+    return (
+      <main className="min-h-screen bg-slate-950 p-6 text-white">
+        Yetki kontrol ediliyor...
+      </main>
+    );
+  }
 
   function handleSaveAccess() {
     if (!username || !mainClassId) {
