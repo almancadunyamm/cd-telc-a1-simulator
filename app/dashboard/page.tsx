@@ -1213,7 +1213,7 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
 window.open(link, "_blank");
 }
 
-  function handleStartPendingPayment() {
+  async function handleStartPendingPayment() {
   if (!currentUser || !pendingPaymentSlug) return;
 
   const link = getShopierLink(pendingPaymentSlug);
@@ -1223,12 +1223,13 @@ window.open(link, "_blank");
     return;
   }
 
-  createPendingOrder({
-    username: currentUser.username,
-    productSlug: pendingPaymentSlug,
-    level: getLevelFromSlug(pendingPaymentSlug),
-  });
-  setPendingPaymentSlug("");
+  await supabase
+  .from("orders")
+  .update({ status: "paid_waiting_activation" })
+  .eq("username", currentUser.username)
+  .eq("product_slug", pendingPaymentSlug);
+
+setPendingPaymentSlug("");
 
   localStorage.removeItem("selected_product_slug");
   localStorage.removeItem("selectedProductSlug");
