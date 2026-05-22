@@ -1223,13 +1223,50 @@ window.open(link, "_blank");
     return;
   }
 
-  await supabase
+  const normalizedUsername = String(currentUser.username || "")
+  .trim()
+  .toLowerCase();
+
+const { data: existingOrders, error: findOrderError } = await supabase
   .from("orders")
-  .update({ status: "paid_waiting_activation" })
-  .eq("username", currentUser.username)
-  .eq("product_slug", pendingPaymentSlug);
+  .select("*")
+  .eq("username", normalizedUsername)
+  .eq("product_slug", pendingPaymentSlug)
+  .in("status", ["pending_payment", "paid_waiting_activation"])
+  .limit(1);
+
+if (findOrderError) {
+  alert("Sipariş kontrol edilemedi: " + findOrderError.message);
+  return;
+}
+
+if (existingOrders && existingOrders.length > 0) {
+  const { error: updateError } = await supabase
+    .from("orders")
+    .update({ status: "paid_waiting_activation" })
+    .eq("id", existingOrders[0].id);
+
+  if (updateError) {
+    alert("Sipariş güncellenemedi: " + updateError.message);
+    return;
+  }
+} else {
+  const { error: insertError } = await supabase.from("orders").insert({
+    username: normalizedUsername,
+    product_slug: pendingPaymentSlug,
+    level: getLevelFromSlug(pendingPaymentSlug),
+    status: "paid_waiting_activation",
+  });
+
+  if (insertError) {
+    alert("Sipariş oluşturulamadı: " + insertError.message);
+    return;
+  }
+}
 
 setPendingPaymentSlug("");
+setHidePendingOrderNotice(false);
+setPaymentNoticeRefreshKey((prev) => prev + 1);
 
   localStorage.removeItem("selected_product_slug");
   localStorage.removeItem("selectedProductSlug");
