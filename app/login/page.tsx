@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -9,7 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleLogin() {
+  async function handleLogin() {
     if (!email || !password) {
       alert("Email ve şifre zorunlu.");
       return;
@@ -65,8 +66,6 @@ export default function LoginPage() {
     }
 
     // STUDENT - sadece kayıtlı öğrenci girebilir
-    const rawUsers = localStorage.getItem("users");
-const users = rawUsers ? JSON.parse(rawUsers) : [];
 
 if (normalizedEmail === "almancadunyamm@gmail.com" && password.trim() === "123456") {
   localStorage.setItem(
@@ -82,12 +81,19 @@ if (normalizedEmail === "almancadunyamm@gmail.com" && password.trim() === "12345
   router.push("/admin");
   return;
 }
-const foundStudent = users.find(
-  (u: any) =>
-    (u.email?.toLowerCase() === normalizedEmail ||
-      u.username?.toLowerCase() === normalizedEmail) &&
-    u.password === password.trim()
-);
+const { data: foundUsers, error } = await supabase
+  .from("users")
+  .select("*")
+  .eq("email", normalizedEmail)
+  .eq("password", password.trim())
+  .limit(1);
+
+if (error) {
+  alert("Giriş kontrolü yapılamadı.");
+  return;
+}
+
+const foundStudent = foundUsers?.[0];
 
     if (!foundStudent) {
       alert("Kayıt bulunamadı. Lütfen önce kayıt olun veya bilgilerinizi kontrol edin.");
