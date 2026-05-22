@@ -127,21 +127,32 @@ if (insertError) {
         name: name.trim(),
       })
     );
+if (selectedSlug) {
+  localStorage.setItem("pending_payment_slug", selectedSlug);
 
-    if (selectedSlug) {
-      localStorage.setItem("pending_payment_slug", selectedSlug);
+  localStorage.setItem(
+    "last_payment_attempt",
+    JSON.stringify({
+      username: normalizedEmail,
+      slug: selectedSlug,
+      time: Date.now(),
+    })
+  );
 
-      localStorage.setItem(
-        "last_payment_attempt",
-        JSON.stringify({
-          username: normalizedEmail,
-          slug: selectedSlug,
-          time: Date.now(),
-        })
-      );
+  const level =
+    selectedSlug.toLowerCase().includes("b1")
+      ? "B1"
+      : selectedSlug.toLowerCase().includes("a2")
+      ? "A2"
+      : "A1";
 
-      
-    }
+  await supabase.from("orders").insert({
+    username: normalizedEmail,
+    product_slug: selectedSlug,
+    level,
+    status: "pending_payment",
+  });
+}
 
     router.push("/dashboard");
   }
