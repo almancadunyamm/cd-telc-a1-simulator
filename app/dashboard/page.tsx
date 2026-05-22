@@ -1,5 +1,5 @@
 "use client";
-
+import { supabase } from "@/lib/supabase";
 import { getShopierLink } from "@/lib/billing/shopier-links";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -628,6 +628,7 @@ const speakingTask =
   }
 }, []);
   useEffect(() => {
+  async function loadDashboardData() {
     const rawUser = localStorage.getItem("mock_logged_user");
 
     if (!rawUser) {
@@ -649,18 +650,34 @@ setPendingPaymentSlug(savedPendingSlug);
   return;
 }
 
-const rawUsers = localStorage.getItem("users");
-const users = rawUsers ? JSON.parse(rawUsers) : [];
+const normalizedUsername = String(parsedUser.username || "")
+  .trim()
+  .toLowerCase();
 
-const activeStudent = users.find(
-  (user: any) =>
-    user.role === "student" &&
-    String(user.email || "").trim().toLowerCase() ===
-      String(parsedUser.username || "").trim().toLowerCase()
-);
+const { data: activeUsers } = await supabase
+  .from("users")
+  .select("*")
+  .eq("email", normalizedUsername)
+  .limit(1);
 
-if (!activeStudent || activeStudent.isActive !== true) {
+const activeStudent = activeUsers?.[0];
+
+if (!activeStudent || activeStudent.is_active !== true) {
   setIsStudentActive(false);
+
+  const { data: pendingOrdersFromDb } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("username", normalizedUsername)
+    .in("status", ["pending_payment", "paid_waiting_activation"])
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  const latestPendingOrder = pendingOrdersFromDb?.[0];
+
+  if (latestPendingOrder?.product_slug) {
+    setPendingPaymentSlug(latestPendingOrder.product_slug);
+  }
 } else {
   setIsStudentActive(true);
 
@@ -685,7 +702,10 @@ if (!activeStudent || activeStudent.isActive !== true) {
     );
 
     setStudentAccess(access || null);
-  }, [router]);
+  }
+
+  loadDashboardData();
+}, [router]);
 
   const accessibleClassIds = useMemo(() => {
     if (!studentAccess) return [];
