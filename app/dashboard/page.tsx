@@ -541,6 +541,7 @@ const earnedBadges = [
   const [pendingPaymentSlug, setPendingPaymentSlug] = useState("");
   const [hidePendingOrderNotice, setHidePendingOrderNotice] = useState(false);
   const [paymentNoticeRefreshKey, setPaymentNoticeRefreshKey] = useState(0);
+  const [dbPendingOrders, setDbPendingOrders] = useState<any[]>([]);
   const [classes, setClasses] = useState<AdminClass[]>([]);
   const [lessons, setLessons] = useState<TeacherLesson[]>([]);
   const [studentAccess, setStudentAccess] = useState<StudentClassAccess | null>(
@@ -674,6 +675,7 @@ if (!activeStudent || activeStudent.is_active !== true) {
     .limit(1);
 
   const latestPendingOrder = pendingOrdersFromDb?.[0];
+  setDbPendingOrders(pendingOrdersFromDb || []);
 
   if (latestPendingOrder?.product_slug) {
     setPendingPaymentSlug(latestPendingOrder.product_slug);
@@ -883,14 +885,18 @@ const accessExpired = isAccessExpired(activeAccessEndDate);
 
 paymentNoticeRefreshKey;  
 const pendingOrders =
-    currentUser !== null
-      ? getPendingOrders().filter(
-          (order) =>
-            order.username === currentUser.username &&
-            getLevelFromSlug(order.productSlug) === selectedLevel &&
-            order.status === "pending_payment"
-        )
-      : [];
+  currentUser !== null
+    ? dbPendingOrders.map((order: any) => ({
+        id: order.id,
+        username: order.username,
+        productSlug: order.product_slug,
+        level: order.level,
+        status: order.status,
+        createdAt: order.created_at,
+        updatedAt: order.created_at,
+        packageType: "starter",
+      }))
+    : [];
 
   const isWaitingPaymentOrActivation = pendingOrders.length > 0;
   const hasPendingOrder = pendingOrders.length > 0;
