@@ -324,7 +324,7 @@ useEffect(() => {
 const loggedUser = JSON.parse(localStorage.getItem("mock_logged_user") || "{}");
 const currentUsername = loggedUser?.username || "guest";
 useEffect(() => {
-  const interval = setInterval(() => {
+  const interval = setInterval(async () => {
     const rawLoggedUser = localStorage.getItem("mock_logged_user");
     const rawUsers = localStorage.getItem("users");
 
@@ -371,12 +371,42 @@ if (!hasWaitingPayment) {
 setDashboardRefreshKey((prev) => prev + 1);
 }
 
-    const rawClasses = localStorage.getItem("admin_classes");
-    const rawLessons = localStorage.getItem("teacher_lessons");
+    const { data: classesFromDb } = await supabase
+  .from("classes")
+  .select("*");
+
+const { data: lessonsFromDb } = await supabase
+  .from("teacher_lessons")
+  .select("*");
     const rawAccess = localStorage.getItem("student_class_access");
 
-    setClasses(rawClasses ? JSON.parse(rawClasses) : []);
-    setLessons(rawLessons ? JSON.parse(rawLessons) : []);
+    setClasses(
+  (classesFromDb || []).map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    level: item.level,
+    teacherId: item.teacher_id,
+    teacherName: item.teacher_name,
+    isDefaultSalesClass: item.is_default_sales_class,
+  }))
+);
+
+setLessons(
+  (lessonsFromDb || []).map((lesson: any) => ({
+    id: lesson.id,
+    title: lesson.title,
+    videoUrl: lesson.video_url,
+    packageType: lesson.package_type,
+    contentType: lesson.content_type,
+    pdfTitle: lesson.pdf_title,
+    pdfUrl: lesson.pdf_url,
+    pdfVisibility: lesson.pdf_visibility,
+    homework: lesson.homework,
+    worksheets: lesson.worksheets || [],
+    classId: lesson.class_id,
+    level: lesson.level,
+  }))
+);
 
     const accessList: StudentClassAccess[] = rawAccess
       ? JSON.parse(rawAccess)
