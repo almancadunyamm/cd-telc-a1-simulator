@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 type PackageType = "starter" | "practice" | "master";
 type ContentType = "liveClass" | "digitalPackage";
@@ -264,7 +265,7 @@ setWorksheets([]);
     setEditingLessonId(null);
   }
 
-  function handleSaveLesson() {
+  async function handleSaveLesson() {
     if (!currentTeacherId) {
       alert("Öğretmen girişi bulunamadı. Lütfen tekrar giriş yapın.");
       router.push("/login");
@@ -290,8 +291,30 @@ setWorksheets([]);
       return;
     }
 
-    const savedLessons = localStorage.getItem("teacher_lessons");
-    const allLessons: LessonItem[] = savedLessons ? JSON.parse(savedLessons) : [];
+    let allLessons: LessonItem[] = [];
+
+const { data: existingLessons } = await supabase
+  .from("teacher_lessons")
+  .select("*");
+
+allLessons =
+  existingLessons?.map((lesson: any) => ({
+    id: lesson.id,
+    level: lesson.level,
+    classId: lesson.class_id,
+    className: lesson.class_name,
+    teacherId: lesson.teacher_id,
+    teacherName: lesson.teacher_name,
+    title: lesson.title,
+    videoUrl: lesson.video_url,
+    packageType: lesson.package_type,
+    contentType: lesson.content_type,
+    pdfTitle: lesson.pdf_title,
+    pdfUrl: lesson.pdf_url,
+    pdfVisibility: lesson.pdf_visibility,
+    homework: lesson.homework,
+    worksheets: lesson.worksheets || [],
+  })) || [];
 
     const lessonData: LessonItem = {
       id: editingLessonId || crypto.randomUUID(),
@@ -320,7 +343,33 @@ worksheetPackageType: isExpertTeacher ? worksheetPackageType : "starter",
         )
       : [...allLessons, lessonData];
 
-    localStorage.setItem("teacher_lessons", JSON.stringify(updatedAllLessons));
+    const lessonToSave = {
+  id: lessonData.id,
+  level: lessonData.level,
+  class_id: lessonData.classId,
+  class_name: lessonData.className,
+  teacher_id: lessonData.teacherId,
+  teacher_name: lessonData.teacherName,
+  title: lessonData.title,
+  video_url: lessonData.videoUrl,
+  package_type: lessonData.packageType,
+  content_type: lessonData.contentType,
+  pdf_title: lessonData.pdfTitle,
+  pdf_url: lessonData.pdfUrl,
+  pdf_visibility: lessonData.pdfVisibility,
+  homework: lessonData.homework,
+  worksheets: lessonData.worksheets || [],
+};
+
+const { error } = await supabase
+  .from("teacher_lessons")
+  .upsert([lessonToSave]);
+
+if (error) {
+  alert("Supabase kayıt hatası.");
+  console.log(error);
+  return;
+}
 
     const teacherClassIds = classes.map((classItem) => classItem.id);
 
