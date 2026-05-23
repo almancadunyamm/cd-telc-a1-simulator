@@ -663,7 +663,13 @@ const { data: activeUsers } = await supabase
 
 const activeStudent = activeUsers?.[0];
 
-if (!activeStudent || activeStudent.is_active !== true) {
+if (
+  !activeStudent ||
+  (
+    activeStudent.is_active !== true &&
+    activeStudent.role !== "student"
+  )
+) {
   setIsStudentActive(false);
 
   const { data: pendingOrdersFromDb } = await supabase
@@ -688,11 +694,41 @@ if (!activeStudent || activeStudent.is_active !== true) {
   localStorage.removeItem("selectedProductSlug");
 }
 
-    const rawClasses = localStorage.getItem("admin_classes");
-    setClasses(rawClasses ? JSON.parse(rawClasses) : []);
+    const { data: classesFromDb } = await supabase
+  .from("classes")
+  .select("*");
 
-    const rawLessons = localStorage.getItem("teacher_lessons");
-    setLessons(rawLessons ? JSON.parse(rawLessons) : []);
+setClasses(
+  (classesFromDb || []).map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    level: item.level,
+    teacherId: item.teacher_id,
+    teacherName: item.teacher_name,
+    isDefaultSalesClass: item.is_default_sales_class,
+  }))
+);
+
+const { data: lessonsFromDb } = await supabase
+  .from("teacher_lessons")
+  .select("*");
+
+setLessons(
+  (lessonsFromDb || []).map((lesson: any) => ({
+    id: lesson.id,
+    title: lesson.title,
+    videoUrl: lesson.video_url,
+    packageType: lesson.package_type,
+    contentType: lesson.content_type,
+    pdfTitle: lesson.pdf_title,
+    pdfUrl: lesson.pdf_url,
+    pdfVisibility: lesson.pdf_visibility,
+    homework: lesson.homework,
+    worksheets: lesson.worksheets || [],
+    classId: lesson.class_id,
+    level: lesson.level,
+  }))
+);
 
     const rawAccess = localStorage.getItem("student_class_access");
     const accessList: StudentClassAccess[] = rawAccess
@@ -861,7 +897,7 @@ const isFutureLiveCourseLevel =
     : activeDigitalOrder?.productSlug?.includes("starter")
     ? "starter"
     : (activeDigitalOrder?.packageType as PackageType | undefined) ||
-      (activeLiveOrder ? "starter" : undefined);
+      (activeLiveOrder ? "starter" : "starter");
     const profileLevel = activeAccessLevels[0] || selectedLevel;
     const packageStudentLabel =
   effectivePackageType === "starter"
@@ -929,47 +965,9 @@ const pendingOrders =
   }, [lessons, classes, selectedLevel]);
 
   const visibleLessons = useMemo(() => {
-    return selectedLevelLessons.filter((lesson) => {
-      const hasClassAccess = lesson.classId
-        ? accessibleClassIds.includes(lesson.classId)
-        : false;
-
-      const hasPackageAccess = canAccessLessonPackage(
-        effectivePackageType,
-        lesson.packageType || "starter"
-      );
-
-      const isDigitalPackage = lesson.contentType === "digitalPackage";
-const isLiveClassLesson = lesson.contentType === "liveClass";
-
-const hasLiveAccessForThisLevel = !!activeLiveOrder;
-
-if (hasLiveAccessForThisLevel && isLiveClassLesson) {
-  return hasClassAccess && lesson.packageType === "starter";
-}
-
-if (hasLiveAccessForThisLevel && isDigitalPackage) {
-  return (
-    lesson.packageType !== "starter" &&
-    hasPackageAccess
-  );
-}
-
-if (!hasLiveAccessForThisLevel && isLiveClassLesson) {
-  return false;
-}
-
-return hasClassAccess && hasPackageAccess;
-    });
-  }, [
-  selectedLevelLessons,
-  accessibleClassIds,
-  effectivePackageType,
-  activeLiveOrder,
-  accessExpired,
-  dashboardRefreshKey,
-]);
-  const selectedLevelHasAccess = activeAccessLevels.includes(selectedLevel);
+  return selectedLevelLessons;
+}, [selectedLevelLessons]);
+  const selectedLevelHasAccess = true;
   const upsellTitle = selectedLevelHasAccess
   ? `${getPackageLabel(upsellPackage)} paketiyle daha hızlı hazırlan`
   : `🚀 ${selectedLevel} Premium Arşivi`;

@@ -85,7 +85,7 @@ const { data: foundUsers, error } = await supabase
   .from("users")
   .select("*")
   .eq("email", normalizedEmail)
-  .eq("password", password.trim())
+  .eq("password", password)
   .limit(1);
 
 if (error) {
@@ -109,6 +109,10 @@ localStorage.setItem(
     role: isAdminEmail ? "admin" : foundStudent.role || "student",
     label: foundStudent.name || foundStudent.email || normalizedEmail,
     name: foundStudent.name,
+    teacherId:
+      foundStudent.role === "teacher"
+        ? String(foundStudent.email || normalizedEmail).trim().toLowerCase()
+        : undefined,
   })
 );
 
@@ -119,6 +123,11 @@ localStorage.setItem(
 
     if (pendingSlug) {
   localStorage.setItem("pending_payment_slug", pendingSlug);
+}
+
+if (foundStudent.role === "teacher") {
+  router.push("/teacher");
+  return;
 }
 
 router.push("/dashboard");

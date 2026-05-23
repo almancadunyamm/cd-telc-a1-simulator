@@ -19,8 +19,10 @@ type ClassItem = {
   id: string;
   name: string;
   level: Level;
-  teacherId: string;
-  teacherName: string;
+  teacherId?: string;
+  teacherName?: string;
+  teacher_id?: string;
+  teacher_name?: string;
 };
 
 type LessonItem = {
@@ -165,37 +167,56 @@ const activeTeacher = teachers.find((teacher: any) => {
 
 setIsExpertTeacher(activeTeacher?.teacherType === "expertTeacher");
 
-    const savedClasses = localStorage.getItem("admin_classes");
-    const savedLessons = localStorage.getItem("teacher_lessons");
-
     let teacherClasses: ClassItem[] = [];
 
-    if (savedClasses) {
-      try {
-        const parsedClasses = JSON.parse(savedClasses) as ClassItem[];
+async function loadTeacherClasses() {
+  const { data, error } = await supabase
+    .from("classes")
+    .select("*");
 
-        teacherClasses = parsedClasses.filter((classItem) => {
-  const classTeacherValues = [
-    classItem.teacherId,
-    classItem.teacherName,
-  ]
-    .map((item) => normalizeId(item))
-    .filter(Boolean);
+  if (error) {
+    console.log(error);
+    setClasses([]);
+    return;
+  }
 
-  return classTeacherValues.some((value) =>
-    teacherMatchValues.includes(value)
-  );
-});
+  teacherClasses = (data || [])
+    .map((classItem: any) => ({
+      id: classItem.id,
+      name: classItem.name,
+      level: classItem.level,
+      teacherId: classItem.teacher_id,
+      teacherName: classItem.teacher_name,
+      teacher_id: classItem.teacher_id,
+      teacher_name: classItem.teacher_name,
+      isDefaultSalesClass: classItem.is_default_sales_class,
+      classType: classItem.class_type,
+    }))
+    .filter((classItem) => {
+      const classTeacherValues = [
+        classItem.teacherId,
+        classItem.teacherName,
+        classItem.teacher_id,
+        classItem.teacher_name,
+      ]
+        .map((item) => normalizeId(item))
+        .filter(Boolean);
 
-        setClasses(teacherClasses);
+      return classTeacherValues.some((value) =>
+        teacherMatchValues.includes(value)
+      );
+    });
 
-        if (teacherClasses.length > 0) {
-          setSelectedClassId(teacherClasses[0].id);
-        }
-      } catch {
-        setClasses([]);
-      }
-    }
+  setClasses(teacherClasses);
+
+  if (teacherClasses.length > 0) {
+    setSelectedClassId(teacherClasses[0].id);
+  }
+}
+
+loadTeacherClasses();
+
+const savedLessons = localStorage.getItem("teacher_lessons");
 
     if (savedLessons) {
       try {
