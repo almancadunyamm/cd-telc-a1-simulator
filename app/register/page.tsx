@@ -154,7 +154,7 @@ if (selectedSlug) {
   });
 }
 
-    router.push("/payment");
+    router.push("/payment/pending");
   }
 return (
   <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50 px-4 py-8">
