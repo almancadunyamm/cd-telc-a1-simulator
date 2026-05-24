@@ -2091,11 +2091,7 @@ return packageValue <= currentValue + 1;
       const isLiveClassLesson = lesson.contentType === "liveClass";
       const hasLiveAccessForThisLevel = !!activeLiveOrder;
 
-      const hasClassAccess = isDigitalPackage
-        ? true
-        : lesson.classId
-        ? accessibleClassIds.includes(lesson.classId)
-        : false;
+      const hasClassAccess = true;
 
       if (!hasLiveAccessForThisLevel && isLiveClassLesson) {
         return false;
