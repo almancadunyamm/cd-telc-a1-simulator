@@ -983,16 +983,10 @@ const pendingOrders =
 }, [currentUser]);
 
   const selectedLevelLessons = useMemo(() => {
-
-    return lessons.filter((lesson) => {
-      if (lesson.classId) {
-        const lessonClass = classes.find((item) => item.id === lesson.classId);
-        return lessonClass?.level === selectedLevel;
-      }
-
-      return lesson.level === selectedLevel;
-    });
-  }, [lessons, classes, selectedLevel]);
+  return lessons.filter(
+    (lesson) => lesson.level === selectedLevel
+  );
+}, [lessons, selectedLevel]);
 
   const visibleLessons = useMemo(() => {
   return selectedLevelLessons;
