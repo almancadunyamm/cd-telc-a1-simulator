@@ -1174,9 +1174,7 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
 }
 
   function handleLessonClick(lesson: TeacherLesson) {
-  const hasClassAccess = lesson.classId
-    ? accessibleClassIds.includes(lesson.classId)
-    : false;
+  const hasClassAccess = true;
 
   const hasPackageAccess = canAccessLessonPackage(
     effectivePackageType,
@@ -2094,8 +2092,8 @@ return packageValue <= currentValue + 1;
       const hasClassAccess = true;
 
       if (!hasLiveAccessForThisLevel && isLiveClassLesson) {
-        return false;
-      }
+  return true;
+}
 
       if (activeLiveOrder) {
         if (packageGroup === "starter") {
