@@ -1,48 +1,72 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
 
 export default function PaymentPendingPage() {
+  const router = useRouter();
+
+  function handleLogout() {
+    localStorage.removeItem("mock_logged_user");
+    router.push("/");
+  }
+
+  function handlePayment() {
+    const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
+    const slug =
+      localStorage.getItem("pending_payment_slug") ||
+      localStorage.getItem("selected_product_slug") ||
+      "";
+
+    const link = links[slug];
+
+    if (!link) {
+      alert("Bu paket için ödeme linki henüz eklenmemiş.");
+      return;
+    }
+
+    window.open(link, "_blank");
+  }
+
   return (
-    <main className="mx-auto max-w-xl px-4 py-16">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="text-xl font-semibold text-slate-900">
-          Ödeme bildiriminiz alındı
-        </h1>
-
-        <p className="mt-4 text-sm leading-6 text-slate-600">
-          Siparişiniz kontrol sürecine alındı. Ödemeniz doğrulandıktan sonra
-          satın aldığınız paket hesabınıza tanımlanacaktır.
-        </p>
-
-        <div className="mt-6 rounded-xl bg-slate-50 p-4 text-left text-sm text-slate-700">
-          <p className="font-medium text-slate-800">Sonraki adım</p>
-          <p className="mt-2">
-            Erişiminiz kısa süre içinde açılacaktır. Kontrol tamamlandıktan
-            sonra dashboard üzerinden ilgili seviyeye erişebilirsiniz.
-          </p>
+    <main className="relative min-h-screen bg-slate-100">
+      <div className="pointer-events-none absolute inset-0 blur-sm opacity-60">
+        <div className="mx-auto max-w-6xl p-8">
+          <div className="rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white">
+            <h1 className="text-3xl font-black">TELC hazırlık panelin hazır 👋</h1>
+            <p className="mt-3">Dersler, PDF materyalleri ve çalışma planın burada.</p>
+          </div>
         </div>
+      </div>
 
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-left text-sm text-amber-900">
-          <p className="font-medium">Önemli</p>
-          <p className="mt-2">
-            Eğer ödeme yaptıktan sonra erişiminiz açılmazsa, ödeme bilginizle
-            birlikte destek ekibiyle iletişime geçin.
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-4">
+        <div className="w-full max-w-lg rounded-3xl bg-white p-8 text-center shadow-2xl">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 text-3xl">
+            🔒
+          </div>
+
+          <h1 className="mt-5 text-2xl font-black text-slate-900">
+            Devam etmek için ödeme adımını tamamla
+          </h1>
+
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Hesabın oluşturuldu. Derslere erişim için ödeme adımını tamamladıktan sonra dekontunu WhatsApp’tan gönderebilirsin.
           </p>
-        </div>
 
-        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center justify-center rounded-xl bg-[#173b8f] px-5 py-3 text-sm font-semibold text-white hover:opacity-90"
+          <button
+            type="button"
+            onClick={handlePayment}
+            className="mt-6 w-full rounded-2xl bg-blue-600 px-5 py-4 text-sm font-black text-white hover:bg-blue-700"
           >
-            Dashboard’a dön
-          </Link>
+            💳 Shopier ile Ödeme Yap
+          </button>
 
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="mt-3 w-full rounded-2xl border border-slate-300 px-5 py-4 text-sm font-black text-slate-700 hover:bg-slate-50"
           >
-            Ana sayfaya dön
-          </Link>
+            Çıkış Yap
+          </button>
         </div>
       </div>
     </main>
