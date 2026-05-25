@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { getShopierLink } from "@/lib/billing/shopier-links";
 
 export default function PaymentPendingPage() {
   const router = useRouter();
@@ -10,22 +12,70 @@ export default function PaymentPendingPage() {
     router.push("/");
   }
 
-  function handlePayment() {
-    const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
-    const slug =
-      localStorage.getItem("pending_payment_slug") ||
-      localStorage.getItem("selected_product_slug") ||
-      "";
+  async function handlePayment() {
+  const rawUser = localStorage.getItem("mock_logged_user");
 
-    const link = links[slug];
-
-    if (!link) {
-      alert("Bu paket için ödeme linki henüz eklenmemiş.");
-      return;
-    }
-
-    window.open(link, "_blank");
+  if (!rawUser) {
+    router.push("/login");
+    return;
   }
+
+  const user = JSON.parse(rawUser);
+
+  const slug =
+    localStorage.getItem("pending_payment_slug") ||
+    localStorage.getItem("selected_product_slug") ||
+    localStorage.getItem("selectedProductSlug") ||
+    "";
+
+  if (!slug) {
+    alert("Seçilen paket bulunamadı. Lütfen paketi tekrar seçin.");
+    return;
+  }
+
+  const link = getShopierLink(slug);
+
+  if (!link) {
+    alert("Bu paket için Shopier linki eklenmemiş.");
+    return;
+  }
+
+  const normalizedUsername = String(user.username || "")
+    .trim()
+    .toLowerCase();
+
+  const level = slug.toLowerCase().includes("b1")
+    ? "B1"
+    : slug.toLowerCase().includes("a2")
+    ? "A2"
+    : "A1";
+
+  const { data: existingOrders } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("username", normalizedUsername)
+    .eq("product_slug", slug)
+    .in("status", ["pending_payment", "paid_waiting_activation"])
+    .limit(1);
+
+  if (existingOrders && existingOrders.length > 0) {
+    await supabase
+      .from("orders")
+      .update({ status: "paid_waiting_activation" })
+      .eq("id", existingOrders[0].id);
+  } else {
+    await supabase.from("orders").insert({
+      username: normalizedUsername,
+      product_slug: slug,
+      level,
+      status: "paid_waiting_activation",
+    });
+  }
+
+  localStorage.setItem("pending_payment_slug", slug);
+  window.open(link, "_blank");
+  router.push("/dashboard");
+}
 
   return (
     <main className="relative min-h-screen bg-slate-100">
