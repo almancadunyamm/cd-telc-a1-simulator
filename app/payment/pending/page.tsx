@@ -49,7 +49,7 @@ export default function PaymentPendingPage() {
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            Hesabın oluşturuldu. Derslere erişim için ödeme adımını tamamladıktan sonra dekontunu WhatsApp’tan gönderebilirsin.
+            Hesabın oluşturuldu. Ödeme adımını tamamladıktan sonra derslere erişim sağlayabileceksin.
           </p>
 
           <button

@@ -693,13 +693,7 @@ const { data: activeUsers } = await supabase
 
 const activeStudent = activeUsers?.[0];
 
-if (
-  !activeStudent ||
-  (
-    activeStudent.is_active !== true &&
-    activeStudent.role !== "student"
-  )
-) {
+if (!activeStudent || activeStudent.is_active !== true) {
   setIsStudentActive(false);
 
   const { data: pendingOrdersFromDb } = await supabase
