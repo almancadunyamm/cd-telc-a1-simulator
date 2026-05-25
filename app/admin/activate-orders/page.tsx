@@ -3,14 +3,41 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ActivateOrderButton from "./activate-order-button";
-import { getPendingOrders, type BillingOrder } from "@/lib/billing/orders";
+import { supabase } from "@/lib/supabase";
+import type { BillingOrder } from "@/lib/billing/orders";
 
 export default function ActivateOrdersPage() {
   const [orders, setOrders] = useState<BillingOrder[]>([]);
 
   useEffect(() => {
-    setOrders(getPendingOrders());
-  }, []);
+  async function loadOrders() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .in("status", ["pending_payment", "paid_waiting_activation"])
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      alert("Siparişler yüklenemedi: " + error.message);
+      return;
+    }
+
+    setOrders(
+      (data || []).map((order: any) => ({
+        id: order.id,
+        username: order.username,
+        productSlug: order.product_slug,
+        level: order.level,
+        status: order.status,
+        createdAt: order.created_at,
+        updatedAt: order.created_at,
+        packageType: "starter",
+      }))
+    );
+  }
+
+  loadOrders();
+}, []);
 
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
