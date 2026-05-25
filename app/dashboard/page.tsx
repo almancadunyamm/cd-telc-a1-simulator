@@ -927,7 +927,7 @@ const isFutureLiveCourseLevel =
     : activeDigitalOrder?.productSlug?.includes("starter")
     ? "starter"
     : (activeDigitalOrder?.packageType as PackageType | undefined) ||
-      (activeLiveOrder ? "starter" : "starter");
+      (activeLiveOrder || isStudentActive ? "starter" : undefined);
     const profileLevel = activeAccessLevels[0] || selectedLevel;
     const packageStudentLabel =
   effectivePackageType === "starter"
@@ -991,7 +991,7 @@ const pendingOrders =
   const visibleLessons = useMemo(() => {
   return selectedLevelLessons;
 }, [selectedLevelLessons]);
-  const selectedLevelHasAccess = true;
+  const selectedLevelHasAccess = isStudentActive;
   const upsellTitle = selectedLevelHasAccess
   ? `${getPackageLabel(upsellPackage)} paketiyle daha hızlı hazırlan`
   : `🚀 ${selectedLevel} Premium Arşivi`;
