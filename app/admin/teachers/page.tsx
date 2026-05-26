@@ -104,25 +104,39 @@ export default function AdminTeachersPage() {
     }
 
     if (editingTeacherId) {
-  const updatedTeachers = teachers.map((teacher) =>
-    teacher.id === editingTeacherId
-      ? {
-    ...teacher,
-    name: name.trim(),
-    email: email.trim().toLowerCase(),
-    teacherType,
-    teacherId: teacherId.trim().toLowerCase(),
-    password: password.trim(),
-    whatsapp: whatsapp.trim(),
+  const { error } = await supabase
+    .from("users")
+    .update({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      password: password.trim(),
+      teacher_type: teacherType,
+      whatsapp: whatsapp.trim(),
+    })
+    .eq("id", editingTeacherId);
+
+  if (error) {
+    alert("Öğretmen güncellenemedi: " + error.message);
+    return;
   }
-      : teacher
+
+  setTeachers(
+    teachers.map((teacher) =>
+      teacher.id === editingTeacherId
+        ? {
+            ...teacher,
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
+            teacherType,
+            teacherId: email.trim().toLowerCase(),
+            password: password.trim(),
+            whatsapp: whatsapp.trim(),
+          }
+        : teacher
+    )
   );
 
-  setTeachers(updatedTeachers);
-  localStorage.setItem(TEACHERS_KEY, JSON.stringify(updatedTeachers));
-
   setEditingTeacherId(null);
-
   setName("");
   setEmail("");
   setTeacherId("");
