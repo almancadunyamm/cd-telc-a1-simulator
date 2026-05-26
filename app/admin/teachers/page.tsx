@@ -149,8 +149,6 @@ whatsapp: whatsapp.trim(),
   password: newTeacher.password,
   role: "teacher",
   is_active: true,
-  teacher_id: newTeacher.teacherId,
-  teacher_type: newTeacher.teacherType,
   whatsapp: newTeacher.whatsapp,
 });
 
