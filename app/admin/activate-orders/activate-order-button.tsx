@@ -1,6 +1,7 @@
 "use client";
 
 import { activateBillingOrder, type BillingOrder } from "@/lib/billing/orders";
+import { supabase } from "@/lib/supabase";
 import { getAccessEndDateByProduct } from "../../../lib/access/access-control";
 type Level = "A1" | "A2" | "B1";
 
@@ -153,7 +154,7 @@ function activateStarterDigitalPackage(username: string, level: Level) {
 }
 
 export default function ActivateOrderButton({ order }: ActivateOrderButtonProps) {
-  function handleActivateOrder() {
+  async function handleActivateOrder() {
     const username = String(order.username || "").trim();
     const productSlug = String(order.productSlug || "").toLowerCase();
     const isLiveCourse = productSlug.includes("live");
@@ -163,8 +164,24 @@ export default function ActivateOrderButton({ order }: ActivateOrderButtonProps)
       return;
     }
 
-    const rawClasses = localStorage.getItem(ADMIN_CLASSES_KEY);
-    const classes: AdminClass[] = rawClasses ? JSON.parse(rawClasses) : [];
+    const { data: classesFromDb, error: classesError } = await supabase
+  .from("classes")
+  .select("*");
+
+if (classesError) {
+  alert("Sınıflar yüklenemedi: " + classesError.message);
+  return;
+}
+
+const classes: AdminClass[] = (classesFromDb || []).map((item: any) => ({
+  id: item.id,
+  name: item.name,
+  level: item.level,
+  teacherName: item.teacher_name,
+  teacherId: item.teacher_id,
+  isDefaultSalesClass: item.is_default_sales_class,
+  classType: item.class_type || "live",
+}));
 
     const levelsToActivate = isLiveCourse
       ? getLevelsFromProductSlug(productSlug)
@@ -178,6 +195,8 @@ export default function ActivateOrderButton({ order }: ActivateOrderButtonProps)
     item.isDefaultSalesClass === true &&
     item.classType === (isLiveCourse ? "live" : "digital")
 );
+console.log("DEFAULT CLASS", defaultClass);
+console.log("ALL CLASSES", classes);
 
       if (!defaultClass) {
         alert(
