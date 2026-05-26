@@ -52,7 +52,17 @@ useEffect(() => {
       return;
     }
 
-    setClasses(data || []);
+    setClasses(
+  (data || []).map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    level: item.level,
+    teacherId: item.teacher_id,
+    teacherName: item.teacher_name,
+    isDefaultSalesClass: item.is_default_sales_class,
+    classType: item.class_type || "live",
+  }))
+);
   }
 
   loadClasses();
@@ -151,7 +161,17 @@ const { data } = await supabase
   .select("*")
   .order("created_at", { ascending: false });
 
-setClasses(data || []);
+setClasses(
+  (data || []).map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    level: item.level,
+    teacherId: item.teacher_id,
+    teacherName: item.teacher_name,
+    isDefaultSalesClass: item.is_default_sales_class,
+    classType: item.class_type || "live",
+  }))
+);
 
     setName("");
     setLevel("A1");
@@ -240,7 +260,17 @@ setEditingClassId(null);
     .select("*")
     .order("created_at", { ascending: false });
 
-  setClasses(data || []);
+  setClasses(
+  (data || []).map((item: any) => ({
+    id: item.id,
+    name: item.name,
+    level: item.level,
+    teacherId: item.teacher_id,
+    teacherName: item.teacher_name,
+    isDefaultSalesClass: item.is_default_sales_class,
+    classType: item.class_type || "live",
+  }))
+);
 
   alert(`${targetClass.level} için varsayılan satış sınıfı güncellendi.`);
 }
