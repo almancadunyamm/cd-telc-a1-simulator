@@ -188,6 +188,10 @@ const classes: AdminClass[] = (classesFromDb || []).map((item: any) => ({
       : [getLevelFromOrder(order)];
 
     activateStudentUser(username);
+    await supabase
+  .from("users")
+  .update({ is_active: true })
+  .eq("email", username.toLowerCase());
       for (const level of levelsToActivate) {
       const defaultClass = classes.find(
   (item) =>
@@ -234,15 +238,19 @@ const updatedOrders = orders.map((item: any) => {
 });
 
 localStorage.setItem(BILLING_ORDERS_KEY, JSON.stringify(updatedOrders));
-    activateBillingOrder(order.id);
+    await supabase
+  .from("orders")
+  .update({
+    status: "completed",
+  })
+  .eq("id", order.id);
 
-    alert(
+    window.location.reload();
+  alert(
       isLiveCourse
         ? `${username} kullanıcısına canlı kurs sınıf erişimi ve Başlangıç dijital paketi açıldı.`
         : `${username} kullanıcısına erişim açıldı.`
     );
-
-    window.location.reload();
   }
 
   return (
