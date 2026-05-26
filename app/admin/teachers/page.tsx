@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 type TeacherItem = {
   teacherType?: "teacher" | "expertTeacher";
   id: string;
@@ -29,9 +30,33 @@ export default function AdminTeachersPage() {
   const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null);
 
   useEffect(() => {
-    const rawTeachers = localStorage.getItem(TEACHERS_KEY);
-    setTeachers(rawTeachers ? JSON.parse(rawTeachers) : []);
-  }, []);
+  async function loadTeachers() {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("role", "teacher")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      alert("Öğretmenler yüklenemedi: " + error.message);
+      return;
+    }
+
+    setTeachers(
+      (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        teacherId: item.teacher_id || item.email,
+        password: item.password,
+        teacherType: item.teacher_type || "teacher",
+        whatsapp: item.whatsapp || "",
+      }))
+    );
+  }
+
+  loadTeachers();
+}, []);
   useEffect(() => {
     const raw = localStorage.getItem("mock_logged_user");
     const user = raw ? JSON.parse(raw) : null;
@@ -51,7 +76,7 @@ export default function AdminTeachersPage() {
       </main>
     );
   }
-  function handleAddTeacher() {
+  async function handleAddTeacher() {
     if (!name || !email || !teacherId || !password || !whatsapp) {
   alert("Tüm alanları doldurun.");
   return;
@@ -118,10 +143,23 @@ password: password.trim(),
 whatsapp: whatsapp.trim(),
     };
 
-    const updatedTeachers = [...teachers, newTeacher];
+    const { error } = await supabase.from("users").insert({
+  name: newTeacher.name,
+  email: newTeacher.email,
+  password: newTeacher.password,
+  role: "teacher",
+  is_active: true,
+  teacher_id: newTeacher.teacherId,
+  teacher_type: newTeacher.teacherType,
+  whatsapp: newTeacher.whatsapp,
+});
 
-    setTeachers(updatedTeachers);
-    localStorage.setItem(TEACHERS_KEY, JSON.stringify(updatedTeachers));
+if (error) {
+  alert("Öğretmen Supabase'e kaydedilemedi: " + error.message);
+  return;
+}
+
+setTeachers([newTeacher, ...teachers]);
 
     setName("");
     setEmail("");
