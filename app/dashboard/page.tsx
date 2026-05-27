@@ -935,7 +935,9 @@ const isFutureLiveCourseLevel =
     ? `${profileLevel} Zirve Öğrencisi`
     : `${profileLevel} Öğrencisi`;
 
-const isDigitalStarterStudent =
+const hasAnyLiveCourseOrder =
+  activeLiveCourseLevels.length > 0;
+    const isDigitalStarterStudent =
   effectivePackageType === "starter" && !activeLiveOrder;
   const activeAccessEndDate =
   effectivePackageType === "practice" || effectivePackageType === "master"
@@ -2318,7 +2320,7 @@ return packageValue <= currentValue + 1;
 
         <div className="rounded-2xl bg-white/20 p-4 backdrop-blur">
           <p className="text-xs opacity-80">
-  {activeLiveOrder ? "Canlı Program" : "Dijital Paket"}
+  {hasAnyLiveCourseOrder ? "Canlı Kurs" : "Dijital Paket"}
 </p>
           <div
   className={`mt-2 inline-flex items-center rounded-full px-4 py-2 text-sm font-black shadow-lg ${
