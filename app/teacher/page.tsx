@@ -148,24 +148,23 @@ const [worksheetPackageType, setWorksheetPackageType] =
 
     setCurrentTeacherId(teacherIdFromLogin);
     setCurrentTeacherName(loggedUser.name || loggedUser.username || "Öğretmen");
-    const rawTeachers = localStorage.getItem("admin_teachers");
-const teachers = rawTeachers ? JSON.parse(rawTeachers) : [];
+    async function loadTeacherType() {
+  const { data, error } = await supabase
+    .from("users")
+    .select("teacher_type")
+    .eq("email", loggedUser?.username?.trim().toLowerCase())
+    .limit(1);
 
-const activeTeacher = teachers.find((teacher: any) => {
-  const teacherValues = [
-    teacher.teacherId,
-    teacher.email,
-    teacher.name,
-  ]
-    .map((item) => normalizeId(item))
-    .filter(Boolean);
+  if (error) {
+    console.log(error);
+    setIsExpertTeacher(false);
+    return;
+  }
 
-  return teacherValues.some((value) =>
-    teacherMatchValues.includes(value)
-  );
-});
+  setIsExpertTeacher(data?.[0]?.teacher_type === "expertTeacher");
+}
 
-setIsExpertTeacher(activeTeacher?.teacherType === "expertTeacher");
+loadTeacherType();
 
     let teacherClasses: ClassItem[] = [];
 
