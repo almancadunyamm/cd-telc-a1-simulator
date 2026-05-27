@@ -156,7 +156,9 @@ function activateStarterDigitalPackage(username: string, level: Level) {
 export default function ActivateOrderButton({ order }: ActivateOrderButtonProps) {
   async function handleActivateOrder() {
     const username = String(order.username || "").trim();
-    const productSlug = String(order.productSlug || "").toLowerCase();
+    const productSlug = String(
+  order.productSlug || (order as any).product_slug || ""
+).toLowerCase();
     const isLiveCourse = productSlug.includes("live");
 
     if (!username) {
@@ -245,9 +247,7 @@ localStorage.setItem(BILLING_ORDERS_KEY, JSON.stringify(updatedOrders));
       status: "completed",
     })
     .eq("username", username.toLowerCase())
-.eq("product_slug", productSlug)
-.in("status", ["pending_payment", "paid_waiting_activation"])
-    .select();
+.select();
 
 console.log("UPDATED ORDERS", updatedOrderRows);
 
