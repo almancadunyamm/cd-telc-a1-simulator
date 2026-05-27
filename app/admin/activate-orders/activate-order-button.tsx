@@ -238,16 +238,25 @@ const updatedOrders = orders.map((item: any) => {
 });
 
 localStorage.setItem(BILLING_ORDERS_KEY, JSON.stringify(updatedOrders));
-    const { error: orderUpdateError } = await supabase
-  .from("orders")
-  .update({
-    status: "completed",
-  })
-  .eq("username", username.toLowerCase())
-.in("status", ["pending_payment", "paid_waiting_activation"]);
+    const { data: updatedOrderRows, error: orderUpdateError } =
+  await supabase
+    .from("orders")
+    .update({
+      status: "completed",
+    })
+    .eq("username", username.toLowerCase())
+    .in("status", ["pending_payment", "paid_waiting_activation"])
+    .select();
+
+console.log("UPDATED ORDERS", updatedOrderRows);
 
 if (orderUpdateError) {
   alert("Sipariş durumu güncellenemedi: " + orderUpdateError.message);
+  return;
+}
+
+if (!updatedOrderRows || updatedOrderRows.length === 0) {
+  alert("Sipariş güncellenemedi. Hiçbir kayıt eşleşmedi.");
   return;
 }
 
