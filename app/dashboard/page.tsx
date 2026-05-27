@@ -326,20 +326,23 @@ const currentUsername = loggedUser?.username || "guest";
 useEffect(() => {
   const interval = setInterval(async () => {
     const rawLoggedUser = localStorage.getItem("mock_logged_user");
-    const rawUsers = localStorage.getItem("users");
 
-    if (!rawLoggedUser || !rawUsers) return;
+if (!rawLoggedUser) return;
 
-    const logged = JSON.parse(rawLoggedUser);
-    const users = JSON.parse(rawUsers);
+const logged = JSON.parse(rawLoggedUser);
+const normalizedUsername = String(logged.username || "")
+  .trim()
+  .toLowerCase();
 
-    const latestUser = users.find(
-      (u: any) =>
-        String(u.email || "").trim().toLowerCase() ===
-        String(logged.username || "").trim().toLowerCase()
-    );
+const { data: activeUsers } = await supabase
+  .from("users")
+  .select("is_active")
+  .eq("email", normalizedUsername)
+  .limit(1);
 
-    if (latestUser?.isActive === true) {
+const latestUser = activeUsers?.[0];
+
+if (latestUser?.is_active === true) {
       const autoReloadKey = `auto_reload_after_activation_${logged.username}`;
 
 if (!localStorage.getItem(autoReloadKey)) {
