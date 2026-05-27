@@ -926,7 +926,9 @@ const isFutureLiveCourseLevel =
     : (activeDigitalOrder?.packageType as PackageType | undefined) ||
       (activeLiveOrder || isStudentActive ? "starter" : undefined);
       const hasAnyLiveCourseOrder =
-  activeAccessLevels.length > 0 && !!activeLiveOrder;
+  !!activeLiveOrder ||
+  localStorage.getItem("selected_product_slug")?.includes("live") ||
+  localStorage.getItem("pending_payment_slug")?.includes("live");
   const profileLevel = activeAccessLevels[0] || selectedLevel;
     const packageStudentLabel =
   hasAnyLiveCourseOrder
