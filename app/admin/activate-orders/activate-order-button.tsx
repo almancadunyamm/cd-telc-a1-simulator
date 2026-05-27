@@ -238,19 +238,25 @@ const updatedOrders = orders.map((item: any) => {
 });
 
 localStorage.setItem(BILLING_ORDERS_KEY, JSON.stringify(updatedOrders));
-    await supabase
+    const { error: orderUpdateError } = await supabase
   .from("orders")
   .update({
     status: "completed",
   })
   .eq("id", order.id);
 
-    window.location.reload();
+if (orderUpdateError) {
+  alert("Sipariş durumu güncellenemedi: " + orderUpdateError.message);
+  return;
+}
+
+    
   alert(
       isLiveCourse
         ? `${username} kullanıcısına canlı kurs sınıf erişimi ve Başlangıç dijital paketi açıldı.`
         : `${username} kullanıcısına erişim açıldı.`
     );
+    window.location.reload();
   }
 
   return (
