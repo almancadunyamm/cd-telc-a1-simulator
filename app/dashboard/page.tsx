@@ -925,18 +925,18 @@ const isFutureLiveCourseLevel =
     ? "starter"
     : (activeDigitalOrder?.packageType as PackageType | undefined) ||
       (activeLiveOrder || isStudentActive ? "starter" : undefined);
-    const profileLevel = activeAccessLevels[0] || selectedLevel;
+      const hasAnyLiveCourseOrder = !!activeLiveOrder;
+  const profileLevel = activeAccessLevels[0] || selectedLevel;
     const packageStudentLabel =
-  effectivePackageType === "starter"
+  hasAnyLiveCourseOrder
+    ? `${profileLevel} Canlı Kurs Öğrencisi`
+    : effectivePackageType === "starter"
     ? `${profileLevel} Başlangıç Öğrencisi`
     : effectivePackageType === "practice"
     ? `${profileLevel} Gelişim Öğrencisi`
     : effectivePackageType === "master"
     ? `${profileLevel} Zirve Öğrencisi`
     : `${profileLevel} Öğrencisi`;
-
-const hasAnyLiveCourseOrder =
-  activeLiveCourseLevels.length > 0;
     const isDigitalStarterStudent =
   effectivePackageType === "starter" && !activeLiveOrder;
   const activeAccessEndDate =
