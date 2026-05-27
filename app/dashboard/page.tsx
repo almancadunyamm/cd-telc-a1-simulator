@@ -925,7 +925,8 @@ const isFutureLiveCourseLevel =
     ? "starter"
     : (activeDigitalOrder?.packageType as PackageType | undefined) ||
       (activeLiveOrder || isStudentActive ? "starter" : undefined);
-      const hasAnyLiveCourseOrder = !!activeLiveOrder;
+      const hasAnyLiveCourseOrder =
+  activeAccessLevels.length > 0 && !!activeLiveOrder;
   const profileLevel = activeAccessLevels[0] || selectedLevel;
     const packageStudentLabel =
   hasAnyLiveCourseOrder
@@ -2320,7 +2321,7 @@ return packageValue <= currentValue + 1;
 
         <div className="rounded-2xl bg-white/20 p-4 backdrop-blur">
           <p className="text-xs opacity-80">
-  {hasAnyLiveCourseOrder ? "Canlı Kurs" : "Dijital Paket"}
+  {JSON.stringify(activeLiveOrder)}
 </p>
           <div
   className={`mt-2 inline-flex items-center rounded-full px-4 py-2 text-sm font-black shadow-lg ${
