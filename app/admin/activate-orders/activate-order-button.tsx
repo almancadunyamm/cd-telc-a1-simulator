@@ -256,10 +256,7 @@ if (orderUpdateError) {
   return;
 }
 
-if (!updatedOrderRows || updatedOrderRows.length === 0) {
-  alert("Sipariş güncellenemedi. Hiçbir kayıt eşleşmedi.");
-  return;
-}
+
 
     
   alert(
