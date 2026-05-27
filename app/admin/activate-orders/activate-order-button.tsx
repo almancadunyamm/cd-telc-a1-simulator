@@ -194,6 +194,12 @@ const classes: AdminClass[] = (classesFromDb || []).map((item: any) => ({
   .from("users")
   .update({ is_active: true })
   .eq("email", username.toLowerCase());
+  await supabase
+  .from("orders")
+  .update({
+    is_activated: true,
+  })
+  .eq("username", username.toLowerCase());
       for (const level of levelsToActivate) {
       const defaultClass = classes.find(
   (item) =>

@@ -15,6 +15,7 @@ export default function ActivateOrdersPage() {
       .from("orders")
       .select("*")
       .in("status", ["pending_payment", "paid_waiting_activation"])
+      .eq("is_activated", false)
       .order("created_at", { ascending: false });
 
     if (error) {
