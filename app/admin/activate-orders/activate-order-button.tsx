@@ -244,8 +244,7 @@ localStorage.setItem(BILLING_ORDERS_KEY, JSON.stringify(updatedOrders));
     .update({
       status: "completed",
     })
-    .eq("username", username.toLowerCase())
-    .in("status", ["pending_payment", "paid_waiting_activation"])
+    .eq("id", order.id)
     .select();
 
 console.log("UPDATED ORDERS", updatedOrderRows);
