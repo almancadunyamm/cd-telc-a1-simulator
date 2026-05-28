@@ -1006,10 +1006,20 @@ const pendingOrders =
 }, [currentUser]);
 
   const selectedLevelLessons = useMemo(() => {
-  return lessons.filter(
-    (lesson) => lesson.level === selectedLevel
-  );
-}, [lessons, selectedLevel]);
+  return lessons.filter((lesson) => {
+    if (lesson.level !== selectedLevel) return false;
+
+    const isLiveLesson = lesson.contentType === "liveClass";
+
+    if (isLiveLesson) {
+      return lesson.classId
+        ? accessibleClassIds.includes(lesson.classId)
+        : false;
+    }
+
+    return true;
+  });
+}, [lessons, selectedLevel, accessibleClassIds]);
 
   const visibleLessons = useMemo(() => {
   return selectedLevelLessons;
