@@ -217,9 +217,26 @@ console.log("ALL CLASSES", classes);
         return;
       }
 
-      giveClassAccess(username, defaultClass.id, {
-  makeMainClass: isLiveCourse,
-});
+      const normalizedUsername = username.trim().toLowerCase();
+
+await supabase
+  .from("student_class_access")
+  .delete()
+  .eq("username", normalizedUsername)
+  .eq("main_class_id", defaultClass.id);
+
+const { error: accessInsertError } = await supabase
+  .from("student_class_access")
+  .insert({
+    username: normalizedUsername,
+    main_class_id: defaultClass.id,
+    extra_class_access: [],
+  });
+
+if (accessInsertError) {
+  alert("Öğrenci varsayılan sınıfa atanamadı: " + accessInsertError.message);
+  return;
+}
 
       if (isLiveCourse) {
         activateStarterDigitalPackage(username, level);
