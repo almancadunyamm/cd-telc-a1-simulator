@@ -411,17 +411,22 @@ setLessons(
   }))
 );
 
-    const accessList: StudentClassAccess[] = rawAccess
-      ? JSON.parse(rawAccess)
-      : [];
+    const { data: accessFromDb } = await supabase
+  .from("student_class_access")
+  .select("*")
+  .eq("username", normalizedUsername);
 
-    const latestAccess = accessList.find(
-      (item) =>
-        String(item.username || "").trim().toLowerCase() ===
-        String(logged.username || "").trim().toLowerCase()
-    );
-
-    setStudentAccess(latestAccess || null);
+setStudentAccess(
+  accessFromDb && accessFromDb.length > 0
+    ? {
+        username: normalizedUsername,
+        mainClassId: accessFromDb[0].main_class_id,
+        extraClassAccess: accessFromDb
+          .slice(1)
+          .map((item: any) => item.main_class_id),
+      }
+    : null
+);
   }, 2000);
 
   return () => clearInterval(interval);
