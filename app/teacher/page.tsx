@@ -215,47 +215,49 @@ async function loadTeacherClasses() {
 
 loadTeacherClasses();
 
-const savedLessons = localStorage.getItem("teacher_lessons");
+async function loadTeacherLessons() {
+  const { data, error } = await supabase
+    .from("teacher_lessons")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    if (savedLessons) {
-      try {
-        const parsedLessons = JSON.parse(savedLessons) as LessonItem[];
+  if (error) {
+    console.log(error);
+    setLessons([]);
+    return;
+  }
 
-        const fixedLessons = parsedLessons.map((lesson) => ({
-          ...lesson,
-          id: lesson.id || crypto.randomUUID(),
-          packageType: lesson.packageType || "starter",
-          contentType: lesson.contentType || "liveClass",
-          worksheets:
-  lesson.worksheets ||
-  (lesson.worksheetTitle && lesson.worksheetUrl
-    ? [
-        {
-          id: crypto.randomUUID(),
-          title: lesson.worksheetTitle,
-          url: lesson.worksheetUrl,
-          packageType: lesson.worksheetPackageType || "practice",
-        },
-      ]
-    : []),
-worksheetTitle: lesson.worksheetTitle || "",
-worksheetUrl: lesson.worksheetUrl || "",
-worksheetPackageType: lesson.worksheetPackageType || "practice",
-        }));
+  const teacherClassIds = teacherClasses.map((classItem) => classItem.id);
 
-        localStorage.setItem("teacher_lessons", JSON.stringify(fixedLessons));
+  const mappedLessons = (data || []).map((lesson: any) => ({
+    id: lesson.id,
+    level: lesson.level,
+    classId: lesson.class_id,
+    className: lesson.class_name,
+    teacherId: lesson.teacher_id,
+    teacherName: lesson.teacher_name,
+    title: lesson.title,
+    videoUrl: lesson.video_url,
+    packageType: lesson.package_type || "starter",
+    contentType: lesson.content_type || "liveClass",
+    pdfTitle: lesson.pdf_title || "",
+    pdfUrl: lesson.pdf_url || "",
+    pdfVisibility: lesson.pdf_visibility || "classOnly",
+    homework: lesson.homework || "",
+    worksheets: lesson.worksheets || [],
+    worksheetTitle: lesson.worksheet_title || "",
+    worksheetUrl: lesson.worksheet_url || "",
+    worksheetPackageType: lesson.worksheet_package_type || "practice",
+  }));
 
-        const teacherClassIds = teacherClasses.map((classItem) => classItem.id);
+  setLessons(
+    mappedLessons.filter((lesson) =>
+      teacherClassIds.includes(lesson.classId)
+    )
+  );
+}
 
-const teacherLessons = fixedLessons.filter((lesson) =>
-  teacherClassIds.includes(lesson.classId)
-);
-
-        setLessons(teacherLessons);
-      } catch {
-        setLessons([]);
-      }
-    }
+loadTeacherLessons();
   }, [router]);
 
   const filteredLessons =
