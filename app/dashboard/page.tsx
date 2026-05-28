@@ -716,8 +716,22 @@ if (!activeStudent || activeStudent.is_active !== true) {
 } else {
   setIsStudentActive(true);
 
+  const { data: activeOrdersFromDb } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("username", normalizedUsername)
+    .in("status", ["pending_payment", "paid_waiting_activation", "completed"])
+    .order("created_at", { ascending: false });
+
+  const latestLiveOrder = activeOrdersFromDb?.find((order: any) =>
+    String(order.product_slug || "").includes("live")
+  );
+
+  if (latestLiveOrder?.product_slug) {
+    localStorage.setItem("selected_product_slug", latestLiveOrder.product_slug);
+  }
+
   localStorage.removeItem("pending_payment_slug");
-  localStorage.removeItem("selected_product_slug");
   localStorage.removeItem("selectedProductSlug");
 }
 
