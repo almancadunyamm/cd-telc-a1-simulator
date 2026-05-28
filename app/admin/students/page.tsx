@@ -80,25 +80,40 @@ export default function AdminStudentsPage() {
     );
   }
 
-  function handleSaveAccess() {
+  async function handleSaveAccess() {
     if (!username || !mainClassId) {
       alert("Öğrenci kullanıcı adı ve sınıf seçimi zorunlu.");
       return;
     }
 
-    const updatedList = [
-      ...studentAccessList.filter((item) => item.username !== username),
-      {
-        username,
-        mainClassId,
-        extraClassAccess: [],
-      },
-    ];
+    const normalizedUsername = username.trim().toLowerCase();
 
-    setStudentAccessList(updatedList);
-    localStorage.setItem("student_class_access", JSON.stringify(updatedList));
+await supabase
+  .from("student_class_access")
+  .delete()
+  .eq("username", normalizedUsername);
 
-    alert("Öğrenci sınıfa atandı.");
+const { error } = await supabase.from("student_class_access").insert({
+  username: normalizedUsername,
+  main_class_id: mainClassId,
+  extra_class_access: [],
+});
+
+if (error) {
+  alert("Öğrenci sınıfa atanamadı: " + error.message);
+  return;
+}
+
+setStudentAccessList([
+  ...studentAccessList.filter((item) => item.username !== normalizedUsername),
+  {
+    username: normalizedUsername,
+    mainClassId,
+    extraClassAccess: [],
+  },
+]);
+
+alert("Öğrenci sınıfa atandı.");
   }
 
   return (
