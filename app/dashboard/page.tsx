@@ -1015,16 +1015,28 @@ const pendingOrders =
     if (lesson.level !== selectedLevel) return false;
 
     const isLiveLesson = lesson.contentType === "liveClass";
+    const isDigitalLesson = lesson.contentType === "digitalPackage";
 
-    if (isLiveLesson) {
-      return lesson.classId
-        ? accessibleClassIds.includes(lesson.classId)
-        : false;
+    const hasClassAccess = lesson.classId
+      ? accessibleClassIds.includes(lesson.classId)
+      : false;
+
+    if (hasAnyLiveCourseOrder) {
+      return isLiveLesson && hasClassAccess;
     }
 
-    return true;
+    if (isDigitalLesson) {
+      return true;
+    }
+
+    return false;
   });
-}, [lessons, selectedLevel, accessibleClassIds]);
+}, [
+  lessons,
+  selectedLevel,
+  accessibleClassIds,
+  hasAnyLiveCourseOrder,
+]);
 
   const visibleLessons = useMemo(() => {
   return selectedLevelLessons;
