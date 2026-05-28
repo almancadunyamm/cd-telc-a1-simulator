@@ -52,10 +52,17 @@ export default function AdminStudentsPage() {
       setMainClassId(mappedClasses[0].id);
     }
 
-    const savedAccess = localStorage.getItem("student_class_access");
-    if (savedAccess) {
-      setStudentAccessList(JSON.parse(savedAccess));
-    }
+    const { data: accessFromDb } = await supabase
+  .from("student_class_access")
+  .select("*");
+
+setStudentAccessList(
+  (accessFromDb || []).map((item: any) => ({
+    username: item.username,
+    mainClassId: item.main_class_id,
+    extraClassAccess: item.extra_class_access || [],
+  }))
+);
   }
 
   loadData();
@@ -82,36 +89,68 @@ export default function AdminStudentsPage() {
 
   async function handleSaveAccess() {
     if (!username || !mainClassId) {
-      alert("Öğrenci kullanıcı adı ve sınıf seçimi zorunlu.");
-      return;
-    }
+  alert("Öğrenci kullanıcı adı ve sınıf seçimi zorunlu.");
+  return;
+}
 
-    const normalizedUsername = username.trim().toLowerCase();
+const normalizedUsername = username.trim().toLowerCase();
 
-await supabase
+const selectedClass = classes.find(
+  (item) => item.id === mainClassId
+);
+
+if (!selectedClass) {
+  alert("Sınıf bulunamadı.");
+  return;
+}
+
+const selectedLevel = selectedClass.level;
+
+const { data: existingAccess } = await supabase
   .from("student_class_access")
-  .delete()
+  .select("*")
   .eq("username", normalizedUsername);
 
-const { error } = await supabase.from("student_class_access").insert({
-  username: normalizedUsername,
-  main_class_id: mainClassId,
-  extra_class_access: [],
-});
+const sameLevelAccess =
+  existingAccess?.find((item: any) => {
+    const relatedClass = classes.find(
+      (c) => c.id === item.main_class_id
+    );
+
+    return relatedClass?.level === selectedLevel;
+  });
+
+if (sameLevelAccess) {
+  await supabase
+    .from("student_class_access")
+    .delete()
+    .eq("id", sameLevelAccess.id);
+}
+
+const { error } = await supabase
+  .from("student_class_access")
+  .insert({
+    username: normalizedUsername,
+    main_class_id: mainClassId,
+    extra_class_access: [],
+  });
 
 if (error) {
   alert("Öğrenci sınıfa atanamadı: " + error.message);
   return;
 }
 
-setStudentAccessList([
-  ...studentAccessList.filter((item) => item.username !== normalizedUsername),
-  {
-    username: normalizedUsername,
-    mainClassId,
-    extraClassAccess: [],
-  },
-]);
+const { data: refreshedAccess } = await supabase
+  .from("student_class_access")
+  .select("*");
+
+setStudentAccessList(
+  (refreshedAccess || []).map((item: any) => ({
+    username: item.username,
+    mainClassId: item.main_class_id,
+    extraClassAccess: item.extra_class_access || [],
+  }))
+);
 
 alert("Öğrenci sınıfa atandı.");
   }
