@@ -771,16 +771,23 @@ setLessons(
   }))
 );
 
-    const rawAccess = localStorage.getItem("student_class_access");
-    const accessList: StudentClassAccess[] = rawAccess
-      ? JSON.parse(rawAccess)
-      : [];
+    const { data: accessFromDb } = await supabase
+  .from("student_class_access")
+  .select("*")
+  .eq("username", normalizedUsername)
+  .limit(1);
 
-    const access = accessList.find(
-      (item) => item.username === parsedUser.username
-    );
+const access = accessFromDb?.[0];
 
-    setStudentAccess(access || null);
+setStudentAccess(
+  access
+    ? {
+        username: access.username,
+        mainClassId: access.main_class_id,
+        extraClassAccess: access.extra_class_access || [],
+      }
+    : null
+);
   }
 
   loadDashboardData();
