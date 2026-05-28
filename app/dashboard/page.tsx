@@ -2137,6 +2137,12 @@ return packageValue <= currentValue + 1;
     const groupLessons = selectedLevelLessons.filter((lesson) => {
       const isDigitalPackage = lesson.contentType === "digitalPackage";
       const isLiveClassLesson = lesson.contentType === "liveClass";
+      if (activeLiveOrder && packageGroup !== "starter") {
+  return (
+    isDigitalPackage &&
+    (lesson.packageType || "starter") === packageGroup
+  );
+}
       const hasLiveAccessForThisLevel = !!activeLiveOrder;
 
       const hasClassAccess = true;
@@ -2146,19 +2152,12 @@ return packageValue <= currentValue + 1;
 }
 
       if (activeLiveOrder) {
-        if (packageGroup === "starter") {
-          return (
-            isLiveClassLesson &&
-            hasClassAccess &&
-            (lesson.packageType || "starter") === "starter"
-          );
-        }
-
-        return (
-          isDigitalPackage &&
-          (lesson.packageType || "starter") === packageGroup
-        );
-      }
+  return (
+    isLiveClassLesson &&
+    hasClassAccess &&
+    (lesson.packageType || "starter") === "starter"
+  );
+}
 
       return (
         isDigitalPackage &&
