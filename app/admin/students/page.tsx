@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 type ClassItem = {
   id: string;
@@ -26,22 +27,39 @@ export default function AdminStudentsPage() {
   const [studentAccessList, setStudentAccessList] = useState<StudentAccess[]>([]);
 
   useEffect(() => {
-    const savedClasses = localStorage.getItem("admin_classes");
-    const savedAccess = localStorage.getItem("student_class_access");
+  async function loadData() {
+    const { data: classesFromDb, error } = await supabase
+      .from("classes")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    if (savedClasses) {
-      const parsedClasses = JSON.parse(savedClasses) as ClassItem[];
-      setClasses(parsedClasses);
-
-      if (parsedClasses.length > 0) {
-        setMainClassId(parsedClasses[0].id);
-      }
+    if (error) {
+      alert("Sınıflar yüklenemedi: " + error.message);
+      return;
     }
 
+    const mappedClasses = (classesFromDb || []).map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      level: item.level,
+      teacherId: item.teacher_id,
+      teacherName: item.teacher_name,
+    }));
+
+    setClasses(mappedClasses);
+
+    if (mappedClasses.length > 0) {
+      setMainClassId(mappedClasses[0].id);
+    }
+
+    const savedAccess = localStorage.getItem("student_class_access");
     if (savedAccess) {
       setStudentAccessList(JSON.parse(savedAccess));
     }
-  }, []);
+  }
+
+  loadData();
+}, []);
     useEffect(() => {
     const raw = localStorage.getItem("mock_logged_user");
     const user = raw ? JSON.parse(raw) : null;
