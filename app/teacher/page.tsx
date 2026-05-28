@@ -393,15 +393,38 @@ if (error) {
   return;
 }
 
-    const teacherClassIds = classes.map((classItem) => classItem.id);
+    const { data: refreshedLessons } = await supabase
+  .from("teacher_lessons")
+  .select("*")
+  .order("created_at", { ascending: false });
+
+const teacherClassIds = classes.map((classItem) => classItem.id);
+
+const mappedLessons = (refreshedLessons || []).map((lesson: any) => ({
+  id: lesson.id,
+  level: lesson.level,
+  classId: lesson.class_id,
+  className: lesson.class_name,
+  teacherId: lesson.teacher_id,
+  teacherName: lesson.teacher_name,
+  title: lesson.title,
+  videoUrl: lesson.video_url,
+  packageType: lesson.package_type,
+  contentType: lesson.content_type,
+  pdfTitle: lesson.pdf_title,
+  pdfUrl: lesson.pdf_url,
+  pdfVisibility: lesson.pdf_visibility,
+  homework: lesson.homework,
+  worksheets: lesson.worksheets || [],
+}));
 
 setLessons(
-  updatedAllLessons.filter((lesson) =>
+  mappedLessons.filter((lesson) =>
     teacherClassIds.includes(lesson.classId)
   )
 );
 
-    alert(editingLessonId ? "Ders güncellendi." : "Ders içeriği eklendi.");
+alert(editingLessonId ? "Ders güncellendi." : "Ders içeriği eklendi.");
 
     resetForm();
   }
