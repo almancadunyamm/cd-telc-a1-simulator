@@ -620,14 +620,17 @@ setLessons(
     <select
   value={packageType}
   onChange={(e) => {
-  const newType = e.target.value as ContentType;
+    const newPackageType = e.target.value as PackageType;
 
-  setContentType(newType);
+    setPackageType(newPackageType);
 
-  if (newType === "liveClass") {
-    setPackageType("starter");
-  }
-}}
+    if (
+      newPackageType === "practice" ||
+      newPackageType === "master"
+    ) {
+      setContentType("digitalPackage");
+    }
+  }}
 >
   <option value="starter">Başlangıç paket dersi</option>
 
