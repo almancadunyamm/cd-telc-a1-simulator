@@ -1022,8 +1022,12 @@ const pendingOrders =
       : false;
 
     if (hasAnyLiveCourseOrder) {
-      return isLiveLesson && hasClassAccess;
-    }
+  return (
+    (isLiveLesson && hasClassAccess) ||
+    (isDigitalLesson &&
+      ["practice", "master"].includes(lesson.packageType || "starter"))
+  );
+}
 
     if (isDigitalLesson) {
       return true;
