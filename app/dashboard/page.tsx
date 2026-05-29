@@ -2135,35 +2135,44 @@ return packageValue <= currentValue + 1;
   })
   .map((packageGroup) => {
     const groupLessons = selectedLevelLessons.filter((lesson) => {
-      const isDigitalPackage = lesson.contentType === "digitalPackage";
-      const isLiveClassLesson = lesson.contentType === "liveClass";
-      if (activeLiveOrder && packageGroup !== "starter") {
-  return (
-    isDigitalPackage &&
-    (lesson.packageType || "starter") === packageGroup
-  );
-}
-      const hasLiveAccessForThisLevel = !!activeLiveOrder;
+  const isDigitalPackage = lesson.contentType === "digitalPackage";
+  const isLiveClassLesson = lesson.contentType === "liveClass";
 
-      const hasClassAccess = true;
+  const hasClassAccess = lesson.classId
+    ? accessibleClassIds.includes(lesson.classId)
+    : false;
 
-      if (!hasLiveAccessForThisLevel && isLiveClassLesson) {
-  return true;
-}
-
-      if (activeLiveOrder) {
-  return (
-    isLiveClassLesson &&
-    hasClassAccess &&
-    (lesson.packageType || "starter") === "starter"
-  );
-}
-
+  if (packageGroup === "starter") {
+    if (hasAnyLiveCourseOrder) {
       return (
-        isDigitalPackage &&
-        (lesson.packageType || "starter") === packageGroup
+        isLiveClassLesson &&
+        hasClassAccess &&
+        (lesson.packageType || "starter") === "starter"
       );
-    });
+    }
+
+    return (
+      isDigitalPackage &&
+      (lesson.packageType || "starter") === "starter"
+    );
+  }
+
+  if (packageGroup === "practice") {
+    return (
+      isDigitalPackage &&
+      (lesson.packageType || "starter") === "practice"
+    );
+  }
+
+  if (packageGroup === "master") {
+    return (
+      isDigitalPackage &&
+      (lesson.packageType || "starter") === "master"
+    );
+  }
+
+  return false;
+});
 
     if (groupLessons.length === 0) return null;
 
