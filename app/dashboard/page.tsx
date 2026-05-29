@@ -2117,22 +2117,22 @@ window.open(worksheet.url, "_blank");
 
     {(["starter", "practice", "master"] as PackageType[])
   .filter((packageGroup) => {
-    const currentValue = getPackageValue(effectivePackageType);
-    const packageValue = getPackageValue(packageGroup);
+  const currentValue = getPackageValue(effectivePackageType);
 
-    if (currentValue >= 3) return true;
+  if (currentValue <= 1) {
+    return packageGroup === "starter" || packageGroup === "practice";
+  }
 
-if (currentValue === 2) {
-  return activeLiveOrder
-    ? true
-    : packageGroup !== "starter";
-}
-if (currentValue >= 3 && !activeLiveOrder) {
-  return packageGroup !== "starter";
-}
+  if (currentValue === 2) {
+    return (
+      packageGroup === "starter" ||
+      packageGroup === "practice" ||
+      packageGroup === "master"
+    );
+  }
 
-return packageValue <= currentValue + 1;
-  })
+  return true;
+})
   .map((packageGroup) => {
     const groupLessons = selectedLevelLessons.filter((lesson) => {
   const isDigitalPackage = lesson.contentType === "digitalPackage";
