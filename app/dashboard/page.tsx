@@ -967,7 +967,7 @@ const isFutureLiveCourseLevel =
     ? `${profileLevel} Zirve Öğrencisi`
     : `${profileLevel} Öğrencisi`;
     const isDigitalStarterStudent =
-  effectivePackageType === "starter" && !activeLiveOrder;
+  effectivePackageType === "starter" && !hasAnyLiveCourseOrder;
   const activeAccessEndDate =
   effectivePackageType === "practice" || effectivePackageType === "master"
     ? activeDigitalOrder?.accessEndDate || activeLiveOrder?.accessEndDate || null
