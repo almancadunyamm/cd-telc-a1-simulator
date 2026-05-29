@@ -1023,6 +1023,14 @@ console.log(
     classId: l.classId,
   }))
 );
+console.log(
+  "LESSONS DETAIL",
+  lessons.map((l) => ({
+    title: l.title,
+    packageType: l.packageType,
+    contentType: l.contentType,
+  }))
+);
   return lessons.filter((lesson) => {
     if (lesson.level !== selectedLevel) return false;
 
