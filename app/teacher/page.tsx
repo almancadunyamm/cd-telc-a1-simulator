@@ -618,14 +618,26 @@ setLessons(
     </select>
 
     <select
-      value={packageType}
-      onChange={(e) => setPackageType(e.target.value as PackageType)}
-      className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm"
-    >
-      <option value="starter">Başlangıç paket dersi</option>
+  value={packageType}
+  onChange={(e) => {
+  const newType = e.target.value as ContentType;
+
+  setContentType(newType);
+
+  if (newType === "liveClass") {
+    setPackageType("starter");
+  }
+}}
+>
+  <option value="starter">Başlangıç paket dersi</option>
+
+  {contentType === "digitalPackage" && (
+    <>
       <option value="practice">Gelişim paket dersi</option>
       <option value="master">Zirve paket dersi</option>
-    </select>
+    </>
+  )}
+</select>
     
   </div>
 </div>
