@@ -2633,6 +2633,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
   ✓ Öncelikli öğrenci destek hattı
 </div>
 
+    {!hasAnyLiveCourseOrder && (
     <button
       type="button"
       onClick={() => {
@@ -2660,6 +2661,7 @@ createPendingOrder({
     >
       🎓 {selectedLevel} Canlı Programını Keşfet
     </button>
+    )}
   </>
 ) : (
   <>
