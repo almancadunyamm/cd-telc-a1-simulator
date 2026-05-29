@@ -341,7 +341,10 @@ allLessons =
     const lessonData: LessonItem = {
       id: editingLessonId || crypto.randomUUID(),
       level: selectedClass.level,
-      classId: selectedClass.id,
+      classId:
+  packageType === "practice" || packageType === "master"
+    ? ""
+    : selectedClass.id,
       className: selectedClass.name,
       teacherId: selectedClass.teacherId || currentTeacherId,
       teacherName: selectedClass.teacherName || currentTeacherName,
@@ -349,7 +352,10 @@ allLessons =
       videoUrl: videoUrl.trim(),
       packageType: isExpertTeacher ? packageType : "starter",
       pdfVisibility: isExpertTeacher ? pdfVisibility : "classOnly",
-      contentType,
+      contentType:
+  packageType === "practice" || packageType === "master"
+    ? "digitalPackage"
+    : contentType,
       pdfTitle: pdfTitle.trim(),
       pdfUrl: pdfUrl.trim(),
       homework: homework.trim(),
@@ -368,7 +374,7 @@ worksheetPackageType: isExpertTeacher ? worksheetPackageType : "starter",
     const lessonToSave = {
   id: lessonData.id,
   level: lessonData.level,
-  class_id: lessonData.classId,
+  class_id: lessonData.classId || null,
   class_name: lessonData.className,
   teacher_id: lessonData.teacherId,
   teacher_name: lessonData.teacherName,
