@@ -1011,6 +1011,18 @@ const pendingOrders =
 }, [currentUser]);
 
   const selectedLevelLessons = useMemo(() => {
+    console.log("SELECTED LEVEL:", selectedLevel);
+console.log("ALL LESSONS COUNT:", lessons.length);
+console.log("LIVE STUDENT:", hasAnyLiveCourseOrder);
+console.log(
+  "LESSONS RAW",
+  lessons.map((l) => ({
+    title: l.title,
+    packageType: l.packageType,
+    contentType: l.contentType,
+    classId: l.classId,
+  }))
+);
   return lessons.filter((lesson) => {
     if (lesson.level !== selectedLevel) return false;
 
@@ -2138,6 +2150,14 @@ window.open(worksheet.url, "_blank");
   return true;
 })
   .map((packageGroup) => {
+    console.log(
+  "LESSONS",
+  selectedLevelLessons.map((l) => ({
+    title: l.title,
+    packageType: l.packageType,
+    contentType: l.contentType,
+  }))
+);
     const groupLessons = selectedLevelLessons.filter((lesson) => {
   const isDigitalPackage = lesson.contentType === "digitalPackage";
   const isLiveClassLesson = lesson.contentType === "liveClass";
