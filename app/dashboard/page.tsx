@@ -973,9 +973,20 @@ const isFutureLiveCourseLevel =
     ? activeDigitalOrder?.accessEndDate || activeLiveOrder?.accessEndDate || null
     : activeLiveOrder?.accessEndDate || activeDigitalOrder?.accessEndDate || null;
 
-const remainingDays = getRemainingDays(activeAccessEndDate);
+const packageDefaultDays =
+  effectivePackageType === "master"
+    ? 365
+    : effectivePackageType === "practice"
+    ? 180
+    : 90;
 
-const accessExpired = isAccessExpired(activeAccessEndDate);
+const remainingDays =
+  activeAccessEndDate
+    ? getRemainingDays(activeAccessEndDate)
+    : packageDefaultDays;
+
+const accessExpired =
+  activeAccessEndDate ? isAccessExpired(activeAccessEndDate) : false;
 
 paymentNoticeRefreshKey;  
 const pendingOrders =
