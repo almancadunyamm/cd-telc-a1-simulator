@@ -194,12 +194,20 @@ const classes: AdminClass[] = (classesFromDb || []).map((item: any) => ({
   .from("users")
   .update({ is_active: true })
   .eq("email", username.toLowerCase());
-  await supabase
+  const normalizedUsername = username.trim().toLowerCase();
+
+const { error: approveOrderUpdateError } = await supabase
   .from("orders")
   .update({
+    status: "completed",
     is_activated: true,
   })
-  .eq("username", username.toLowerCase());
+  .eq("id", order.id);
+
+if (approveOrderUpdateError) {
+  alert("Sipariş güncellenemedi: " + approveOrderUpdateError.message);
+  return;
+}
       for (const level of levelsToActivate) {
       const defaultClass = classes.find(
   (item) =>
@@ -216,8 +224,6 @@ console.log("ALL CLASSES", classes);
         );
         return;
       }
-
-      const normalizedUsername = username.trim().toLowerCase();
 
 await supabase
   .from("student_class_access")
