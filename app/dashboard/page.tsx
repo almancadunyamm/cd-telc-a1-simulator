@@ -604,6 +604,7 @@ const earnedBadges = [
   const [dbPendingOrders, setDbPendingOrders] = useState<any[]>([]);
   const [dbActiveOrders, setDbActiveOrders] = useState<any[]>([]);
   const [classes, setClasses] = useState<AdminClass[]>([]);
+  const [teachers, setTeachers] = useState<any[]>([]);
   const [lessons, setLessons] = useState<TeacherLesson[]>([]);
   const [studentAccess, setStudentAccess] = useState<StudentClassAccess | null>(
     null
@@ -767,6 +768,12 @@ if (!activeStudent || activeStudent.is_active !== true) {
     const { data: classesFromDb } = await supabase
   .from("classes")
   .select("*");
+  const { data: teachersFromDb } = await supabase
+  .from("users")
+  .select("*")
+  .eq("role", "teacher");
+
+setTeachers(teachersFromDb || []);
 
 setClasses(
   (classesFromDb || []).map((item: any) => ({
@@ -840,11 +847,6 @@ setStudentAccess(
 
   if (!studentAccess) return defaultWhatsapp;
 
-  const rawTeachers = localStorage.getItem("admin_teachers");
-  if (!rawTeachers) return defaultWhatsapp;
-
-  const teachers = JSON.parse(rawTeachers);
-
   const studentClassIds = [
     studentAccess.mainClassId,
     ...(studentAccess.extraClassAccess || []),
@@ -858,27 +860,31 @@ setStudentAccess(
 
   if (!activeClass) return defaultWhatsapp;
 
-  const activeTeacherKeys = [
-  activeClass.teacherId,
-  activeClass.teacherName,
-]
-  .map((item) => String(item || "").trim().toLowerCase())
-  .filter(Boolean);
+  if (activeClass.isDefaultSalesClass) return defaultWhatsapp;
 
-const matchedTeacher = teachers.find((teacher: any) => {
-  const teacherKeys = [
-    teacher.teacherId,
-    teacher.name,
-    teacher.email,
+  const activeTeacherKeys = [
+    activeClass.teacherId,
+    activeClass.teacherName,
   ]
     .map((item) => String(item || "").trim().toLowerCase())
     .filter(Boolean);
 
-  return teacherKeys.some((key) => activeTeacherKeys.includes(key));
-});
+  const matchedTeacher = teachers.find((teacher: any) => {
+    const teacherKeys = [
+      teacher.teacher_id,
+      teacher.teacherId,
+      teacher.name,
+      teacher.full_name,
+      teacher.email,
+    ]
+      .map((item) => String(item || "").trim().toLowerCase())
+      .filter(Boolean);
+
+    return teacherKeys.some((key) => activeTeacherKeys.includes(key));
+  });
 
   return matchedTeacher?.whatsapp || defaultWhatsapp;
-}, [studentAccess, classes, selectedLevel]);
+}, [studentAccess, classes, selectedLevel, teachers]);
 
   const selectedLevelClasses = useMemo(() => {
     return classes.filter((item) => item.level === selectedLevel);
