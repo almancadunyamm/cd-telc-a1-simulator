@@ -582,6 +582,7 @@ const earnedBadges = [
   const [hidePendingOrderNotice, setHidePendingOrderNotice] = useState(false);
   const [paymentNoticeRefreshKey, setPaymentNoticeRefreshKey] = useState(0);
   const [dbPendingOrders, setDbPendingOrders] = useState<any[]>([]);
+  const [dbActiveOrders, setDbActiveOrders] = useState<any[]>([]);
   const [classes, setClasses] = useState<AdminClass[]>([]);
   const [lessons, setLessons] = useState<TeacherLesson[]>([]);
   const [studentAccess, setStudentAccess] = useState<StudentClassAccess | null>(
@@ -729,6 +730,7 @@ if (!activeStudent || activeStudent.is_active !== true) {
     .eq("username", normalizedUsername)
     .in("status", ["pending_payment", "paid_waiting_activation", "completed"])
     .order("created_at", { ascending: false });
+    setDbActiveOrders(activeOrdersFromDb || []);
 
   const latestLiveOrder = activeOrdersFromDb?.find((order: any) =>
     String(order.product_slug || "").includes("live")
@@ -865,28 +867,37 @@ const matchedTeacher = teachers.find((teacher: any) => {
   const activeDigitalOrder = useMemo(() => {
   if (!currentUser) return undefined;
 
-  const activeOrders = getOrders().filter(
-    (order) =>
-      order.username === currentUser.username &&
-      order.status === "active" &&
-      !isLiveCourseSlug(order.productSlug) &&
-      getLevelFromSlug(order.productSlug) === selectedLevel
-  );
+  const activeOrders = dbActiveOrders
+    .map((order: any) => ({
+      ...order,
+      productSlug: order.product_slug || order.productSlug,
+      packageType: order.package_type || order.packageType,
+    }))
+    .filter(
+      (order: any) =>
+        String(order.username || "").trim().toLowerCase() ===
+          String(currentUser.username || "").trim().toLowerCase() &&
+        ["completed", "active"].includes(order.status) &&
+        !isLiveCourseSlug(order.productSlug) &&
+        getLevelsFromSlug(order.productSlug).includes(selectedLevel)
+    );
 
   function getOrderPackageValue(order: any) {
-  const slug = String(order.productSlug || "").toLowerCase();
+    const slug = String(order.productSlug || "").toLowerCase();
 
-  if (slug.includes("master")) return 3;
-  if (slug.includes("practice")) return 2;
-  if (slug.includes("starter")) return 1;
+    if (slug.includes("master")) return 3;
+    if (slug.includes("zirve")) return 3;
+    if (slug.includes("practice")) return 2;
+    if (slug.includes("gelisim")) return 2;
+    if (slug.includes("starter")) return 1;
 
-  return getPackageValue(order.packageType as PackageType);
-}
+    return getPackageValue(order.packageType as PackageType);
+  }
 
-return activeOrders.sort(
-  (a, b) => getOrderPackageValue(b) - getOrderPackageValue(a)
-)[0];
-}, [currentUser, selectedLevel, dashboardRefreshKey]);
+  return activeOrders.sort(
+    (a, b) => getOrderPackageValue(b) - getOrderPackageValue(a)
+  )[0];
+}, [currentUser, selectedLevel, dbActiveOrders, dashboardRefreshKey]);
 
   const activeLiveCourseLevels = useMemo(() => {
   if (!currentUser) return [];
