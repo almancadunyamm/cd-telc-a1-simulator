@@ -33,12 +33,34 @@ const USERS_KEY = "users";
 function getLevelsFromProductSlug(productSlug: string): Level[] {
   const slug = productSlug.toLowerCase();
 
-  if (slug === "live-full") return ["A1", "A2", "B1"];
-  if (slug === "live-a1-a2") return ["A1", "A2"];
+  if (
+    slug === "live-full" ||
+    slug.includes("a1-a2-b1") ||
+    slug.includes("a1a2b1")
+  ) {
+    return ["A1", "A2", "B1"];
+  }
+
+  if (
+    slug === "live-a1-a2" ||
+    slug.includes("a1-a2") ||
+    slug.includes("a1a2")
+  ) {
+    return ["A1", "A2"];
+  }
+
+  if (
+    slug.includes("a2-b1") ||
+    slug.includes("a2b1")
+  ) {
+    return ["A2", "B1"];
+  }
+
   if (slug.includes("a1")) return ["A1"];
   if (slug.includes("a2")) return ["A2"];
+  if (slug.includes("b1")) return ["B1"];
 
-  return ["B1"];
+  return ["A1"];
 }
 
 function getLevelFromOrder(order: BillingOrder): Level {
@@ -197,16 +219,41 @@ const classes: AdminClass[] = (classesFromDb || []).map((item: any) => ({
   const normalizedUsername = username.trim().toLowerCase();
 
 
-  const { data: approveUpdatedRows, error: approveOrderUpdateError } =
+  const { data: matchingOrders, error: matchingOrderError } = await supabase
+  .from("orders")
+  .select("*")
+  .eq("username", normalizedUsername)
+  .in("status", ["pending_payment", "paid_waiting_activation"])
+  .order("created_at", { ascending: false });
+
+if (matchingOrderError) {
+  alert("Sipariş bulunamadı.");
+  console.log(matchingOrderError);
+  return;
+}
+
+const matchingOrder = (matchingOrders || []).find((item: any) => {
+  const dbSlug = String(item.product_slug || "").trim().toLowerCase();
+
+  return dbSlug === productSlug || dbSlug.includes(productSlug) || productSlug.includes(dbSlug);
+});
+
+if (!matchingOrder) {
+  alert("Sipariş güncellenemedi. Eşleşen bekleyen sipariş bulunamadı.");
+  console.log("ORDER FROM BUTTON", order);
+  console.log("PRODUCT SLUG", productSlug);
+  console.log("MATCHING ORDERS", matchingOrders);
+  return;
+}
+
+const { data: approveUpdatedRows, error: approveOrderUpdateError } =
   await supabase
     .from("orders")
     .update({
       status: "completed",
       is_activated: true,
     })
-    .eq("username", normalizedUsername)
-    .eq("product_slug", productSlug)
-    .in("status", ["pending_payment", "paid_waiting_activation"])
+    .eq("id", matchingOrder.id)
     .select();
 
 if (approveOrderUpdateError) {

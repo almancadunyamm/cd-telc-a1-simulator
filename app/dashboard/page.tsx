@@ -166,16 +166,36 @@ function getLevelFromSlug(slug: string): Level {
   if (normalized.includes("a2")) return "A2";
   return "B1";
 }
-function getLevelsFromSlug(slug: string): Level[] {
-  const normalized = slug.toLowerCase();
+function getLevelsFromSlug(slug?: string): Level[] {
+  const value = String(slug || "").toLowerCase();
 
-  const levels: Level[] = [];
+  if (
+    value.includes("a1-a2-b1") ||
+    value.includes("a1a2b1") ||
+    value.includes("triple") ||
+    value.includes("uclu")
+  ) {
+    return ["A1", "A2", "B1"];
+  }
 
-  if (normalized.includes("a1")) levels.push("A1");
-  if (normalized.includes("a2")) levels.push("A2");
-  if (normalized.includes("b1")) levels.push("B1");
+  if (
+    value.includes("a1-a2") ||
+    value.includes("a1a2") ||
+    value.includes("double") ||
+    value.includes("ikili")
+  ) {
+    return ["A1", "A2"];
+  }
 
-  return levels;
+  if (value.includes("a2-b1") || value.includes("a2b1")) {
+    return ["A2", "B1"];
+  }
+
+  if (value.includes("a1")) return ["A1"];
+  if (value.includes("a2")) return ["A2"];
+  if (value.includes("b1")) return ["B1"];
+
+  return ["A1"];
 }
 
 function isLiveCourseSlug(slug?: string) {
