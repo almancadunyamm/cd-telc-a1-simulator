@@ -40,6 +40,7 @@ type AdminClass = {
   teacherName: string;
   teacherId: string;
   isDefaultSalesClass?: boolean;
+  classType?: "live" | "digital";
 };
 
 type TeacherLesson = {
@@ -391,6 +392,7 @@ const { data: lessonsFromDb } = await supabase
     teacherId: item.teacher_id,
     teacherName: item.teacher_name,
     isDefaultSalesClass: item.is_default_sales_class,
+    classType: item.class_type || "live",
   }))
 );
 
@@ -752,6 +754,7 @@ setClasses(
     teacherId: item.teacher_id,
     teacherName: item.teacher_name,
     isDefaultSalesClass: item.is_default_sales_class,
+    classType: item.class_type || "live",
   }))
 );
 
@@ -952,6 +955,7 @@ const isFutureLiveCourseLevel =
     : (activeDigitalOrder?.packageType as PackageType | undefined) ||
       (activeLiveOrder || isStudentActive ? "starter" : undefined);
       const hasAnyLiveCourseOrder =
+  userClasses.some((classItem) => classItem.classType === "live") ||
   !!activeLiveOrder ||
   localStorage.getItem("selected_product_slug")?.includes("live") ||
   localStorage.getItem("pending_payment_slug")?.includes("live");
