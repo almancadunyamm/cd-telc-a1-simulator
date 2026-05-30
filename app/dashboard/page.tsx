@@ -1288,7 +1288,7 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
   localStorage.setItem("last_selected_lesson", JSON.stringify(lesson));
 }
 
-  function handleUpgrade(packageType: PackageType) {
+  async function handleUpgrade(packageType: PackageType) {
   if (!currentUser) return;
 
   const finalPackageType: PackageType = selectedLevelHasAccess
@@ -1318,6 +1318,16 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
     productSlug: slug,
     level: selectedLevel,
   });
+  const normalizedUsername = String(currentUser.username || "")
+  .trim()
+  .toLowerCase();
+
+await supabase.from("orders").insert({
+  username: normalizedUsername,
+  product_slug: slug,
+  level: selectedLevel,
+  status: "paid_waiting_activation",
+});
 
   setShowUpsell(false);
   setHidePendingOrderNotice(false);
@@ -1325,6 +1335,18 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
 setHidePendingOrderNotice(false);
 setPaymentNoticeRefreshKey((prev) => prev + 1);
 
+setDbPendingOrders([
+  {
+    id: crypto.randomUUID(),
+    username: currentUser.username,
+    product_slug: slug,
+    level: selectedLevel,
+    status: "paid_waiting_activation",
+    created_at: new Date().toISOString(),
+  },
+]);
+
+setHidePendingOrderNotice(false);
 window.open(link, "_blank");
 }
 
