@@ -204,7 +204,9 @@ const classes: AdminClass[] = (classesFromDb || []).map((item: any) => ({
       status: "completed",
       is_activated: true,
     })
-    .eq("id", order.id)
+    .eq("username", normalizedUsername)
+    .eq("product_slug", productSlug)
+    .in("status", ["pending_payment", "paid_waiting_activation"])
     .select();
 
 if (approveOrderUpdateError) {
@@ -215,6 +217,17 @@ if (approveOrderUpdateError) {
 
 if (!approveUpdatedRows || approveUpdatedRows.length === 0) {
   alert("Sipariş güncellenemedi. Hiçbir kayıt eşleşmedi.");
+  return;
+}
+const isPremiumUpgrade =
+  productSlug.includes("practice") ||
+  productSlug.includes("master") ||
+  productSlug.includes("gelisim") ||
+  productSlug.includes("zirve");
+
+if (!isLiveCourse && isPremiumUpgrade) {
+  alert(`${username} kullanıcısının premium paket erişimi açıldı.`);
+  window.location.reload();
   return;
 }
       for (const level of levelsToActivate) {
