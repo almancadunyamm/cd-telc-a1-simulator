@@ -196,16 +196,25 @@ const classes: AdminClass[] = (classesFromDb || []).map((item: any) => ({
   .eq("email", username.toLowerCase());
   const normalizedUsername = username.trim().toLowerCase();
 
-const { error: approveOrderUpdateError } = await supabase
-  .from("orders")
-  .update({
-    status: "completed",
-    is_activated: true,
-  })
-  .eq("id", order.id);
+
+  const { data: approveUpdatedRows, error: approveOrderUpdateError } =
+  await supabase
+    .from("orders")
+    .update({
+      status: "completed",
+      is_activated: true,
+    })
+    .eq("id", order.id)
+    .select();
 
 if (approveOrderUpdateError) {
-  alert("Sipariş güncellenemedi: " + approveOrderUpdateError.message);
+  alert("Sipariş güncellenemedi.");
+  console.log(approveOrderUpdateError);
+  return;
+}
+
+if (!approveUpdatedRows || approveUpdatedRows.length === 0) {
+  alert("Sipariş güncellenemedi. Hiçbir kayıt eşleşmedi.");
   return;
 }
       for (const level of levelsToActivate) {
@@ -269,21 +278,6 @@ const updatedOrders = orders.map((item: any) => {
 });
 
 localStorage.setItem(BILLING_ORDERS_KEY, JSON.stringify(updatedOrders));
-    const { data: updatedOrderRows, error: orderUpdateError } =
-  await supabase
-    .from("orders")
-    .update({
-      status: "completed",
-    })
-    .eq("username", username.toLowerCase())
-.select();
-
-console.log("UPDATED ORDERS", updatedOrderRows);
-
-if (orderUpdateError) {
-  alert("Sipariş durumu güncellenemedi: " + orderUpdateError.message);
-  return;
-}
 
 
 
