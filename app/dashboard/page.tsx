@@ -964,17 +964,21 @@ const isFutureLiveCourseLevel =
   const activeAccessLevels: string[] = useMemo(() => {
   if (!currentUser) return [selectedLevel];
 
-  const activeOrders = getOrders().filter(
-    (order) =>
-      order.username === currentUser.username &&
-      order.status === "active"
+  const completedOrders = dbActiveOrders.filter(
+    (order: any) =>
+      String(order.username || "").trim().toLowerCase() ===
+        String(currentUser.username || "").trim().toLowerCase() &&
+      ["completed", "active"].includes(order.status)
   );
-  const levels = activeOrders.flatMap((order) =>
-  getLevelsFromSlug(order.productSlug)
-);
 
-  return levels.length > 0 ? Array.from(new Set(levels)) : [selectedLevel];
-}, [currentUser, selectedLevel]);
+  const levels = completedOrders.flatMap((order: any) =>
+    getLevelsFromSlug(order.product_slug || order.productSlug || "")
+  );
+
+  return levels.length > 0
+    ? Array.from(new Set(levels))
+    : [selectedLevel];
+}, [currentUser, selectedLevel, dbActiveOrders]);
 
   const effectivePackageType: PackageType | undefined =
   activeDigitalOrder?.productSlug?.includes("master")
