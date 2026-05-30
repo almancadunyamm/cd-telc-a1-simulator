@@ -2534,6 +2534,32 @@ window.open(worksheet.url, "_blank");
       <p className="mt-2 text-xs opacity-80">
         Günlük ilerleme: %{progressPercent}
       </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+  {(["A1", "A2", "B1"] as const).map((levelItem) => {
+    const hasLevelAccess = activeAccessLevels.includes(levelItem);
+
+    return (
+      <button
+        key={levelItem}
+        type="button"
+        disabled={!hasLevelAccess}
+        onClick={() => {
+          setSelectedLevel(levelItem);
+          setSelectedLesson(null);
+        }}
+        className={`rounded-full px-4 py-2 text-xs font-black transition ${
+          selectedLevel === levelItem
+            ? "bg-white text-blue-700 shadow-lg"
+            : hasLevelAccess
+            ? "bg-white/20 text-white hover:bg-white/30"
+            : "cursor-not-allowed bg-white/10 text-white/50"
+        }`}
+      >
+        {hasLevelAccess ? "✓" : "🔒"} {levelItem}
+      </button>
+    );
+  })}
+</div>
 
       <button
         type="button"
