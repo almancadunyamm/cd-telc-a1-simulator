@@ -2140,10 +2140,11 @@ window.open(worksheet.url, "_blank");
   const hasAccess = activeAccessLevels.includes(levelItem);
 
   if (!hasAccess) {
-    setUpsellPackage("practice");
-    setShowUpsell(true);
-    return;
-  }
+  setSelectedLevel(levelItem);
+  setSelectedLesson(null);
+  setShowUpsell(false);
+  return;
+}
 
   setSelectedLevel(levelItem);
   setSelectedLesson(null);
