@@ -401,7 +401,9 @@ setDashboardRefreshKey((prev) => prev + 1);
 
 const { data: lessonsFromDb } = await supabase
   .from("teacher_lessons")
-  .select("*");
+  .select("*")
+  .order("lesson_order", { ascending: true })
+  .order("created_at", { ascending: true });
     const rawAccess = localStorage.getItem("student_class_access");
 
     setClasses(
@@ -789,7 +791,9 @@ setClasses(
 
 const { data: lessonsFromDb } = await supabase
   .from("teacher_lessons")
-  .select("*");
+  .select("*")
+  .order("lesson_order", { ascending: true })
+  .order("created_at", { ascending: true });
 
 setLessons(
   (lessonsFromDb || []).map((lesson: any) => ({
