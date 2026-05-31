@@ -2604,33 +2604,6 @@ window.open(worksheet.url, "_blank");
     </div>
 
   </div>
-  <div className="mt-4 flex flex-wrap items-center gap-2">
-  {(["A1", "A2", "B1"] as const).map((levelItem) => {
-    const hasLevelAccess = activeAccessLevels.some(
-  (accessLevel) =>
-    accessLevel.toLowerCase() === levelItem.toLowerCase()
-);
-
-    return (
-      <span
-        key={levelItem}
-        className={`rounded-full px-3 py-1 text-xs font-black ${
-          hasLevelAccess
-            ? "bg-white text-emerald-700 shadow-md"
-            : "bg-white/10 text-white/70 ring-1 ring-white/20"
-        }`}
-      >
-        {hasLevelAccess ? "✓" : "🔒"} {levelItem}
-      </span>
-    );
-  })}
-
-  {activeLiveOrder && (
-    <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-white ring-1 ring-white/20">
-      🎓 Canlı kurs erişimi aktif
-    </span>
-  )}
-</div>
 </section>
 
     <section className="mb-8 grid min-w-0 gap-6 lg:grid-cols-3">
