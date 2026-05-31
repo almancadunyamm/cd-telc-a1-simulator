@@ -2775,8 +2775,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
       type="button"
       onClick={() => {
         const slug = `live-${selectedLevel.toLowerCase()}`;
-        const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
-        const link = links[slug];
+        const link = getShopierLink(slug);
 
         if (!link) {
           alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
