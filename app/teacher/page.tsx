@@ -468,34 +468,38 @@ setWorksheets(
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handleDeleteLesson(lessonId: string) {
-    const savedLessons = localStorage.getItem("teacher_lessons");
-    const allLessons: LessonItem[] = savedLessons ? JSON.parse(savedLessons) : [];
+  async function handleDeleteLesson(lessonId: string) {
+  const confirmed = window.confirm("Bu dersi silmek istediğinizden emin misiniz?");
 
-    const targetLesson = allLessons.find((lesson) => lesson.id === lessonId);
+  if (!confirmed) return;
 
-    if (!targetLesson) {
-      alert("Ders bulunamadı.");
-      return;
-    }
+  const { error } = await supabase
+    .from("teacher_lessons")
+    .delete()
+    .eq("id", lessonId);
 
-    const updatedAllLessons = allLessons.filter(
-      (lesson) => lesson.id !== lessonId
-    );
-
-    localStorage.setItem("teacher_lessons", JSON.stringify(updatedAllLessons));
-
-    const teacherClassIds = classes.map((classItem) => classItem.id);
-
-setLessons(
-  updatedAllLessons.filter((lesson) =>
-    teacherClassIds.includes(lesson.classId)
-  )
-);
-    if (editingLessonId === lessonId) {
-      resetForm();
-    }
+  if (error) {
+    alert("Ders silinemedi: " + error.message);
+    return;
   }
+
+  setLessons((prev) => prev.filter((lesson) => lesson.id !== lessonId));
+
+  const savedLessons = localStorage.getItem("teacher_lessons");
+  const allLessons: LessonItem[] = savedLessons ? JSON.parse(savedLessons) : [];
+
+  const updatedAllLessons = allLessons.filter(
+    (lesson) => lesson.id !== lessonId
+  );
+
+  localStorage.setItem("teacher_lessons", JSON.stringify(updatedAllLessons));
+
+  if (editingLessonId === lessonId) {
+    resetForm();
+  }
+
+  alert("Ders silindi.");
+}
   function convertPracticeLessonsToDigitalPackage() {
   const savedLessons = localStorage.getItem("teacher_lessons");
   const allLessons: LessonItem[] = savedLessons ? JSON.parse(savedLessons) : [];
