@@ -2212,23 +2212,33 @@ window.open(worksheet.url, "_blank");
 </button>
 
           <button
-            type="button"
-            onClick={() => {
-  const slug = `live-${selectedLevel.toLowerCase()}`;
-  const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
-  const link = links[slug];
+  type="button"
+  onClick={() => {
+    const slug = `live-${selectedLevel.toLowerCase()}`;
 
-  if (!link) {
-    alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
-    return;
-  }
+    const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
 
-  window.open(link, "_blank");
-}}
-            className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
-          >
-            🎓 {selectedLevel} Canlı Kursunu İncele
-          </button>
+    const possibleLinks = [
+      links[slug],
+      links[`canli-${selectedLevel.toLowerCase()}`],
+      links[`liveCourse-${selectedLevel.toLowerCase()}`],
+      links[selectedLevel],
+      links[selectedLevel.toLowerCase()],
+    ];
+
+    const link = possibleLinks.find(Boolean);
+
+    if (!link) {
+      alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
+      return;
+    }
+
+    window.open(link, "_blank");
+  }}
+  className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
+>
+  🎓 {selectedLevel} Canlı Kursunu İncele
+</button>
         </div>
       </div>
     </div>
