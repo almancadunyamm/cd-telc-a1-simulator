@@ -614,6 +614,112 @@ const earnedBadges = [
 
   const [selectedLevel, setSelectedLevel] = useState<Level>("A1");
   const [activeDashboardTab, setActiveDashboardTab] = useState("home");
+  const a1VocabularyQuestions = [
+  {
+    tr: "Merhaba.",
+    de: "Hallo.",
+    options: ["Hallo.", "Danke.", "Bitte.", "Tschüss."],
+  },
+  {
+    tr: "Benim adım Ahmet.",
+    de: "Ich heiße Ahmet.",
+    options: ["Ich bin Ahmet.", "Ich heiße Ahmet.", "Ich komme Ahmet.", "Ich wohne Ahmet."],
+  },
+  {
+    tr: "Senin adın ne?",
+    de: "Wie heißt du?",
+    options: ["Wo wohnst du?", "Wie heißt du?", "Wie alt bist du?", "Woher kommst du?"],
+  },
+  {
+    tr: "Ben Türkiye’den geliyorum.",
+    de: "Ich komme aus der Türkei.",
+    options: ["Ich wohne in der Türkei.", "Ich komme aus der Türkei.", "Ich bin Türkei.", "Ich gehe Türkei."],
+  },
+  {
+    tr: "Sen nerelisin?",
+    de: "Woher kommst du?",
+    options: ["Wie heißt du?", "Wo wohnst du?", "Woher kommst du?", "Wie alt bist du?"],
+  },
+  {
+    tr: "İstanbul’da yaşıyorum.",
+    de: "Ich wohne in Istanbul.",
+    options: ["Ich wohne in Istanbul.", "Ich komme aus Istanbul.", "Ich heiße Istanbul.", "Ich bin Istanbul."],
+  },
+  {
+    tr: "Kaç yaşındasın?",
+    de: "Wie alt bist du?",
+    options: ["Wie alt bist du?", "Wie heißt du?", "Wo wohnst du?", "Woher kommst du?"],
+  },
+  {
+    tr: "Ben 25 yaşındayım.",
+    de: "Ich bin 25 Jahre alt.",
+    options: ["Ich habe 25 Jahre.", "Ich bin 25 Jahre alt.", "Ich wohne 25 Jahre.", "Ich komme 25 Jahre."],
+  },
+  {
+    tr: "Öğrenciyim.",
+    de: "Ich bin Student.",
+    options: ["Ich bin Student.", "Ich habe Student.", "Ich wohne Student.", "Ich komme Student."],
+  },
+  {
+    tr: "Tanıştığımıza memnun oldum.",
+    de: "Freut mich, dich kennenzulernen.",
+    options: ["Danke schön.", "Bis bald.", "Freut mich, dich kennenzulernen.", "Guten Morgen."],
+  },
+];
+
+const [vocabularyIndex, setVocabularyIndex] = useState(0);
+const [vocabularyLives, setVocabularyLives] = useState(3);
+const [vocabularyCorrectCount, setVocabularyCorrectCount] = useState(0);
+const [vocabularyFinished, setVocabularyFinished] = useState(false);
+const [vocabularyFeedback, setVocabularyFeedback] = useState<"correct" | "wrong" | null>(null);
+const currentVocabularyQuestion = a1VocabularyQuestions[vocabularyIndex];
+
+const handleVocabularyAnswer = (answer: string) => {
+  if (!currentVocabularyQuestion || vocabularyFeedback) return;
+
+  if (answer === currentVocabularyQuestion.de) {
+    setVocabularyFeedback("correct");
+
+    setTimeout(() => {
+      const nextIndex = vocabularyIndex + 1;
+
+      setVocabularyCorrectCount((prev) => prev + 1);
+      setVocabularyFeedback(null);
+
+      if (nextIndex >= a1VocabularyQuestions.length) {
+        setVocabularyFinished(true);
+      } else {
+        setVocabularyIndex(nextIndex);
+      }
+    }, 500);
+
+    return;
+  }
+
+  setVocabularyFeedback("wrong");
+
+  setTimeout(() => {
+    setVocabularyFeedback(null);
+
+    if (vocabularyLives <= 1) {
+      setVocabularyIndex(0);
+      setVocabularyLives(3);
+      setVocabularyCorrectCount(0);
+      setVocabularyFinished(false);
+      return;
+    }
+
+    setVocabularyLives((prev) => prev - 1);
+  }, 700);
+};
+
+const resetVocabularyGame = () => {
+  setVocabularyIndex(0);
+  setVocabularyLives(3);
+  setVocabularyCorrectCount(0);
+  setVocabularyFinished(false);
+  setVocabularyFeedback(null);
+};
   
   const openedLessonCount = Number(
   localStorage.getItem(`opened_lesson_count_${currentUsername}`) || "0"
@@ -3073,57 +3179,196 @@ createPendingOrder({
 )}
 {activeDashboardTab === "vocabulary" && (
   <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
-    <div className="rounded-3xl bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 p-6">
-      <p className="text-sm font-black uppercase tracking-widest text-emerald-700">
-        Kelime Akademisi
-      </p>
+    <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 p-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm font-black uppercase tracking-widest text-emerald-700">
+            Kelime Akademisi
+          </p>
 
-      <h2 className="mt-3 text-3xl font-black text-slate-900">
-        Oyunlaştırılmış kelime sistemi hazırlanıyor
-      </h2>
+          <h2 className="mt-3 text-3xl font-black text-slate-900">
+            A1 Tema 1: Kendini Tanıtma
+          </h2>
 
-      <p className="mt-4 text-sm leading-6 text-slate-600">
-        A1, A2 ve B1 seviyelerine özel kelime pratiği; can sistemi, seviye
-        ilerlemesi, tekrar modu ve başarı takibiyle yakında panelinize
-        eklenecektir.
-      </p>
-
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-2xl">❤️ ❤️ ❤️</p>
-          <h3 className="mt-3 font-black text-slate-900">Can Sistemi</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            Yanlış cevaplarda can azalır, doğru cevaplarda ilerleme devam eder.
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+            Türkçe cümleyi oku, doğru Almanca karşılığını seç. 3 canın var.
+            Tüm soruları bitirince seviye tamamlanır.
           </p>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-2xl">🎯</p>
-          <h3 className="mt-3 font-black text-slate-900">Seviye Bazlı Kelimeler</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            A1, A2 ve B1 seviyelerine göre özel kelime listeleri açılır.
+        <div className="rounded-2xl bg-white px-5 py-4 text-center shadow-sm">
+          <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+            Can
           </p>
-        </div>
-
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-2xl">🚀</p>
-          <h3 className="mt-3 font-black text-slate-900">Akıllı Tekrar</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            Yanlış yapılan kelimeler tekrar sorularak öğrenme güçlendirilir.
+          <p className="mt-1 text-2xl">
+            {"❤️".repeat(vocabularyLives)}
+            {"🤍".repeat(3 - vocabularyLives)}
           </p>
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-emerald-200 bg-white p-5">
-        <p className="text-sm font-bold text-slate-900">
-          Bu bölüm, kurs süreciniz ilerledikçe otomatik olarak aktif edilecektir.
-        </p>
+      {!vocabularyFinished ? (
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-3xl bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-black uppercase tracking-widest text-blue-600">
+                Soru {vocabularyIndex + 1} / {a1VocabularyQuestions.length}
+              </p>
 
-        <p className="mt-2 text-sm text-slate-500">
-          Şimdilik ders kayıtları, PDF materyalleri, konuşma görevleri ve deneme
-          sınavı hazırlık alanlarını kullanabilirsiniz.
-        </p>
-      </div>
+              <p className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
+                Doğru: {vocabularyCorrectCount}
+              </p>
+            </div>
+
+            <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all"
+                style={{
+                  width: `${((vocabularyIndex + 1) / a1VocabularyQuestions.length) * 100}%`,
+                }}
+              />
+            </div>
+
+            <div className="mt-8 rounded-3xl border border-slate-100 bg-slate-50 p-6 text-center">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Türkçe
+              </p>
+
+              <h3 className="mt-3 text-2xl font-black text-slate-900">
+                {currentVocabularyQuestion.tr}
+              </h3>
+
+              <p className="mt-3 text-sm text-slate-500">
+                Doğru Almanca karşılığı seç.
+              </p>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {currentVocabularyQuestion.options.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => handleVocabularyAnswer(option)}
+                  disabled={!!vocabularyFeedback}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-sm font-black text-slate-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-80"
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+
+            {vocabularyFeedback === "correct" && (
+              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-black text-emerald-700">
+                ✅ Harika! Doğru cevap.
+              </div>
+            )}
+
+            {vocabularyFeedback === "wrong" && (
+              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-black text-red-700">
+                ❌ Yanlış cevap. Bir can azalıyor.
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-3xl bg-white p-6 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-widest text-purple-600">
+              Bugünkü hedef
+            </p>
+
+            <h3 className="mt-3 text-2xl font-black text-slate-900">
+              10 kelime pratiği
+            </h3>
+
+            <div className="mt-5 space-y-3">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                  İlerleme
+                </p>
+                <p className="mt-1 text-xl font-black text-slate-900">
+                  {vocabularyIndex + 1} / {a1VocabularyQuestions.length}
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                  Kazanım
+                </p>
+                <p className="mt-1 text-xl font-black text-slate-900">
+                  Kendini tanıtma cümleleri
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                  Sistem
+                </p>
+                <p className="mt-1 text-xl font-black text-slate-900">
+                  3 canlı mini oyun
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={resetVocabularyGame}
+              className="mt-6 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-50"
+            >
+              🔄 Oyunu Sıfırla
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-6 rounded-3xl bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-emerald-50 text-5xl">
+            🎉
+          </div>
+
+          <h3 className="mt-5 text-3xl font-black text-slate-900">
+            Tebrikler!
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            A1 Tema 1 kelime pratiğini başarıyla tamamladın.
+          </p>
+
+          <div className="mx-auto mt-6 grid max-w-xl gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl bg-emerald-50 p-4">
+              <p className="text-xs font-black uppercase tracking-widest text-emerald-700">
+                Doğru
+              </p>
+              <p className="mt-1 text-2xl font-black text-emerald-900">
+                {vocabularyCorrectCount}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-blue-50 p-4">
+              <p className="text-xs font-black uppercase tracking-widest text-blue-700">
+                Seviye
+              </p>
+              <p className="mt-1 text-2xl font-black text-blue-900">
+                A1
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-purple-50 p-4">
+              <p className="text-xs font-black uppercase tracking-widest text-purple-700">
+                Tema
+              </p>
+              <p className="mt-1 text-2xl font-black text-purple-900">
+                1
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={resetVocabularyGame}
+            className="mt-8 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white hover:bg-slate-800"
+          >
+            Tekrar Oyna
+          </button>
+        </div>
+      )}
     </div>
   </section>
 )}
