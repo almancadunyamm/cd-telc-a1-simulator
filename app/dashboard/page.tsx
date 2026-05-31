@@ -2216,17 +2216,7 @@ window.open(worksheet.url, "_blank");
   onClick={() => {
     const slug = `live-${selectedLevel.toLowerCase()}`;
 
-    const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
-
-    const possibleLinks = [
-      links[slug],
-      links[`canli-${selectedLevel.toLowerCase()}`],
-      links[`liveCourse-${selectedLevel.toLowerCase()}`],
-      links[selectedLevel],
-      links[selectedLevel.toLowerCase()],
-    ];
-
-    const link = possibleLinks.find(Boolean);
+    const link = getShopierLink(slug);
 
     if (!link) {
       alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
