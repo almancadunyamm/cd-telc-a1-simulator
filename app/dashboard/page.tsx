@@ -1139,7 +1139,12 @@ lessons.forEach((lesson) => {
 ]);
 
   const visibleLessons = useMemo(() => {
-  return selectedLevelLessons;
+  return [...selectedLevelLessons].sort((a, b) => {
+    const aNum = Number(String(a.title).match(/^(\d+)/)?.[1] || 999);
+    const bNum = Number(String(b.title).match(/^(\d+)/)?.[1] || 999);
+
+    return aNum - bNum;
+  });
 }, [selectedLevelLessons]);
   const selectedLevelHasAccess = isStudentActive;
   const selectedLevelIsUnlocked =
@@ -1161,6 +1166,12 @@ const upsellBadgeText = selectedLevelHasAccess
 const lessonsForList = selectedLevelHasAccess
   ? visibleLessons
   : selectedLevelLessons;
+  const sortedLessonsForList = [...lessonsForList].sort((a, b) => {
+  const aNum = Number(String(a.title).match(/^(\d+)/)?.[1] || 999);
+  const bNum = Number(String(b.title).match(/^(\d+)/)?.[1] || 999);
+
+  return aNum - bNum;
+});
   const pdfMaterials = useMemo(() => {
   return selectedLevelLessons.flatMap((lesson) => {
     const isDigitalPackagePdf =
