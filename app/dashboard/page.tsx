@@ -3249,6 +3249,21 @@ createPendingOrder({
         const groupMaterials = pdfMaterials.filter(
           (material) => material.packageType === packageGroup
         );
+        const sortedGroupMaterials = [...groupMaterials].sort((a, b) => {
+  const aNum = Number(
+    String(a.lessonTitle || a.title)
+      .trim()
+      .match(/^(\d+)/)?.[1] || 999
+  );
+
+  const bNum = Number(
+    String(b.lessonTitle || b.title)
+      .trim()
+      .match(/^(\d+)/)?.[1] || 999
+  );
+
+  return aNum - bNum;
+});
 
         if (groupMaterials.length === 0) return null;
 
@@ -3285,7 +3300,7 @@ createPendingOrder({
             </div>
 
             <div className="flex-1 space-y-3 overflow-y-auto pr-2">
-              {groupMaterials.map((material) => {
+            {sortedGroupMaterials.map((material) => {
                 const canOpen =
                   selectedLevelHasAccess &&
                   canAccessLessonPackage(
