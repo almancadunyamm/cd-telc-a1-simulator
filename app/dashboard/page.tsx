@@ -2328,10 +2328,17 @@ window.open(worksheet.url, "_blank");
 
     if (groupLessons.length === 0) return null;
 
-    const packageIsOpen = canAccessLessonPackage(
-      effectivePackageType,
-      packageGroup
-    );
+const sortedGroupLessons = [...groupLessons].sort((a, b) => {
+  const aNum = Number(String(a.title).trim().match(/^(\d+)/)?.[1] || 999);
+  const bNum = Number(String(b.title).trim().match(/^(\d+)/)?.[1] || 999);
+
+  return aNum - bNum;
+});
+
+const packageIsOpen = canAccessLessonPackage(
+  effectivePackageType,
+  packageGroup
+);
 
     return (
       <div
@@ -2361,7 +2368,7 @@ window.open(worksheet.url, "_blank");
         </div>
 
         <div className="flex-1 space-y-3 overflow-y-auto pr-2">
-          {groupLessons.map((lesson, index) => {
+          {sortedGroupLessons.map((lesson, index) => {
             const hasPackageAccess = canAccessLessonPackage(
               effectivePackageType,
               lesson.packageType || "starter"
