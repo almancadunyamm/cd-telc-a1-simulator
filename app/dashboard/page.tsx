@@ -2819,7 +2819,7 @@ createPendingOrder({
     <button
       type="button"
       onClick={() => {
-        const message = `Konuşma görevimi göndermek istiyorum. Kullanıcı: ${
+        const message = `Merhaba, öğretmen atamam hakkında bilgi almak istiyorum.n Kullanıcı: ${
           JSON.parse(localStorage.getItem("mock_logged_user") || "{}")?.username ||
           "Öğrenci"
         }`;
