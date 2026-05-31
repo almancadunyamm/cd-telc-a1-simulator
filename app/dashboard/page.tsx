@@ -3141,7 +3141,7 @@ createPendingOrder({
       </div>
     )}
 
-    {!selectedLevelHasAccess && (
+    {!activeAccessLevels.includes(selectedLevel) && (
   <div className="mt-6 rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 shadow-sm">
     <div className="flex items-start gap-3">
       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500 text-xl text-white shadow-md">
@@ -3208,20 +3208,20 @@ createPendingOrder({
   <div className="mt-6 grid gap-4 lg:grid-cols-2">
     {(["starter", "practice", "master"] as PackageType[])
       .filter((packageGroup) => {
-        if (effectivePackageType === "starter") {
-          return packageGroup === "starter" || packageGroup === "practice";
-        }
+  if (effectivePackageType === "starter") {
+    return packageGroup !== "master";
+  }
 
-        if (effectivePackageType === "practice") {
-          return true;
-        }
+  if (effectivePackageType === "practice") {
+    return true;
+  }
 
-        if (effectivePackageType === "master") {
-          return true;
-        }
+  if (effectivePackageType === "master") {
+    return true;
+  }
 
-        return packageGroup === "starter";
-      })
+  return packageGroup === "starter";
+})
       .map((packageGroup) => {
         const groupMaterials = pdfMaterials.filter(
           (material) => material.packageType === packageGroup
