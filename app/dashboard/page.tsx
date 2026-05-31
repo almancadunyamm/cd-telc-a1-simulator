@@ -3209,23 +3209,33 @@ createPendingOrder({
           </button>
 
           <button
-            type="button"
-            onClick={() => {
-              const slug = `live-${selectedLevel.toLowerCase()}`;
-              const links = JSON.parse(localStorage.getItem("shopier_links") || "{}");
-              const link = links[slug];
+  type="button"
+  onClick={() => {
+    const slug = `live-${selectedLevel.toLowerCase()}`;
 
-              if (!link) {
-                alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
-                return;
-              }
+    const link = getShopierLink(slug);
 
-              window.open(link, "_blank");
-            }}
-            className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
-          >
-            🎓 {selectedLevel} Canlı Kursunu İncele
-          </button>
+    if (!link) {
+      alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
+      return;
+    }
+
+    setPendingPaymentSlug(slug);
+    setHidePendingOrderNotice(false);
+    setPaymentNoticeRefreshKey((prev) => prev + 1);
+
+    createPendingOrder({
+      username: currentUser.username,
+      productSlug: slug,
+      level: selectedLevel,
+    });
+
+    window.open(link, "_blank");
+  }}
+  className="mt-5 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-sm font-bold text-white hover:from-purple-700 hover:to-blue-700"
+>
+  🎓 {selectedLevel} Canlı Programını Keşfet
+</button>
         </div>
       </div>
     </div>
