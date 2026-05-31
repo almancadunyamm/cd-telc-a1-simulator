@@ -2134,7 +2134,7 @@ window.open(worksheet.url, "_blank");
     </h3>
 
     <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-      Sağdaki listeden bir ders seçerek videoyu burada izleyebilir, notlarını alabilir
+      Ders listesinden bir ders seçerek videoyu burada izleyebilir, notlarını alabilir
       ve TELC hazırlık sürecinde ilerlemeye devam edebilirsin.
     </p>
 
