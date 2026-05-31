@@ -219,7 +219,8 @@ async function loadTeacherLessons() {
   const { data, error } = await supabase
     .from("teacher_lessons")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("lesson_order", { ascending: true, nullsFirst: false })
+.order("created_at", { ascending: true });
 
   if (error) {
     console.log(error);
@@ -402,7 +403,8 @@ if (error) {
     const { data: refreshedLessons } = await supabase
   .from("teacher_lessons")
   .select("*")
-  .order("created_at", { ascending: false });
+  .order("lesson_order", { ascending: true, nullsFirst: false })
+.order("created_at", { ascending: true });
 
 const teacherClassIds = classes.map((classItem) => classItem.id);
 
