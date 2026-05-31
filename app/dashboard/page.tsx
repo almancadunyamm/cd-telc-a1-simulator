@@ -2116,9 +2116,34 @@ window.open(worksheet.url, "_blank");
 )}
               </div>
             ) : lessonsForList.length > 0 ? (
-              <div className="rounded-2xl bg-slate-900 p-6 text-slate-500">
-                Sağdaki listeden bir ders seçin.
-              </div>
+              <div className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-white via-blue-50 to-purple-50 p-8 shadow-sm">
+  <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-200/30 blur-3xl" />
+  <div className="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-purple-200/30 blur-3xl" />
+
+  <div className="relative flex min-h-[340px] flex-col items-center justify-center text-center">
+    <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-white shadow-lg shadow-blue-100 ring-1 ring-blue-100">
+      <span className="text-5xl">▶️</span>
+    </div>
+
+    <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-600">
+      Ders izleme alanı
+    </p>
+
+    <h3 className="mt-3 max-w-xl text-2xl font-black tracking-tight text-slate-900">
+      Ders içeriklerini izlemeye hazır mısın?
+    </h3>
+
+    <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+      Sağdaki listeden bir ders seçerek videoyu burada izleyebilir, notlarını alabilir
+      ve TELC hazırlık sürecinde ilerlemeye devam edebilirsin.
+    </p>
+
+    <div className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-purple-100 bg-white/80 px-5 py-3 text-sm font-bold text-purple-700 shadow-sm">
+      <span>💡</span>
+      <span>Düzenli çalış, istikrarlı ilerle, hedeflerine ulaş!</span>
+    </div>
+  </div>
+</div>
             ) : (
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
   <p className="text-xs font-black uppercase tracking-widest text-blue-700">
