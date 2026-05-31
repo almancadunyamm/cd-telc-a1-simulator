@@ -885,6 +885,22 @@ setStudentAccess(
 
   return matchedTeacher?.whatsapp || defaultWhatsapp;
 }, [studentAccess, classes, selectedLevel, teachers]);
+const isInDefaultClassForSelectedLevel = useMemo(() => {
+  if (!studentAccess) return false;
+
+  const studentClassIds = [
+    studentAccess.mainClassId,
+    ...(studentAccess.extraClassAccess || []),
+  ].filter(Boolean);
+
+  const activeClass = classes.find(
+    (classItem) =>
+      studentClassIds.includes(classItem.id) &&
+      classItem.level === selectedLevel
+  );
+
+  return !!activeClass?.isDefaultSalesClass;
+}, [studentAccess, classes, selectedLevel]);
 
   const selectedLevelClasses = useMemo(() => {
     return classes.filter((item) => item.level === selectedLevel);
@@ -2769,6 +2785,16 @@ createPendingOrder({
   </>
 ) : (
   <>
+    
+    {isInDefaultClassForSelectedLevel && (
+  <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+    <p className="font-bold">⏳ Öğretmen ataması bekleniyor</p>
+    <p className="mt-1">
+      Öğretmen atandığında konuşma görevlerinizi doğrudan hocanıza
+      gönderebileceksiniz.
+    </p>
+  </div>
+)}
     <p className="text-sm font-semibold text-purple-600">
       Konuşma Pratiği
     </p>
@@ -2801,13 +2827,16 @@ createPendingOrder({
         completeSpeakingTask();
 
         window.open(
-          `https://wa.me/${activeTeacherWhatsapp}?text=${encodeURIComponent(message)}`,
+          `https://wa.me/${
+  isInDefaultClassForSelectedLevel ? "905013434419" : activeTeacherWhatsapp
+}?text=${encodeURIComponent(message)}`,
           "_blank"
         );
       }}
       className="mt-5 w-full rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-3 text-sm font-bold text-white hover:from-green-600 hover:to-emerald-600"
-    >
-      🎤 WhatsApp’tan Gönder
+    >{isInDefaultClassForSelectedLevel
+  ? "📞 Destek Ekibiyle İletişime Geç"
+  : "🎤 WhatsApp’tan Gönder"}
     </button>
   </>
 )}
@@ -3349,7 +3378,9 @@ createPendingOrder({
           completeSpeakingTask();
 
 window.open(
-  `https://wa.me/${activeTeacherWhatsapp}?text=${encodeURIComponent(message)}`,
+  `https://wa.me/${
+  isInDefaultClassForSelectedLevel ? "905013434419" : activeTeacherWhatsapp
+}?text=${encodeURIComponent(message)}`,
   "_blank"
 );
         }}
