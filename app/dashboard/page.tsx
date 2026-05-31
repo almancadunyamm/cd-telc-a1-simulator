@@ -2811,12 +2811,14 @@ createPendingOrder({
     </p>
 
     <h2 className="mt-2 text-xl font-bold">
-      {selectedLevel === "B1" && currentB1Task
-        ? currentB1Task.title
-        : "Bu Haftanın Görevi"}
-    </h2>
+  {selectedLevelIsUnlocked
+    ? selectedLevel === "B1" && currentB1Task
+      ? currentB1Task.title
+      : "Bu Haftanın Görevi"
+    : `${selectedLevel} seviyesi kilitli`}
+</h2>
 
-    {selectedLevel === "B1" && currentB1Task && (
+    {selectedLevelIsUnlocked && selectedLevel === "B1" && currentB1Task && (
       <div className="mt-3 rounded-2xl bg-white/70 p-3 text-xs font-semibold text-slate-600">
         <p>Tema: {currentB1Task.theme}</p>
         <p className="mt-1">Hedef: {currentB1Task.grammar}</p>
