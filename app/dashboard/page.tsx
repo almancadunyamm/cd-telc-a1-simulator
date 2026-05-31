@@ -2683,10 +2683,11 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
         {isDigitalStarterStudent ? (
   <div className="space-y-3">
     {[
-      "Kişisel günlük çalışma görevi",
-      "Öğretmen destekli takip",
-      "Haftalık ilerleme motivasyonu",
-    ].map((item) => (
+  "Kişisel günlük çalışma planı",
+  "PDF ve çalışma kağıdı erişimi",
+  "TELC deneme sınavları",
+  "İlerleme takibi ve görev sistemi",
+].map((item) => (
       <div
         key={item}
         className="flex items-center justify-between rounded-2xl bg-slate-50 p-3"
