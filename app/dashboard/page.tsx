@@ -1811,17 +1811,17 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
   </div>
   <nav className="space-y-2 text-sm font-semibold">
   {[
-    { key: "home", label: "Ana Sayfa", icon: "🏠" },
-{ key: "lessons", label: "Dersler", icon: "🎬" },
-{ key: "materials", label: "PDF Merkezi", icon: "📚" },
-{ key: "exams", label: "Deneme Sınavları", icon: "📝" },
-{ key: "practice", label: "Pratik", icon: "🎤" },
-{ key: "vocabulary", label: "Kelime", icon: "📚" },
-{ key: "progress", label: "İlerleme", icon: "📊" },
-{ key: "community", label: "Topluluk", icon: "👥" },
-{ key: "badges", label: "Rozetler", icon: "🏆" },
-{ key: "settings", label: "Ayarlar", icon: "⚙️" },
-  ].map((item) => (
+  { key: "home", label: "Ana Sayfa", icon: "🏠" },
+  { key: "lessons", label: "Dersler", icon: "🎬" },
+  { key: "vocabulary", label: "Kelime", icon: "📚" },
+  { key: "practice", label: "Pratik", icon: "🎤" },
+  { key: "materials", label: "PDF", icon: "📄" },
+  { key: "exams", label: "Deneme Sınavları", icon: "📝" },
+  { key: "progress", label: "İlerleme", icon: "📊" },
+  { key: "community", label: "Topluluk", icon: "👥" },
+  { key: "badges", label: "Rozetler", icon: "🏆" },
+  { key: "settings", label: "Ayarlar", icon: "⚙️" },
+].map((item) => (
     <button
       key={item.key}
       type="button"
@@ -1869,17 +1869,17 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
   <div className="w-full overflow-x-auto rounded-2xl bg-white p-3 shadow">
     <div className="flex max-w-full gap-2 overflow-x-auto">
       {[
-        { key: "home", label: "Ana Sayfa", icon: "🏠" },
-        { key: "exams", label: "Deneme", icon: "📝" },
-        { key: "lessons", label: "Dersler", icon: "🎬" },
-        { key: "materials", label: "PDF", icon: "📚" },
-        { key: "practice", label: "Pratik", icon: "🎤" },
-        { key: "vocabulary", label: "Kelime", icon: "📚" },
-        { key: "progress", label: "İlerleme", icon: "📊" },
-        { key: "community", label: "Topluluk", icon: "👥" },
-        { key: "badges", label: "Rozetler", icon: "🏆" },
-        { key: "settings", label: "Ayarlar", icon: "⚙️" },
-      ].map((item) => (
+  { key: "home", label: "Ana Sayfa", icon: "🏠" },
+  { key: "lessons", label: "Dersler", icon: "🎬" },
+  { key: "vocabulary", label: "Kelime", icon: "📚" },
+  { key: "practice", label: "Pratik", icon: "🎤" },
+  { key: "materials", label: "PDF Merkezi", icon: "📄" },
+  { key: "exams", label: "Deneme Sınavları", icon: "📝" },
+  { key: "progress", label: "İlerleme", icon: "📊" },
+  { key: "community", label: "Topluluk", icon: "👥" },
+  { key: "badges", label: "Rozetler", icon: "🏆" },
+  { key: "settings", label: "Ayarlar", icon: "⚙️" },
+].map((item) => (
         <button
           key={item.key}
           type="button"
