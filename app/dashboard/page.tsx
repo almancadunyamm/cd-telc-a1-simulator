@@ -656,7 +656,7 @@ const currentB1Tasks = speakingTasksB1.filter(
 const currentB1Task =
   currentB1Tasks[currentThemeIndex % 3] || currentB1Tasks[0];
 
-const speakingTask =
+  const speakingTask =
   selectedLevel === "A1"
     ? speakingTasksA1[currentThemeIndex]
     : selectedLevel === "B1"
@@ -1138,6 +1138,8 @@ lessons.forEach((lesson) => {
   return selectedLevelLessons;
 }, [selectedLevelLessons]);
   const selectedLevelHasAccess = isStudentActive;
+  const selectedLevelIsUnlocked =
+  activeAccessLevels.includes(selectedLevel);
   const upsellTitle = selectedLevelHasAccess
   ? `${getPackageLabel(upsellPackage)} paketiyle daha hızlı hazırlan`
   : `🚀 ${selectedLevel} Premium Arşivi`;
@@ -2135,6 +2137,14 @@ window.open(worksheet.url, "_blank");
       <button
         key={levelItem}
         onClick={() => {
+  const hasAccess = activeAccessLevels.includes(levelItem);
+
+  if (!hasAccess) {
+    setUpsellPackage("practice");
+    setShowUpsell(true);
+    return;
+  }
+
   setSelectedLevel(levelItem);
   setSelectedLesson(null);
 }}
@@ -2813,9 +2823,12 @@ createPendingOrder({
     )}
 
     <p className="mt-3 text-sm leading-6 text-slate-600">
-      {speakingTask}
-    </p>
+  {selectedLevelIsUnlocked
+    ? speakingTask
+    : "Bu seviye hesabınızda açık değil. Devam etmek için paket yükseltmeniz gerekir."}
+</p>
 
+    {selectedLevelIsUnlocked && (
     <button
       type="button"
       onClick={() => {
@@ -2838,6 +2851,7 @@ createPendingOrder({
   ? "📞 Destek Ekibiyle İletişime Geç"
   : "🎤 WhatsApp’tan Gönder"}
     </button>
+    )}
   </>
 )}
       </div>
@@ -3364,9 +3378,12 @@ createPendingOrder({
       </h2>
 
       <p className="mt-3 text-sm leading-6 text-slate-600">
-        {speakingTask}
-      </p>
+  {selectedLevelIsUnlocked
+    ? speakingTask
+    : "Bu seviye hesabınızda açık değil. Devam etmek için paket yükseltmeniz gerekir."}
+</p>
 
+      {selectedLevelIsUnlocked && (
       <button
         type="button"
         onClick={() => {
@@ -3398,6 +3415,7 @@ window.open(
 </div>
         🎤 WhatsApp’tan Ses/Video Gönder
       </button>
+      )}
     </div>
 
     <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-lg">
