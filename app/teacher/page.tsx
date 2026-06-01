@@ -343,7 +343,7 @@ allLessons =
       id: editingLessonId || crypto.randomUUID(),
       level: selectedClass.level,
       classId:
-  packageType === "practice" || packageType === "master"
+  contentType === "digitalPackage"
     ? ""
     : selectedClass.id,
       className: selectedClass.name,
@@ -351,12 +351,12 @@ allLessons =
       teacherName: selectedClass.teacherName || currentTeacherName,
       title: title.trim(),
       videoUrl: videoUrl.trim(),
-      packageType: isExpertTeacher ? packageType : "starter",
+      packageType:
+  contentType === "liveClass" && !isExpertTeacher
+    ? "practice"
+    : packageType,
       pdfVisibility: isExpertTeacher ? pdfVisibility : "classOnly",
-      contentType:
-  packageType === "practice" || packageType === "master"
-    ? "digitalPackage"
-    : contentType,
+      contentType,
       pdfTitle: pdfTitle.trim(),
       pdfUrl: pdfUrl.trim(),
       homework: homework.trim(),
@@ -615,21 +615,21 @@ setWorksheets(
     />
 
     <select
-      value={contentType}
-      onChange={(e) => {
-  const newContentType = e.target.value as ContentType;
+  value={contentType}
+  onChange={(e) => {
+    const newContentType = e.target.value as ContentType;
 
-  setContentType(newContentType);
+    setContentType(newContentType);
 
-  if (newContentType === "liveClass") {
-    setPackageType("practice");
-  }
-}}
-      className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm"
-    >
-      <option value="liveClass">Canlı sınıf dersi</option>
-      <option value="digitalPackage">Dijital paket içeriği</option>
-    </select>
+    if (newContentType === "liveClass" && !isExpertTeacher) {
+      setPackageType("practice");
+    }
+  }}
+  className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm"
+>
+  <option value="liveClass">Canlı sınıf dersi</option>
+  <option value="digitalPackage">Dijital paket içeriği</option>
+</select>
 
     <select
   value={packageType}
@@ -637,9 +637,17 @@ setWorksheets(
     const newPackageType = e.target.value as PackageType;
     setPackageType(newPackageType);
   }}
+  className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm"
 >
   {contentType === "liveClass" ? (
-    <option value="practice">Gelişim paket dersi</option>
+    isExpertTeacher ? (
+      <>
+        <option value="starter">Başlangıç paket dersi</option>
+        <option value="practice">Gelişim paket dersi</option>
+      </>
+    ) : (
+      <option value="practice">Gelişim paket dersi</option>
+    )
   ) : (
     <>
       <option value="starter">Başlangıç paket dersi</option>
