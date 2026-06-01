@@ -614,111 +614,363 @@ const earnedBadges = [
 
   const [selectedLevel, setSelectedLevel] = useState<Level>("A1");
   const [activeDashboardTab, setActiveDashboardTab] = useState("home");
-  const a1VocabularyQuestions = [
+  type MasteryQuestion = {
+  id: number;
+  themeId: number;
+  themeTitle: string;
+  lessonNumber: number;
+  lessonTitle: string;
+  tr: string;
+  de: string;
+  options: string[];
+};
+
+const masteryThemes = [
   {
+    id: 1,
+    title: "Kendini Tanıtma",
+    germanTitle: "Sich vorstellen",
+    lessons: [
+      { number: 1, title: "Tanışma + sein fiili" },
+      { number: 2, title: "Kişi zamirleri + cümle kurma" },
+      { number: 3, title: "Soru cümleleri (W-Fragen)" },
+    ],
+  },
+  {
+    id: 2,
+    title: "Aile ve Arkadaşlar",
+    germanTitle: "Familie & Freunde",
+    lessons: [
+      { number: 4, title: "Aile bireyleri + haben" },
+      { number: 5, title: "İyelik: mein / dein" },
+      { number: 6, title: "Basit sıfatlar + cümle kurma" },
+    ],
+  },
+  {
+    id: 3,
+    title: "Meslek",
+    germanTitle: "Beruf",
+    lessons: [
+      { number: 7, title: "Meslekler + arbeiten" },
+      { number: 8, title: "Artikel: der / die / das" },
+      { number: 9, title: "Çoğul: Plural" },
+    ],
+  },
+  {
+    id: 4,
+    title: "Günlük Hayat",
+    germanTitle: "Tagesablauf",
+    lessons: [
+      { number: 10, title: "Günlük fiiller" },
+      { number: 11, title: "Saatler" },
+      { number: 12, title: "Fiil çekimi: Präsens" },
+    ],
+  },
+  {
+    id: 5,
+    title: "Yemek & İçecek",
+    germanTitle: "Essen & Trinken",
+    lessons: [
+      { number: 13, title: "Yiyecekler" },
+      { number: 14, title: "mögen + gern" },
+      { number: 15, title: "Akkusativ" },
+    ],
+  },
+  {
+    id: 6,
+    title: "Alışveriş",
+    germanTitle: "Einkaufen",
+    lessons: [
+      { number: 16, title: "Fiyat sorma" },
+      { number: 17, title: "möchten" },
+      { number: 18, title: "haben fiili" },
+    ],
+  },
+  {
+    id: 7,
+    title: "Ev & Yaşam",
+    germanTitle: "Wohnen",
+    lessons: [
+      { number: 19, title: "Ev bölümleri" },
+      { number: 20, title: "es gibt" },
+      { number: 21, title: "Yer edatları" },
+    ],
+  },
+  {
+    id: 8,
+    title: "Boş Zaman",
+    germanTitle: "Freizeit",
+    lessons: [
+      { number: 22, title: "Hobiler ve aktiviteler" },
+      { number: 23, title: "können" },
+      { number: 24, title: "Cümle genişletme" },
+    ],
+  },
+  {
+    id: 9,
+    title: "Ulaşım & Yol Tarifi",
+    germanTitle: "Verkehr & Wegbeschreibung",
+    lessons: [
+      { number: 25, title: "Ulaşım araçları" },
+      { number: 26, title: "Emir cümlesi: Imperativ" },
+      { number: 27, title: "Yönler" },
+    ],
+  },
+  {
+    id: 10,
+    title: "Sağlık",
+    germanTitle: "Gesundheit",
+    lessons: [
+      { number: 28, title: "Vücut" },
+      { number: 29, title: "müssen" },
+      { number: 30, title: "Basit tavsiye cümleleri" },
+    ],
+  },
+  {
+    id: 11,
+    title: "Tatil",
+    germanTitle: "Urlaub",
+    lessons: [
+      { number: 31, title: "Seyahat" },
+      { number: 32, title: "Perfekt tanıtım" },
+      { number: 33, title: "Otel & rezervasyon" },
+    ],
+  },
+  {
+    id: 12,
+    title: "Randevu & İletişim",
+    germanTitle: "Termin & Kommunikation",
+    lessons: [
+      { number: 34, title: "Telefon konuşmaları" },
+      { number: 35, title: "Tarih & saat" },
+      { number: 36, title: "Genel tekrar + TELC simülasyon" },
+    ],
+  },
+];
+
+const masteryQuestions: MasteryQuestion[] = [
+  {
+    id: 1,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 1,
+    lessonTitle: "Tanışma + sein fiili",
     tr: "Merhaba.",
     de: "Hallo.",
     options: ["Hallo.", "Danke.", "Bitte.", "Tschüss."],
   },
   {
-    tr: "Benim adım Ahmet.",
-    de: "Ich heiße Ahmet.",
-    options: ["Ich bin Ahmet.", "Ich heiße Ahmet.", "Ich komme Ahmet.", "Ich wohne Ahmet."],
+    id: 2,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 1,
+    lessonTitle: "Tanışma + sein fiili",
+    tr: "Ben Ahmet'im.",
+    de: "Ich bin Ahmet.",
+    options: ["Ich bin Ahmet.", "Ich habe Ahmet.", "Ich komme Ahmet.", "Ich wohne Ahmet."],
   },
   {
+    id: 3,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 1,
+    lessonTitle: "Tanışma + sein fiili",
+    tr: "Sen öğrencisin.",
+    de: "Du bist Student.",
+    options: ["Du bist Student.", "Ich bin Student.", "Er ist Student.", "Sie sind Student."],
+  },
+  {
+    id: 4,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 1,
+    lessonTitle: "Tanışma + sein fiili",
+    tr: "O Almanya'da.",
+    de: "Er ist in Deutschland.",
+    options: ["Er ist in Deutschland.", "Er hat Deutschland.", "Er kommt Deutschland.", "Er wohnt Deutschland."],
+  },
+  {
+    id: 5,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 1,
+    lessonTitle: "Tanışma + sein fiili",
+    tr: "Ben Türkiye'deyim.",
+    de: "Ich bin in der Türkei.",
+    options: ["Ich bin in der Türkei.", "Ich habe in der Türkei.", "Ich komme in der Türkei.", "Ich heiße Türkei."],
+  },
+  {
+    id: 6,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 2,
+    lessonTitle: "Kişi zamirleri + cümle kurma",
+    tr: "Ben Türkiye'den geliyorum.",
+    de: "Ich komme aus der Türkei.",
+    options: ["Ich komme aus der Türkei.", "Du kommst aus der Türkei.", "Er kommt aus der Türkei.", "Wir kommen aus der Türkei."],
+  },
+  {
+    id: 7,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 2,
+    lessonTitle: "Kişi zamirleri + cümle kurma",
+    tr: "Sen nereden geliyorsun?",
+    de: "Woher kommst du?",
+    options: ["Woher kommst du?", "Wie heißt du?", "Wo wohnst du?", "Wie alt bist du?"],
+  },
+  {
+    id: 8,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 2,
+    lessonTitle: "Kişi zamirleri + cümle kurma",
+    tr: "O İstanbul'dan geliyor.",
+    de: "Er kommt aus Istanbul.",
+    options: ["Er kommt aus Istanbul.", "Ich komme aus Istanbul.", "Du kommst aus Istanbul.", "Wir kommen aus Istanbul."],
+  },
+  {
+    id: 9,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 2,
+    lessonTitle: "Kişi zamirleri + cümle kurma",
+    tr: "Ben 25 yaşındayım.",
+    de: "Ich bin 25 Jahre alt.",
+    options: ["Ich bin 25 Jahre alt.", "Ich habe 25 Jahre alt.", "Ich komme 25 Jahre alt.", "Ich wohne 25 Jahre alt."],
+  },
+  {
+    id: 10,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 2,
+    lessonTitle: "Kişi zamirleri + cümle kurma",
+    tr: "Sen 30 yaşındasın.",
+    de: "Du bist 30 Jahre alt.",
+    options: ["Du bist 30 Jahre alt.", "Ich bin 30 Jahre alt.", "Er ist 30 Jahre alt.", "Wir sind 30 Jahre alt."],
+  },
+  {
+    id: 11,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
     tr: "Senin adın ne?",
     de: "Wie heißt du?",
-    options: ["Wo wohnst du?", "Wie heißt du?", "Wie alt bist du?", "Woher kommst du?"],
+    options: ["Wie heißt du?", "Woher kommst du?", "Wie alt bist du?", "Wo wohnst du?"],
   },
   {
-    tr: "Ben Türkiye’den geliyorum.",
-    de: "Ich komme aus der Türkei.",
-    options: ["Ich wohne in der Türkei.", "Ich komme aus der Türkei.", "Ich bin Türkei.", "Ich gehe Türkei."],
+    id: 12,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
+    tr: "Nerede yaşıyorsun?",
+    de: "Wo wohnst du?",
+    options: ["Wo wohnst du?", "Wie heißt du?", "Woher kommst du?", "Wie alt bist du?"],
   },
   {
-    tr: "Sen nerelisin?",
-    de: "Woher kommst du?",
-    options: ["Wie heißt du?", "Wo wohnst du?", "Woher kommst du?", "Wie alt bist du?"],
-  },
-  {
-    tr: "İstanbul’da yaşıyorum.",
-    de: "Ich wohne in Istanbul.",
-    options: ["Ich wohne in Istanbul.", "Ich komme aus Istanbul.", "Ich heiße Istanbul.", "Ich bin Istanbul."],
-  },
-  {
+    id: 13,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
     tr: "Kaç yaşındasın?",
     de: "Wie alt bist du?",
     options: ["Wie alt bist du?", "Wie heißt du?", "Wo wohnst du?", "Woher kommst du?"],
   },
   {
-    tr: "Ben 25 yaşındayım.",
-    de: "Ich bin 25 Jahre alt.",
-    options: ["Ich habe 25 Jahre.", "Ich bin 25 Jahre alt.", "Ich wohne 25 Jahre.", "Ich komme 25 Jahre."],
+    id: 14,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
+    tr: "Sen nerelisin?",
+    de: "Woher kommst du?",
+    options: ["Woher kommst du?", "Wo wohnst du?", "Wie alt bist du?", "Wie heißt du?"],
   },
   {
-    tr: "Öğrenciyim.",
-    de: "Ich bin Student.",
-    options: ["Ich bin Student.", "Ich habe Student.", "Ich wohne Student.", "Ich komme Student."],
-  },
-  {
+    id: 15,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
     tr: "Tanıştığımıza memnun oldum.",
     de: "Freut mich, dich kennenzulernen.",
-    options: ["Danke schön.", "Bis bald.", "Freut mich, dich kennenzulernen.", "Guten Morgen."],
+    options: ["Freut mich, dich kennenzulernen.", "Guten Morgen.", "Bis bald.", "Danke schön."],
   },
 ];
 
-const [vocabularyIndex, setVocabularyIndex] = useState(0);
-const [vocabularyLives, setVocabularyLives] = useState(3);
-const [vocabularyCorrectCount, setVocabularyCorrectCount] = useState(0);
-const [vocabularyFinished, setVocabularyFinished] = useState(false);
-const [vocabularyFeedback, setVocabularyFeedback] = useState<"correct" | "wrong" | null>(null);
-const currentVocabularyQuestion = a1VocabularyQuestions[vocabularyIndex];
+const [selectedMasteryThemeId, setSelectedMasteryThemeId] = useState(1);
+const [masteryIndex, setMasteryIndex] = useState(0);
+const [masteryLives, setMasteryLives] = useState(3);
+const [masteryAnswers, setMasteryAnswers] = useState<MasteryQuestion[]>([]);
+const [masteryFinished, setMasteryFinished] = useState(false);
+const [masteryFeedback, setMasteryFeedback] = useState<"correct" | "wrong" | null>(null);
 
-const handleVocabularyAnswer = (answer: string) => {
-  if (!currentVocabularyQuestion || vocabularyFeedback) return;
+const selectedMasteryTheme = masteryThemes.find(
+  (theme) => theme.id === selectedMasteryThemeId
+);
 
-  if (answer === currentVocabularyQuestion.de) {
-    setVocabularyFeedback("correct");
+const selectedMasteryQuestions = masteryQuestions.filter(
+  (question) => question.themeId === selectedMasteryThemeId
+);
+
+const currentMasteryQuestion = selectedMasteryQuestions[masteryIndex];
+
+const getLessonScore = (lessonNumber: number) => {
+  return masteryAnswers.filter(
+    (answer) => answer.lessonNumber === lessonNumber
+  ).length;
+};
+
+const isThemePassed = selectedMasteryTheme
+  ? selectedMasteryTheme.lessons.every((lesson) => getLessonScore(lesson.number) >= 3)
+  : false;
+
+const resetMasteryTest = (themeId = selectedMasteryThemeId) => {
+  setSelectedMasteryThemeId(themeId);
+  setMasteryIndex(0);
+  setMasteryLives(3);
+  setMasteryAnswers([]);
+  setMasteryFinished(false);
+  setMasteryFeedback(null);
+};
+
+const handleMasteryAnswer = (answer: string) => {
+  if (!currentMasteryQuestion || masteryFeedback) return;
+
+  if (answer === currentMasteryQuestion.de) {
+    setMasteryFeedback("correct");
 
     setTimeout(() => {
-      const nextIndex = vocabularyIndex + 1;
+      const nextIndex = masteryIndex + 1;
 
-      setVocabularyCorrectCount((prev) => prev + 1);
-      setVocabularyFeedback(null);
+      setMasteryAnswers((prev) => [...prev, currentMasteryQuestion]);
+      setMasteryFeedback(null);
 
-      if (nextIndex >= a1VocabularyQuestions.length) {
-        setVocabularyFinished(true);
+      if (nextIndex >= selectedMasteryQuestions.length) {
+        setMasteryFinished(true);
       } else {
-        setVocabularyIndex(nextIndex);
+        setMasteryIndex(nextIndex);
       }
     }, 500);
 
     return;
   }
 
-  setVocabularyFeedback("wrong");
+  setMasteryFeedback("wrong");
 
   setTimeout(() => {
-    setVocabularyFeedback(null);
+    setMasteryFeedback(null);
 
-    if (vocabularyLives <= 1) {
-      setVocabularyIndex(0);
-      setVocabularyLives(3);
-      setVocabularyCorrectCount(0);
-      setVocabularyFinished(false);
+    if (masteryLives <= 1) {
+      setMasteryFinished(true);
       return;
     }
 
-    setVocabularyLives((prev) => prev - 1);
+    setMasteryLives((prev) => prev - 1);
   }, 700);
-};
-
-const resetVocabularyGame = () => {
-  setVocabularyIndex(0);
-  setVocabularyLives(3);
-  setVocabularyCorrectCount(0);
-  setVocabularyFinished(false);
-  setVocabularyFeedback(null);
 };
   
   const openedLessonCount = Number(
@@ -3180,193 +3432,291 @@ createPendingOrder({
 {activeDashboardTab === "vocabulary" && (
   <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
     <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 p-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm font-black uppercase tracking-widest text-emerald-700">
-            Kelime Akademisi
-          </p>
+      <div>
+        <p className="text-sm font-black uppercase tracking-widest text-emerald-700">
+          Kelime & Ustalık Testleri
+        </p>
 
-          <h2 className="mt-3 text-3xl font-black text-slate-900">
-            A1 Tema 1: Kendini Tanıtma
-          </h2>
+        <h2 className="mt-3 text-3xl font-black text-slate-900">
+          🏆 A1 Ustalık Yolculuğu
+        </h2>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            Türkçe cümleyi oku, doğru Almanca karşılığını seç. 3 canın var.
-            Tüm soruları bitirince seviye tamamlanır.
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-white px-5 py-4 text-center shadow-sm">
-          <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-            Can
-          </p>
-          <p className="mt-1 text-2xl">
-            {"❤️".repeat(vocabularyLives)}
-            {"🤍".repeat(3 - vocabularyLives)}
-          </p>
-        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+          Her tema 3 dersten oluşur. Ustalık Testi’nde her dersten 5 soru gelir.
+          Bir temayı geçmek için her dersten en az 3 doğru yapmalısın.
+        </p>
       </div>
 
-      {!vocabularyFinished ? (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-black uppercase tracking-widest text-blue-600">
-                Soru {vocabularyIndex + 1} / {a1VocabularyQuestions.length}
-              </p>
+      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {masteryThemes.map((theme) => {
+          const isActive = theme.id === selectedMasteryThemeId;
+          const isUnlocked = theme.id === 1;
 
-              <p className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
-                Doğru: {vocabularyCorrectCount}
-              </p>
-            </div>
+          return (
+            <button
+              key={theme.id}
+              type="button"
+              onClick={() => {
+                if (!isUnlocked) return;
+                resetMasteryTest(theme.id);
+              }}
+              className={`rounded-3xl border p-5 text-left shadow-sm transition ${
+                isActive
+                  ? "border-emerald-300 bg-white ring-4 ring-emerald-100"
+                  : "border-white/70 bg-white/70 hover:bg-white"
+              } ${!isUnlocked ? "cursor-not-allowed opacity-60" : ""}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                    Tema {theme.id}
+                  </p>
+                  <h3 className="mt-2 text-lg font-black text-slate-900">
+                    {theme.title}
+                  </h3>
+                  <p className="mt-1 text-xs font-bold text-slate-500">
+                    {theme.germanTitle}
+                  </p>
+                </div>
 
-            <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all"
-                style={{
-                  width: `${((vocabularyIndex + 1) / a1VocabularyQuestions.length) * 100}%`,
-                }}
-              />
-            </div>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+                  {isUnlocked ? "Açık" : "Kilitli"}
+                </span>
+              </div>
 
-            <div className="mt-8 rounded-3xl border border-slate-100 bg-slate-50 p-6 text-center">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-                Türkçe
-              </p>
+              <div className="mt-4 space-y-2">
+                {theme.lessons.map((lesson) => (
+                  <div
+                    key={lesson.number}
+                    className="rounded-2xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600"
+                  >
+                    Ders {lesson.number}: {lesson.title}
+                  </div>
+                ))}
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
-              <h3 className="mt-3 text-2xl font-black text-slate-900">
-                {currentVocabularyQuestion.tr}
+      {selectedMasteryTheme && (
+        <div className="mt-8 rounded-[2rem] bg-white p-6 shadow-sm">
+          {!masteryFinished ? (
+            <>
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-purple-600">
+                    🏆 Ustalık Testi
+                  </p>
+
+                  <h3 className="mt-2 text-2xl font-black text-slate-900">
+                    Tema {selectedMasteryTheme.id}: {selectedMasteryTheme.title}
+                  </h3>
+
+                  <p className="mt-2 text-sm text-slate-500">
+                    15 soru · 3 ders · Her dersten en az 3 doğru
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 px-5 py-4 text-center">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                    Can
+                  </p>
+                  <p className="mt-1 text-2xl">
+                    {"❤️".repeat(masteryLives)}
+                    {"🤍".repeat(3 - masteryLives)}
+                  </p>
+                </div>
+              </div>
+
+              {currentMasteryQuestion ? (
+                <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50 p-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs font-black uppercase tracking-widest text-blue-600">
+                        Soru {masteryIndex + 1} / {selectedMasteryQuestions.length}
+                      </p>
+
+                      <p className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-600">
+                        Ders {currentMasteryQuestion.lessonNumber}
+                      </p>
+                    </div>
+
+                    <div className="mt-5 h-3 overflow-hidden rounded-full bg-white">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all"
+                        style={{
+                          width: `${((masteryIndex + 1) / selectedMasteryQuestions.length) * 100}%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="mt-8 rounded-3xl bg-white p-6 text-center shadow-sm">
+                      <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                        Türkçe
+                      </p>
+
+                      <h3 className="mt-3 text-2xl font-black text-slate-900">
+                        {currentMasteryQuestion.tr}
+                      </h3>
+
+                      <p className="mt-3 text-sm font-bold text-slate-500">
+                        {currentMasteryQuestion.lessonTitle}
+                      </p>
+                    </div>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      {currentMasteryQuestion.options.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => handleMasteryAnswer(option)}
+                          disabled={!!masteryFeedback}
+                          className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-sm font-black text-slate-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-80"
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+
+                    {masteryFeedback === "correct" && (
+                      <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-black text-emerald-700">
+                        ✅ Harika! Doğru cevap.
+                      </div>
+                    )}
+
+                    {masteryFeedback === "wrong" && (
+                      <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-black text-red-700">
+                        ❌ Bu konu Ders {currentMasteryQuestion.lessonNumber} ile ilgili.
+                        Dersi tekrar izleyip yeniden denemeni öneriyoruz.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                      Ders bazlı başarı
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      {selectedMasteryTheme.lessons.map((lesson) => {
+                        const score = getLessonScore(lesson.number);
+
+                        return (
+                          <div
+                            key={lesson.number}
+                            className="rounded-2xl bg-slate-50 p-4"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-black text-slate-900">
+                                  Ders {lesson.number}
+                                </p>
+                                <p className="mt-1 text-xs font-bold text-slate-500">
+                                  {lesson.title}
+                                </p>
+                              </div>
+
+                              <p className="text-sm font-black text-slate-900">
+                                {score}/5
+                              </p>
+                            </div>
+
+                            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                              <div
+                                className="h-full rounded-full bg-emerald-500"
+                                style={{ width: `${(score / 5) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => resetMasteryTest(selectedMasteryTheme.id)}
+                      className="mt-6 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-50"
+                    >
+                      🔄 Testi Sıfırla
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-6 rounded-3xl bg-slate-50 p-8 text-center">
+                  <p className="text-lg font-black text-slate-900">
+                    Bu tema için sorular hazırlanıyor.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="rounded-3xl bg-white p-8 text-center">
+              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-emerald-50 text-5xl">
+                {isThemePassed ? "🎉" : "🔍"}
+              </div>
+
+              <h3 className="mt-5 text-3xl font-black text-slate-900">
+                {isThemePassed ? "Ustalık Testi Başarılı!" : "Tekrar Çalışma Zamanı"}
               </h3>
 
-              <p className="mt-3 text-sm text-slate-500">
-                Doğru Almanca karşılığı seç.
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {isThemePassed
+                  ? `Tema ${selectedMasteryTheme.id} başarıyla tamamlandı. Bir sonraki tema yakında açılacak.`
+                  : "Bazı derslerde eksiklerin görünüyor. En az 3/5 başarı gereken dersleri tekrar izlemeni öneriyoruz."}
               </p>
-            </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {currentVocabularyQuestion.options.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => handleVocabularyAnswer(option)}
-                  disabled={!!vocabularyFeedback}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-sm font-black text-slate-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-80"
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
+              <div className="mx-auto mt-6 grid max-w-3xl gap-3 md:grid-cols-3">
+                {selectedMasteryTheme.lessons.map((lesson) => {
+                  const score = getLessonScore(lesson.number);
+                  const passed = score >= 3;
 
-            {vocabularyFeedback === "correct" && (
-              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-black text-emerald-700">
-                ✅ Harika! Doğru cevap.
-              </div>
-            )}
+                  return (
+                    <div
+                      key={lesson.number}
+                      className={`rounded-2xl p-4 ${
+                        passed ? "bg-emerald-50" : "bg-red-50"
+                      }`}
+                    >
+                      <p
+                        className={`text-xs font-black uppercase tracking-widest ${
+                          passed ? "text-emerald-700" : "text-red-700"
+                        }`}
+                      >
+                        Ders {lesson.number}
+                      </p>
 
-            {vocabularyFeedback === "wrong" && (
-              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-black text-red-700">
-                ❌ Yanlış cevap. Bir can azalıyor.
-              </div>
-            )}
-          </div>
+                      <p className="mt-1 text-2xl font-black text-slate-900">
+                        {score}/5
+                      </p>
 
-          <div className="rounded-3xl bg-white p-6 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-widest text-purple-600">
-              Bugünkü hedef
-            </p>
+                      <p className="mt-1 text-xs font-bold text-slate-500">
+                        {lesson.title}
+                      </p>
 
-            <h3 className="mt-3 text-2xl font-black text-slate-900">
-              10 kelime pratiği
-            </h3>
-
-            <div className="mt-5 space-y-3">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-                  İlerleme
-                </p>
-                <p className="mt-1 text-xl font-black text-slate-900">
-                  {vocabularyIndex + 1} / {a1VocabularyQuestions.length}
-                </p>
+                      {!passed && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveDashboardTab("lessons")}
+                          className="mt-4 w-full rounded-xl bg-white px-3 py-2 text-xs font-black text-red-700 shadow-sm hover:bg-red-100"
+                        >
+                          📺 Dersi Tekrar İzle
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-                  Kazanım
-                </p>
-                <p className="mt-1 text-xl font-black text-slate-900">
-                  Kendini tanıtma cümleleri
-                </p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-                  Sistem
-                </p>
-                <p className="mt-1 text-xl font-black text-slate-900">
-                  3 canlı mini oyun
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => resetMasteryTest(selectedMasteryTheme.id)}
+                className="mt-8 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white hover:bg-slate-800"
+              >
+                Yeniden Dene
+              </button>
             </div>
-
-            <button
-              type="button"
-              onClick={resetVocabularyGame}
-              className="mt-6 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-50"
-            >
-              🔄 Oyunu Sıfırla
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-6 rounded-3xl bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-emerald-50 text-5xl">
-            🎉
-          </div>
-
-          <h3 className="mt-5 text-3xl font-black text-slate-900">
-            Tebrikler!
-          </h3>
-
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            A1 Tema 1 kelime pratiğini başarıyla tamamladın.
-          </p>
-
-          <div className="mx-auto mt-6 grid max-w-xl gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl bg-emerald-50 p-4">
-              <p className="text-xs font-black uppercase tracking-widest text-emerald-700">
-                Doğru
-              </p>
-              <p className="mt-1 text-2xl font-black text-emerald-900">
-                {vocabularyCorrectCount}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-blue-50 p-4">
-              <p className="text-xs font-black uppercase tracking-widest text-blue-700">
-                Seviye
-              </p>
-              <p className="mt-1 text-2xl font-black text-blue-900">
-                A1
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-purple-50 p-4">
-              <p className="text-xs font-black uppercase tracking-widest text-purple-700">
-                Tema
-              </p>
-              <p className="mt-1 text-2xl font-black text-purple-900">
-                1
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={resetVocabularyGame}
-            className="mt-8 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white hover:bg-slate-800"
-          >
-            Tekrar Oyna
-          </button>
+          )}
         </div>
       )}
     </div>
