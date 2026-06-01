@@ -278,14 +278,15 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
         {
           name: "Başlangıç",
           slug: `${starterLevel.toLowerCase()}-starter`,
-          price: "₺990",
+          price: "Ücretsiz",
           badge: `${starterLevel} Başlangıç`,
           highlight: false,
           features: [
-            "2 TELC dijital deneme",
-            "PDF materyal merkezi",
-            "Temel speaking görevleri",
-            "Sınav formatını tanıma",
+            "A1 Temalaları",
+            "18 ders erişimi",
+            "Ustalık Testleri",
+            "Çalışma sayfaları",
+            "Temel TELC hazırlık alanı"
           ],
         },
         {
@@ -354,7 +355,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           >
             <p className="text-sm font-black">
               {plan.name === "Başlangıç"
-                ? "Dijital sınava ilk adım"
+                ? "A1 dijital başlangıç ücretsiz"
                 : plan.name === "Gelişim"
                 ? "Video ders + deneme sistemi"
                 : "Tam dijital hazırlık"}
@@ -401,20 +402,24 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           </ul>
 
           <a
-  href="/register"
+  href={
+    plan.name === "Başlangıç"
+      ? `/register?level=${starterLevel}&package=starter&free=true`
+      : "/register"
+  }
   onClick={() => {
     localStorage.setItem("selected_product_slug", plan.slug);
     localStorage.setItem("selectedProductSlug", plan.slug);
     localStorage.setItem("pending_payment_slug", plan.slug);
   }}
-            className={`mt-8 inline-flex w-full justify-center rounded-full px-6 py-4 text-sm font-black transition ${
-              plan.highlight
-                ? "bg-blue-600 text-white hover:bg-blue-500"
-                : "bg-slate-950 text-white hover:bg-slate-800"
-            }`}
-          >
-            Paketi Seç
-          </a>
+  className={`mt-8 inline-flex w-full justify-center rounded-full px-6 py-4 text-sm font-black transition ${
+    plan.highlight
+      ? "bg-blue-600 text-white hover:bg-blue-500"
+      : "bg-slate-950 text-white hover:bg-slate-800"
+  }`}
+>
+  {plan.name === "Başlangıç" ? "Ücretsiz Başla" : "Paketi Seç"}
+</a>
         </div>
       ))}
     </div>
