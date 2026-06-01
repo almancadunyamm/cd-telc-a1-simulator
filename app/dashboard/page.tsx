@@ -3521,10 +3521,44 @@ createPendingOrder({
     </h3>
 
     <p className="mt-2 text-sm leading-6 text-slate-600">
-      Bu seviyedeki Ustalık Testleri şu anda hesabında açık değil.
-      {selectedMasteryLevel} dijital paketine geçerek bu seviyedeki tema
-      testlerini ve öğrenme yolculuğunu başlatabilirsin.
-    </p>
+  Bu seviyedeki Ustalık Testleri şu anda hesabında açık değil.
+  {selectedMasteryLevel} dijital paketine geçerek bu seviyedeki tema
+  testlerini ve öğrenme yolculuğunu başlatabilirsin.
+</p>
+
+<div className="mt-4 flex flex-col gap-2 sm:flex-row">
+  <button
+    type="button"
+    onClick={() => {
+      setUpsellPackage("practice");
+      setShowUpsell(true);
+    }}
+    className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
+  >
+    🚀 Paketi Yükselt
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      const slug = `live-${selectedMasteryLevel.toLowerCase()}`;
+
+      const link = getShopierLink(slug);
+
+      if (!link) {
+        alert(
+          `${selectedMasteryLevel} canlı kurs Shopier linki henüz eklenmemiş.`
+        );
+        return;
+      }
+
+      window.open(link, "_blank");
+    }}
+    className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
+  >
+    🎓 {selectedMasteryLevel} Canlı Kursunu İncele
+  </button>
+</div>
   </div>
 )}
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -3900,37 +3934,6 @@ const progressPercent = getThemeProgressPercent(theme.id);
         <p className="mt-2 text-sm leading-6 text-slate-600">
           Ders PDF’leri, çalışma sayfaları ve premium materyalleri tek yerden
           görüntüleyebilirsiniz.
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-  <button
-    type="button"
-    onClick={() => {
-      setUpsellPackage("practice");
-      setShowUpsell(true);
-    }}
-    className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
-  >
-    🚀 Paketi Yükselt
-  </button>
-
-  <button
-    type="button"
-    onClick={() => {
-      const slug = `live-${selectedMasteryLevel.toLowerCase()}`;
-
-      const link = getShopierLink(slug);
-
-      if (!link) {
-        alert(`${selectedMasteryLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
-        return;
-      }
-
-      window.open(link, "_blank");
-    }}
-    className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
-  >
-    🎓 {selectedMasteryLevel} Canlı Kursunu İncele
-  </button>
-</div>
         </p>
         
       </div>
