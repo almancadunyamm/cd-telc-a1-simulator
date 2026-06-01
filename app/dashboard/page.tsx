@@ -2726,31 +2726,30 @@ window.open(worksheet.url, "_blank");
       .match(/^(\d+)/)?.[1] || 999
   );
 
+  const isStarterLesson =
+    (lesson.packageType || "starter") === "starter";
+
+  if (!isStarterLesson) return false;
+
   // Canlı kurs öğrencisi:
-  // Ortak dijital başlangıç havuzundaki 36 resmi dersi görür.
+  // Ortak dijital başlangıç havuzundaki resmi dersleri görür.
+  // Ayrıca kendi sınıfına ait canlı başlangıç kayıtlarını da görebilir.
   if (hasAnyLiveCourseOrder) {
     return (
-      isDigitalPackage &&
-      (lesson.packageType || "starter") === "starter"
+      isDigitalPackage ||
+      (isLiveClassLesson && hasClassAccess)
     );
   }
 
   // Dijital Başlangıç öğrencisi:
-  // Sadece ilk 18 dersi görür.
+  // Sadece ilk 18 resmi başlangıç dersini görür.
   if (effectivePackageType === "starter") {
-    return (
-      isDigitalPackage &&
-      (lesson.packageType || "starter") === "starter" &&
-      lessonNumber <= 18
-    );
+    return isDigitalPackage && lessonNumber <= 18;
   }
 
   // Dijital Gelişim / Zirve öğrencisi:
   // Başlangıç havuzundaki tüm resmi dersleri görür.
-  return (
-    isDigitalPackage &&
-    (lesson.packageType || "starter") === "starter"
-  );
+  return isDigitalPackage;
 }
 
   if (packageGroup === "practice") {
