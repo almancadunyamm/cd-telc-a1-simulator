@@ -3900,8 +3900,7 @@ const progressPercent = getThemeProgressPercent(theme.id);
         <p className="mt-2 text-sm leading-6 text-slate-600">
           Ders PDF’leri, çalışma sayfaları ve premium materyalleri tek yerden
           görüntüleyebilirsiniz.
-        </p>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
   <button
     type="button"
     onClick={() => {
@@ -3932,6 +3931,8 @@ const progressPercent = getThemeProgressPercent(theme.id);
     🎓 {selectedMasteryLevel} Canlı Kursunu İncele
   </button>
 </div>
+        </p>
+        
       </div>
 
       <div className="flex flex-wrap gap-2">
