@@ -2669,7 +2669,7 @@ window.open(worksheet.url, "_blank");
     </p>
   </div>
 )}
-  {selectedLevelHasAccess && !isFutureLiveCourseLevel && (
+  {activeAccessLevels.includes(selectedLevel) && !isFutureLiveCourseLevel && (
   <div className="grid gap-4">
 
     {(["starter", "practice", "master"] as PackageType[])
@@ -2849,7 +2849,7 @@ const packageIsOpen = canAccessLessonPackage(
           })}
         </div>
 
-        {selectedLevelHasAccess && !packageIsOpen && (
+        {activeAccessLevels.includes(selectedLevel) && !packageIsOpen && (
           <button
             type="button"
             onClick={() => {
@@ -3956,13 +3956,17 @@ const progressPercent = getThemeProgressPercent(theme.id);
     </div>
   </div>
 )}
-    {selectedLevelHasAccess && !isFutureLiveCourseLevel && pdfMaterials.length === 0 && (
+    {activeAccessLevels.includes(selectedLevel) &&
+  !isFutureLiveCourseLevel &&
+  pdfMaterials.length === 0 && (
       <div className="mt-6 rounded-3xl bg-slate-50 p-6 text-sm text-slate-500">
         Bu seviye için henüz PDF materyali eklenmemiş.
       </div>
     )}
 
-    {selectedLevelHasAccess && !isFutureLiveCourseLevel && pdfMaterials.length > 0 && (
+    {activeAccessLevels.includes(selectedLevel) &&
+  !isFutureLiveCourseLevel &&
+  pdfMaterials.length > 0 && (
   <div className="mt-6 grid gap-4 lg:grid-cols-2">
     {(["starter", "practice", "master"] as PackageType[])
       .filter((packageGroup) => {
@@ -4037,8 +4041,8 @@ const progressPercent = getThemeProgressPercent(theme.id);
             <div className="flex-1 space-y-3 overflow-y-auto pr-2">
             {sortedGroupMaterials.map((material) => {
                 const canOpen =
-                  selectedLevelHasAccess &&
-                  canAccessLessonPackage(
+  activeAccessLevels.includes(selectedLevel) &&
+  canAccessLessonPackage(
                     effectivePackageType,
                     material.packageType
                   ) &&
