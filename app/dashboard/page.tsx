@@ -2699,14 +2699,18 @@ window.open(worksheet.url, "_blank");
   return true;
 })
   .map((packageGroup) => {
-    console.log(
-  "LESSONS",
-  selectedLevelLessons.map((l) => ({
+    console.log("LESSON DEBUG", {
+  selectedLevel,
+  hasAnyLiveCourseOrder,
+  effectivePackageType,
+  packageGroup,
+  selectedLevelLessons: selectedLevelLessons.map((l) => ({
     title: l.title,
     packageType: l.packageType,
     contentType: l.contentType,
-  }))
-);
+    classId: l.classId,
+  })),
+});
     const groupLessons = selectedLevelLessons.filter((lesson) => {
   const isDigitalPackage = lesson.contentType === "digitalPackage";
   const isLiveClassLesson = lesson.contentType === "liveClass";
