@@ -1509,8 +1509,7 @@ lessons.forEach((lesson) => {
     if (hasAnyLiveCourseOrder) {
   return (
     (isLiveLesson && hasClassAccess) ||
-    (isDigitalLesson &&
-      ["practice", "master"].includes(lesson.packageType || "starter"))
+    isDigitalLesson
   );
 }
 
