@@ -2778,10 +2778,10 @@ const sortedGroupLessons = [...groupLessons].sort((a, b) => {
   return aNum - bNum;
 });
 
-const packageIsOpen = canAccessLessonPackage(
-  effectivePackageType,
-  packageGroup
-);
+const packageIsOpen =
+  hasAnyLiveCourseOrder && packageGroup === "starter"
+    ? true
+    : canAccessLessonPackage(effectivePackageType, packageGroup);
 
     return (
       <div
@@ -2812,13 +2812,16 @@ const packageIsOpen = canAccessLessonPackage(
 
         <div className="flex-1 space-y-3 overflow-y-auto pr-2">
           {sortedGroupLessons.map((lesson, index) => {
-            const hasPackageAccess = canAccessLessonPackage(
-              effectivePackageType,
-              lesson.packageType || "starter"
-            );
+            const hasPackageAccess =
+  hasAnyLiveCourseOrder && packageGroup === "starter"
+    ? true
+    : canAccessLessonPackage(
+        effectivePackageType,
+        lesson.packageType || "starter"
+      );
 
-            const isOpen =
-              !!effectivePackageType && hasPackageAccess && !accessExpired;
+const isOpen =
+  !!effectivePackageType && hasPackageAccess && !accessExpired;
 
             return (
               <button
@@ -4127,10 +4130,10 @@ const progressPercent = getThemeProgressPercent(theme.id);
 
         if (groupMaterials.length === 0) return null;
 
-        const packageIsOpen = canAccessLessonPackage(
-          effectivePackageType,
-          packageGroup
-        );
+        const packageIsOpen =
+  hasAnyLiveCourseOrder && packageGroup === "starter"
+    ? true
+    : canAccessLessonPackage(effectivePackageType, packageGroup);
 
         return (
           <div
