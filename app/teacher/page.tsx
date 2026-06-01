@@ -616,7 +616,15 @@ setWorksheets(
 
     <select
       value={contentType}
-      onChange={(e) => setContentType(e.target.value as ContentType)}
+      onChange={(e) => {
+  const newContentType = e.target.value as ContentType;
+
+  setContentType(newContentType);
+
+  if (newContentType === "liveClass") {
+    setPackageType("practice");
+  }
+}}
       className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm"
     >
       <option value="liveClass">Canlı sınıf dersi</option>
@@ -627,21 +635,14 @@ setWorksheets(
   value={packageType}
   onChange={(e) => {
     const newPackageType = e.target.value as PackageType;
-
     setPackageType(newPackageType);
-
-    if (
-      newPackageType === "practice" ||
-      newPackageType === "master"
-    ) {
-      setContentType("digitalPackage");
-    }
   }}
 >
-  <option value="starter">Başlangıç paket dersi</option>
-
-  {contentType === "digitalPackage" && (
+  {contentType === "liveClass" ? (
+    <option value="practice">Gelişim paket dersi</option>
+  ) : (
     <>
+      <option value="starter">Başlangıç paket dersi</option>
       <option value="practice">Gelişim paket dersi</option>
       <option value="master">Zirve paket dersi</option>
     </>
