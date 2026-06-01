@@ -3714,6 +3714,33 @@ createPendingOrder({
                 })}
               </div>
 
+              {isThemePassed && selectedMasteryTheme.id === 6 && (
+  <div className="mx-auto mt-8 max-w-3xl rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-6 text-left shadow-sm">
+    <p className="text-xs font-black uppercase tracking-widest text-amber-700">
+      🎉 Başlangıç Paketi Tamamlandı
+    </p>
+
+    <h3 className="mt-3 text-2xl font-black text-slate-900">
+      Almanca yolculuğuna Gelişim Paketi ile devam et
+    </h3>
+
+    <p className="mt-3 text-sm leading-6 text-slate-600">
+      İlk 6 temayı başarıyla tamamladın. Tema 7’den itibaren Ev & Yaşam,
+      Boş Zaman, Ulaşım, Sağlık, Tatil ve TELC hazırlık konuları seni bekliyor.
+    </p>
+
+    <button
+      type="button"
+      onClick={() => {
+        setUpsellPackage("practice");
+        setShowUpsell(true);
+      }}
+      className="mt-5 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white hover:bg-slate-800"
+    >
+      🚀 Gelişim Paketine Geç
+    </button>
+  </div>
+)}
               <button
                 type="button"
                 onClick={() => resetMasteryTest(selectedMasteryTheme.id)}
