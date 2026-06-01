@@ -3701,7 +3701,7 @@ const progressPercent = getThemeProgressPercent(theme.id);
 
               {currentMasteryQuestion ? (
                 <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-                  <div className="rounded-3xl border border-slate-100 bg-slate-50 p-6">
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50 p-4 sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs font-black uppercase tracking-widest text-blue-600">
                         Soru {masteryIndex + 1} / {selectedMasteryQuestions.length}
@@ -3721,14 +3721,14 @@ const progressPercent = getThemeProgressPercent(theme.id);
                       />
                     </div>
 
-                    <div className="mt-8 rounded-3xl bg-white p-6 text-center shadow-sm">
+                    <div className="mt-6 rounded-3xl bg-white p-4 text-center shadow-sm sm:mt-8 sm:p-6">
                       <p className="text-xs font-black uppercase tracking-widest text-slate-400">
                         Türkçe
                       </p>
 
-                      <h3 className="mt-3 text-2xl font-black text-slate-900">
-                        {currentMasteryQuestion.tr}
-                      </h3>
+                      <h3 className="mt-3 text-xl font-black leading-tight text-slate-900 sm:text-2xl">
+  {currentMasteryQuestion.tr}
+</h3>
 
                       <p className="mt-3 text-sm font-bold text-slate-500">
                         {currentMasteryQuestion.lessonTitle}
@@ -3742,7 +3742,7 @@ const progressPercent = getThemeProgressPercent(theme.id);
                           type="button"
                           onClick={() => handleMasteryAnswer(option)}
                           disabled={!!masteryFeedback}
-                          className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-sm font-black text-slate-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-80"
+                          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-black text-slate-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-80 sm:py-4"
                         >
                           {option}
                         </button>
