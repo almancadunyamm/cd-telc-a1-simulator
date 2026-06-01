@@ -3486,7 +3486,7 @@ createPendingOrder({
       : "bg-amber-100 text-amber-700"
   }`}
 >
-  {isUnlocked ? "Başlangıçta Açık" : "Gelişim Paketi"}
+  {isUnlocked ? "Başlangıç Paketi" : "Gelişim Paketi"}
 </span>
               </div>
 
