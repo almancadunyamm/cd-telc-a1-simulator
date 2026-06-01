@@ -1507,9 +1507,12 @@ lessons.forEach((lesson) => {
       : false;
 
     if (hasAnyLiveCourseOrder) {
+  const isDigitalStarterLesson =
+    isDigitalLesson && (lesson.packageType || "starter") === "starter";
+
   return (
     (isLiveLesson && hasClassAccess) ||
-    isDigitalLesson
+    isDigitalStarterLesson
   );
 }
 
