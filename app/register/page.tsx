@@ -120,11 +120,12 @@ if (insertError) {
   return;
 }
 
-    const selectedSlug =
-      localStorage.getItem("selected_product_slug") ||
-      localStorage.getItem("selectedProductSlug") ||
-      localStorage.getItem("pending_payment_slug") ||
-      "";
+    const selectedSlug = isFreeStarter
+  ? `${freeStarterLevel.toLowerCase()}-starter`
+  : localStorage.getItem("selected_product_slug") ||
+    localStorage.getItem("selectedProductSlug") ||
+    localStorage.getItem("pending_payment_slug") ||
+    "";
 
     localStorage.setItem(
       "mock_logged_user",
@@ -153,13 +154,13 @@ if (selectedSlug) {
       : selectedSlug.toLowerCase().includes("a2")
       ? "A2"
       : "A1";
-
-  await supabase.from("orders").insert({
-    username: normalizedEmail,
-    product_slug: selectedSlug,
-    level,
-    status: "pending_payment",
-  });
+await supabase.from("orders").insert({
+  username: normalizedEmail,
+  product_slug: selectedSlug,
+  level,
+  status: isFreeStarter ? "completed" : "pending_payment",
+  is_activated: isFreeStarter ? true : false,
+});
 }
 
     if (isFreeStarter) {
