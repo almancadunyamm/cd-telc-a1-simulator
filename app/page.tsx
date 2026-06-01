@@ -225,12 +225,21 @@ export default function HomePage() {
         ))}
       </div>
 
-      <a
-        href="/digital-simulation"
-        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:scale-[1.02] hover:bg-blue-700"
-      >
-        Dijital Sistemi İncele
-      </a>
+      <div className="mt-6 space-y-3">
+  <a
+    href="/register?level=A1&package=starter&free=true"
+    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:scale-[1.02] hover:bg-blue-700"
+  >
+    🎁 Ücretsiz Başlangıca Gir
+  </a>
+
+  <a
+    href="/digital-simulation"
+    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-blue-200 bg-white/80 px-5 py-3 text-sm font-black text-blue-700 transition hover:bg-blue-50"
+  >
+    Dijital Sistemi Detaylı İncele
+  </a>
+</div>
     </div>
   </div>
 
