@@ -903,6 +903,7 @@ const masteryQuestions: MasteryQuestion[] = [
   },
 ];
 
+const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
 const [selectedMasteryThemeId, setSelectedMasteryThemeId] = useState(1);
 const [masteryIndex, setMasteryIndex] = useState(0);
 const [masteryLives, setMasteryLives] = useState(3);
@@ -3475,6 +3476,57 @@ createPendingOrder({
           Her tema 3 dersten oluşur. Ustalık Testi’nde her dersten 5 soru gelir.
           Bir temayı geçmek için her dersten en az 3 doğru yapmalısın.
         </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+  {(["A1", "A2", "B1"] as const).map((levelItem) => {
+    const hasAccess = activeAccessLevels.includes(levelItem);
+    const isActive = selectedMasteryLevel === levelItem;
+
+    return (
+      <button
+        key={levelItem}
+        type="button"
+        onClick={() => {
+          setSelectedMasteryLevel(levelItem);
+
+          if (!hasAccess) {
+            return;
+          }
+
+          setSelectedMasteryThemeId(1);
+          resetMasteryTest(1);
+        }}
+        className={`rounded-full px-4 py-2 text-sm font-black transition ${
+          hasAccess
+            ? isActive
+              ? "bg-emerald-600 text-white shadow-lg"
+              : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+            : isActive
+            ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
+            : "bg-slate-100 text-slate-400"
+        }`}
+      >
+        {hasAccess ? "✓" : "🔒"} {levelItem}
+      </button>
+    );
+  })}
+</div>
+{!activeAccessLevels.includes(selectedMasteryLevel) && (
+  <div className="mt-5 rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 shadow-sm">
+    <p className="text-xs font-black uppercase tracking-widest text-amber-700">
+      Premium seviye kilitli
+    </p>
+
+    <h3 className="mt-2 text-xl font-black text-slate-900">
+      {selectedMasteryLevel} Ustalık Testleri seni bekliyor
+    </h3>
+
+    <p className="mt-2 text-sm leading-6 text-slate-600">
+      Bu seviyedeki Ustalık Testleri şu anda hesabında açık değil.
+      {selectedMasteryLevel} dijital paketine geçerek bu seviyedeki tema
+      testlerini ve öğrenme yolculuğunu başlatabilirsin.
+    </p>
+  </div>
+)}
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
   <button
     type="button"
@@ -3505,6 +3557,7 @@ createPendingOrder({
 </div>
       </div>
 
+      {activeAccessLevels.includes(selectedMasteryLevel) && (
       <div id="mastery-theme-cards" className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {masteryThemes.map((theme) => {
           const isActive = theme.id === selectedMasteryThemeId;
@@ -3577,8 +3630,8 @@ const progressPercent = getThemeProgressPercent(theme.id);
           );
         })}
       </div>
-
-      {selectedMasteryTheme && (
+)}
+      {activeAccessLevels.includes(selectedMasteryLevel) && selectedMasteryTheme && (
   <div id="mastery-test-area" className="mt-8 scroll-mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
           {!masteryFinished ? (
             <>
