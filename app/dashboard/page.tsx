@@ -985,7 +985,7 @@ const handleMasteryAnswer = (answer: string) => {
 } else {
   setMasteryIndex(nextIndex);
 }
-    }, 500);
+    }, 1200);
 
     return;
   }
@@ -1001,7 +1001,7 @@ const handleMasteryAnswer = (answer: string) => {
     }
 
     setMasteryLives((prev) => prev - 1);
-  }, 700);
+  }, 1800);
 };
   
   const openedLessonCount = Number(
@@ -2675,6 +2675,13 @@ window.open(worksheet.url, "_blank");
 
     {(["starter", "practice", "master"] as PackageType[])
   .filter((packageGroup) => {
+  // Canlı kurs öğrencisi:
+  // Başlangıç resmi dersleri + Gelişim canlı ders kayıtları görünür.
+  // Zirve şimdilik görünmez.
+  if (hasAnyLiveCourseOrder) {
+    return packageGroup === "starter" || packageGroup === "practice";
+  }
+
   const currentValue = getPackageValue(effectivePackageType);
 
   if (currentValue <= 1) {
@@ -2709,19 +2716,38 @@ window.open(worksheet.url, "_blank");
     : false;
 
   if (packageGroup === "starter") {
-    if (hasAnyLiveCourseOrder) {
-      return (
-        isLiveClassLesson &&
-        hasClassAccess &&
-        (lesson.packageType || "starter") === "starter"
-      );
-    }
+  const lessonNumber = Number(
+    String(lesson.title)
+      .trim()
+      .match(/^(\d+)/)?.[1] || 999
+  );
 
+  // Canlı kurs öğrencisi:
+  // Ortak dijital başlangıç havuzundaki 36 resmi dersi görür.
+  if (hasAnyLiveCourseOrder) {
     return (
       isDigitalPackage &&
       (lesson.packageType || "starter") === "starter"
     );
   }
+
+  // Dijital Başlangıç öğrencisi:
+  // Sadece ilk 18 dersi görür.
+  if (effectivePackageType === "starter") {
+    return (
+      isDigitalPackage &&
+      (lesson.packageType || "starter") === "starter" &&
+      lessonNumber <= 18
+    );
+  }
+
+  // Dijital Gelişim / Zirve öğrencisi:
+  // Başlangıç havuzundaki tüm resmi dersleri görür.
+  return (
+    isDigitalPackage &&
+    (lesson.packageType || "starter") === "starter"
+  );
+}
 
   if (packageGroup === "practice") {
     return (
