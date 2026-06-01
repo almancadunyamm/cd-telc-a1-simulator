@@ -63,10 +63,12 @@ export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+const freeStarterLevel = (searchParams.get("level") || "").toUpperCase();
+
 const isFreeStarter =
   searchParams.get("free") === "true" &&
   searchParams.get("package") === "starter" &&
-  searchParams.get("level") === "A1";
+  ["A1", "A2", "B1"].includes(freeStarterLevel);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

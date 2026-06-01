@@ -403,10 +403,10 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
 
           <a
   href={
-    plan.name === "Başlangıç"
-      ? `/register?level=${starterLevel}&package=starter&free=true`
-      : "/register"
-  }
+  plan.name === "Başlangıç"
+    ? `/register?level=${starterLevel}&package=starter&free=true`
+    : "/register"
+}
   onClick={() => {
     localStorage.setItem("selected_product_slug", plan.slug);
     localStorage.setItem("selectedProductSlug", plan.slug);
