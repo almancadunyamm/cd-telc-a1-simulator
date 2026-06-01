@@ -3528,32 +3528,36 @@ createPendingOrder({
   </div>
 )}
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-  <button
-    type="button"
-    onClick={() => {
-      resetMasteryTest(selectedMasteryThemeId);
-      setTimeout(() => {
-        document
-          .getElementById("mastery-test-area")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-    }}
-    className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-lg shadow-slate-200 hover:bg-slate-800"
-  >
-    🏆 Hemen Ustalık Testine Başla
-  </button>
+ {activeAccessLevels.includes(selectedMasteryLevel) && (
+  <>
+    <button
+      type="button"
+      onClick={() => {
+        resetMasteryTest(selectedMasteryThemeId);
+        setTimeout(() => {
+          document
+            .getElementById("mastery-test-area")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }}
+      className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-lg shadow-slate-200 hover:bg-slate-800"
+    >
+      🏆 Hemen Ustalık Testine Başla
+    </button>
 
-  <button
-    type="button"
-    onClick={() => {
-      document
-        .getElementById("mastery-theme-cards")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }}
-    className="rounded-2xl border border-emerald-200 bg-white px-6 py-3 text-sm font-black text-emerald-700 hover:bg-emerald-50"
-  >
-    📚 Temaları İncele
-  </button>
+    <button
+      type="button"
+      onClick={() => {
+        document
+          .getElementById("mastery-theme-cards")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }}
+      className="rounded-2xl border border-emerald-200 bg-white px-6 py-3 text-sm font-black text-emerald-700 hover:bg-emerald-50"
+    >
+      📚 Temaları İncele
+    </button>
+  </>
+)}
 </div>
       </div>
 
@@ -3897,6 +3901,37 @@ const progressPercent = getThemeProgressPercent(theme.id);
           Ders PDF’leri, çalışma sayfaları ve premium materyalleri tek yerden
           görüntüleyebilirsiniz.
         </p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+  <button
+    type="button"
+    onClick={() => {
+      setUpsellPackage("practice");
+      setShowUpsell(true);
+    }}
+    className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
+  >
+    🚀 Paketi Yükselt
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      const slug = `live-${selectedMasteryLevel.toLowerCase()}`;
+
+      const link = getShopierLink(slug);
+
+      if (!link) {
+        alert(`${selectedMasteryLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
+        return;
+      }
+
+      window.open(link, "_blank");
+    }}
+    className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
+  >
+    🎓 {selectedMasteryLevel} Canlı Kursunu İncele
+  </button>
+</div>
       </div>
 
       <div className="flex flex-wrap gap-2">
