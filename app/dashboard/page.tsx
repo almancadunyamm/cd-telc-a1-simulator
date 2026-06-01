@@ -2732,13 +2732,14 @@ window.open(worksheet.url, "_blank");
   if (!isStarterLesson) return false;
 
   // Canlı kurs öğrencisi:
-  // Ortak dijital başlangıç havuzundaki resmi dersleri görür.
-  // Ayrıca kendi sınıfına ait canlı başlangıç kayıtlarını da görebilir.
+  // 1) Ortak dijital başlangıç havuzundaki tüm resmi dersleri görür.
+  // 2) Varsa kendi canlı sınıfına yüklenen başlangıç kayıtlarını da görür.
   if (hasAnyLiveCourseOrder) {
-    return (
-      isDigitalPackage ||
-      (isLiveClassLesson && hasClassAccess)
-    );
+    if (isDigitalPackage) return true;
+
+    if (isLiveClassLesson && hasClassAccess) return true;
+
+    return false;
   }
 
   // Dijital Başlangıç öğrencisi:
