@@ -909,6 +909,7 @@ const [masteryLives, setMasteryLives] = useState(3);
 const [masteryAnswers, setMasteryAnswers] = useState<MasteryQuestion[]>([]);
 const [masteryFinished, setMasteryFinished] = useState(false);
 const [masteryFeedback, setMasteryFeedback] = useState<"correct" | "wrong" | null>(null);
+const [completedMasteryThemes, setCompletedMasteryThemes] = useState<number[]>([]);
 
 const selectedMasteryTheme = masteryThemes.find(
   (theme) => theme.id === selectedMasteryThemeId
@@ -929,6 +930,15 @@ const getLessonScore = (lessonNumber: number) => {
 const isThemePassed = selectedMasteryTheme
   ? selectedMasteryTheme.lessons.every((lesson) => getLessonScore(lesson.number) >= 3)
   : false;
+  const getThemeProgressPercent = (themeId: number) => {
+  if (completedMasteryThemes.includes(themeId)) return 100;
+  if (themeId !== selectedMasteryThemeId) return 0;
+
+  return Math.min(
+    100,
+    Math.round((masteryAnswers.length / 15) * 100)
+  );
+};
 
 const resetMasteryTest = (themeId = selectedMasteryThemeId) => {
   setSelectedMasteryThemeId(themeId);
@@ -952,10 +962,28 @@ const handleMasteryAnswer = (answer: string) => {
       setMasteryFeedback(null);
 
       if (nextIndex >= selectedMasteryQuestions.length) {
-        setMasteryFinished(true);
-      } else {
-        setMasteryIndex(nextIndex);
-      }
+  setMasteryFinished(true);
+
+  const updatedAnswers = [...masteryAnswers, currentMasteryQuestion];
+  const passedAllLessons = selectedMasteryTheme
+    ? selectedMasteryTheme.lessons.every(
+        (lesson) =>
+          updatedAnswers.filter(
+            (answer) => answer.lessonNumber === lesson.number
+          ).length >= 3
+      )
+    : false;
+
+  if (passedAllLessons) {
+    setCompletedMasteryThemes((prev) =>
+      prev.includes(selectedMasteryThemeId)
+        ? prev
+        : [...prev, selectedMasteryThemeId]
+    );
+  }
+} else {
+  setMasteryIndex(nextIndex);
+}
     }, 500);
 
     return;
@@ -3481,6 +3509,8 @@ createPendingOrder({
         {masteryThemes.map((theme) => {
           const isActive = theme.id === selectedMasteryThemeId;
           const isUnlocked = theme.id <= 6;
+          const isCompleted = completedMasteryThemes.includes(theme.id);
+const progressPercent = getThemeProgressPercent(theme.id);
 
           return (
             <button
@@ -3516,10 +3546,23 @@ createPendingOrder({
       : "bg-amber-100 text-amber-700"
   }`}
 >
-  {isUnlocked ? "Başlangıç Paketi" : "Gelişim Paketi"}
+  {isCompleted ? "Tamamlandı" : isUnlocked ? "Başlangıç Paketi" : "Gelişim Paketi"}
 </span>
               </div>
 
+              <div className="mt-4">
+  <div className="flex items-center justify-between text-xs font-black text-slate-500">
+    <span>İlerleme</span>
+    <span>{progressPercent}%</span>
+  </div>
+
+  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+    <div
+      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all"
+      style={{ width: `${progressPercent}%` }}
+    />
+  </div>
+</div>
               <div className="mt-4 space-y-2">
                 {theme.lessons.map((lesson) => (
                   <div
