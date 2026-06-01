@@ -3450,7 +3450,7 @@ createPendingOrder({
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {masteryThemes.map((theme) => {
           const isActive = theme.id === selectedMasteryThemeId;
-          const isUnlocked = theme.id === 1;
+          const isUnlocked = theme.id <= 6;
 
           return (
             <button
@@ -3464,7 +3464,7 @@ createPendingOrder({
                 isActive
                   ? "border-emerald-300 bg-white ring-4 ring-emerald-100"
                   : "border-white/70 bg-white/70 hover:bg-white"
-              } ${!isUnlocked ? "cursor-not-allowed opacity-60" : ""}`}
+              } ${!isUnlocked ? "cursor-not-allowed opacity-75" : ""}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -3479,9 +3479,15 @@ createPendingOrder({
                   </p>
                 </div>
 
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                  {isUnlocked ? "Açık" : "Kilitli"}
-                </span>
+                <span
+  className={`rounded-full px-3 py-1 text-xs font-black ${
+    isUnlocked
+      ? "bg-emerald-100 text-emerald-700"
+      : "bg-amber-100 text-amber-700"
+  }`}
+>
+  {isUnlocked ? "Başlangıçta Açık" : "Gelişim Paketi"}
+</span>
               </div>
 
               <div className="mt-4 space-y-2">
