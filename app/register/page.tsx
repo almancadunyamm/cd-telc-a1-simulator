@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 type UserItem = {
@@ -61,6 +61,12 @@ function getLevelFromSlug(slug: string) {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+const isFreeStarter =
+  searchParams.get("free") === "true" &&
+  searchParams.get("package") === "starter" &&
+  searchParams.get("level") === "A1";
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -104,7 +110,7 @@ if (existingUsers && existingUsers.length > 0) {
   email: normalizedEmail,
   password: password.trim(),
   role: "student",
-  is_active: false,
+  is_active: isFreeStarter,
 });
 
 if (insertError) {
@@ -154,7 +160,12 @@ if (selectedSlug) {
   });
 }
 
-    router.push("/payment/pending");
+    if (isFreeStarter) {
+  router.push("/dashboard");
+  return;
+}
+
+router.push("/payment/pending");
   }
 return (
   <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50 px-4 py-8">
