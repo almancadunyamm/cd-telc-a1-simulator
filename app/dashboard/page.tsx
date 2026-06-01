@@ -3447,9 +3447,37 @@ createPendingOrder({
           Her tema 3 dersten oluşur. Ustalık Testi’nde her dersten 5 soru gelir.
           Bir temayı geçmek için her dersten en az 3 doğru yapmalısın.
         </p>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+  <button
+    type="button"
+    onClick={() => {
+      resetMasteryTest(selectedMasteryThemeId);
+      setTimeout(() => {
+        document
+          .getElementById("mastery-test-area")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }}
+    className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-lg shadow-slate-200 hover:bg-slate-800"
+  >
+    🏆 Hemen Ustalık Testine Başla
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      document
+        .getElementById("mastery-theme-cards")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }}
+    className="rounded-2xl border border-emerald-200 bg-white px-6 py-3 text-sm font-black text-emerald-700 hover:bg-emerald-50"
+  >
+    📚 Temaları İncele
+  </button>
+</div>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div id="mastery-theme-cards" className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {masteryThemes.map((theme) => {
           const isActive = theme.id === selectedMasteryThemeId;
           const isUnlocked = theme.id <= 6;
@@ -3508,7 +3536,7 @@ createPendingOrder({
       </div>
 
       {selectedMasteryTheme && (
-        <div className="mt-8 rounded-[2rem] bg-white p-6 shadow-sm">
+  <div id="mastery-test-area" className="mt-8 scroll-mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
           {!masteryFinished ? (
             <>
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
