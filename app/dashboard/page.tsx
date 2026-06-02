@@ -908,6 +908,7 @@ const [selectedMasteryThemeId, setSelectedMasteryThemeId] = useState(1);
 const [masteryIndex, setMasteryIndex] = useState(0);
 const [masteryLives, setMasteryLives] = useState(3);
 const [masteryAnswers, setMasteryAnswers] = useState<MasteryQuestion[]>([]);
+const [activeMasteryQuestions, setActiveMasteryQuestions] = useState<MasteryQuestion[]>([]);
 const [masteryFinished, setMasteryFinished] = useState(false);
 const [masteryFeedback, setMasteryFeedback] = useState<"correct" | "wrong" | null>(null);
 const [completedMasteryThemes, setCompletedMasteryThemes] = useState<number[]>([]);
@@ -915,10 +916,43 @@ const [completedMasteryThemes, setCompletedMasteryThemes] = useState<number[]>([
 const selectedMasteryTheme = masteryThemes.find(
   (theme) => theme.id === selectedMasteryThemeId
 );
+const getRandomMasteryQuestions = (themeId: number) => {
 
-const selectedMasteryQuestions = masteryQuestions.filter(
-  (question) => question.themeId === selectedMasteryThemeId
-);
+  const theme = masteryThemes.find((item) => item.id === themeId);
+
+
+
+  if (!theme) return [];
+
+
+
+  return theme.lessons.flatMap((lesson) => {
+
+    const lessonQuestions = masteryQuestions.filter(
+
+      (question) =>
+
+        question.themeId === themeId &&
+
+        question.lessonNumber === lesson.number
+
+    );
+
+
+
+    return [...lessonQuestions]
+
+      .sort(() => Math.random() - 0.5)
+
+      .slice(0, 5);
+
+  });
+
+};
+const selectedMasteryQuestions =
+  activeMasteryQuestions.length > 0
+    ? activeMasteryQuestions
+    : getRandomMasteryQuestions(selectedMasteryThemeId);
 
 const currentMasteryQuestion = selectedMasteryQuestions[masteryIndex];
 
@@ -941,14 +975,21 @@ const isThemePassed = selectedMasteryTheme
   );
 };
 
+
 const resetMasteryTest = (themeId = selectedMasteryThemeId) => {
   setSelectedMasteryThemeId(themeId);
+  setActiveMasteryQuestions(getRandomMasteryQuestions(themeId));
   setMasteryIndex(0);
   setMasteryLives(3);
   setMasteryAnswers([]);
   setMasteryFinished(false);
   setMasteryFeedback(null);
 };
+useEffect(() => {
+  if (activeDashboardTab === "vocabulary" && activeMasteryQuestions.length === 0) {
+    setActiveMasteryQuestions(getRandomMasteryQuestions(selectedMasteryThemeId));
+  }
+}, [activeDashboardTab, activeMasteryQuestions.length, selectedMasteryThemeId]);
 
 const handleMasteryAnswer = (answer: string) => {
   if (!currentMasteryQuestion || masteryFeedback) return;
@@ -1476,26 +1517,6 @@ const pendingOrders =
 }, [currentUser]);
 
   const selectedLevelLessons = useMemo(() => {
-    console.log("SELECTED LEVEL:", selectedLevel);
-console.log("ALL LESSONS COUNT:", lessons.length);
-console.log("LIVE STUDENT:", hasAnyLiveCourseOrder);
-console.log(
-  "LESSONS RAW",
-  lessons.map((l) => ({
-    title: l.title,
-    packageType: l.packageType,
-    contentType: l.contentType,
-    classId: l.classId,
-  }))
-);
-lessons.forEach((lesson) => {
-  console.log(
-    "LESSON",
-    lesson.title,
-    lesson.packageType,
-    lesson.contentType
-  );
-});
   return lessons.filter((lesson) => {
     if (lesson.level !== selectedLevel) return false;
 
@@ -2701,18 +2722,7 @@ window.open(worksheet.url, "_blank");
   return true;
 })
   .map((packageGroup) => {
-    console.log("LESSON DEBUG", {
-  selectedLevel,
-  hasAnyLiveCourseOrder,
-  effectivePackageType,
-  packageGroup,
-  selectedLevelLessons: selectedLevelLessons.map((l) => ({
-    title: l.title,
-    packageType: l.packageType,
-    contentType: l.contentType,
-    classId: l.classId,
-  })),
-});
+    
     const groupLessons = selectedLevelLessons.filter((lesson) => {
   const isDigitalPackage = lesson.contentType === "digitalPackage";
   const isLiveClassLesson = lesson.contentType === "liveClass";
