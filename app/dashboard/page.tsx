@@ -751,7 +751,10 @@ const masteryThemes = [
 ];
 
 const masteryQuestions: MasteryQuestion[] = [
-  ...theme1Questions,
+  ...theme1Questions.map((question) => ({
+    ...question,
+    options: [...question.options],
+  })),
 ];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -3369,8 +3372,8 @@ createPendingOrder({
         </h2>
 
         <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-          Her tema 3 dersten oluşur. Ustalık Testi’nde her dersten 5 soru gelir.
-          Bir temayı geçmek için her dersten en az 3 doğru yapmalısın.
+          Bir sonraki temanın kilidini açmak için Ustalık Testini geç! Her dersten 5 soru gelir.
+          İlerlemek için her bölümde en az 3 doğru cevap vermelisin.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
   {(["A1", "A2", "B1"] as const).map((levelItem) => {
