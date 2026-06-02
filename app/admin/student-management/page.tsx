@@ -84,6 +84,19 @@ const filteredStudents = students.filter((student) => {
 
   return true;
 });
+const totalStudents = students.length;
+
+const liveStudents = students.filter(
+  (student) => getStudentType(student) === "Canlı"
+).length;
+
+const digitalStudents = students.filter(
+  (student) => getStudentType(student) === "Dijital"
+).length;
+
+const passiveStudents = students.filter(
+  (student) => !student.is_active
+).length;
 return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl">
