@@ -91,28 +91,6 @@ return (
         <h1 className="mb-6 text-3xl font-black">
           🎓 Öğrenci Yönetimi
         </h1>
-
-        <div className="mb-5 flex flex-wrap gap-3">
-  {[
-    { key: "all", label: "Tüm Öğrenciler" },
-    { key: "live", label: "Canlı Öğrenciler" },
-    { key: "digital", label: "Dijital Öğrenciler" },
-    { key: "passive", label: "Pasifler" },
-  ].map((item) => (
-    <button
-      key={item.key}
-      type="button"
-      onClick={() => setStudentFilter(item.key as any)}
-      className={`rounded-full px-5 py-2 text-sm font-black transition ${
-        studentFilter === item.key
-          ? "bg-yellow-400 text-slate-950"
-          : "bg-white/10 text-white hover:bg-white/20"
-      }`}
-    >
-      {item.label}
-    </button>
-  ))}
-</div>
         <div className="mb-5 flex flex-wrap gap-3">
   {[
     { key: "all", label: "Tüm Öğrenciler" },
