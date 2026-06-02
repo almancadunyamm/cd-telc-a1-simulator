@@ -20,6 +20,9 @@ export default function StudentManagementPage() {
 const [studentFilter, setStudentFilter] = useState<
   "all" | "live" | "digital" | "passive"
 >("all");
+const [newStudentName, setNewStudentName] = useState("");
+const [newStudentEmail, setNewStudentEmail] = useState("");
+const [newStudentLevels, setNewStudentLevels] = useState<("A1" | "A2" | "B1")[]>(["A1"]);
 
   useEffect(() => {
   async function loadStudents() {
@@ -84,7 +87,81 @@ const filteredStudents = students.filter((student) => {
 
   return true;
 });
+async function handleAddLiveStudent() {
+  const email = newStudentEmail.trim().toLowerCase();
+  const name = newStudentName.trim();
 
+  if (!email || !name) {
+    alert("Ad soyad ve email zorunlu.");
+    return;
+  }
+
+  if (newStudentLevels.length === 0) {
+    alert("En az bir seviye seçmelisin.");
+    return;
+  }
+
+  const { data: existingUsers } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", email)
+    .limit(1);
+
+  if (existingUsers && existingUsers.length > 0) {
+    await supabase
+      .from("users")
+      .update({
+        name,
+        role: "student",
+        is_active: true,
+      })
+      .eq("email", email);
+  } else {
+    const { error: userError } = await supabase.from("users").insert({
+      name,
+      email,
+      password: "123456",
+      role: "student",
+      is_active: true,
+    });
+
+    if (userError) {
+      alert("Öğrenci oluşturulamadı.");
+      console.log(userError);
+      return;
+    }
+  }
+
+  for (const level of newStudentLevels) {
+    const slug = `live-${level.toLowerCase()}`;
+
+    const { data: existingOrders } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("username", email)
+      .eq("product_slug", slug)
+      .limit(1);
+
+    if (!existingOrders || existingOrders.length === 0) {
+      const { error: orderError } = await supabase.from("orders").insert({
+        username: email,
+        product_slug: slug,
+        level,
+        status: "completed",
+        is_activated: true,
+      });
+
+      if (orderError) {
+        alert(`${level} siparişi oluşturulamadı.`);
+        console.log(orderError);
+        return;
+      }
+    }
+  }
+
+  alert("Canlı öğrenci başarıyla eklendi.");
+  window.location.reload();
+}
 return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl">
@@ -120,7 +197,62 @@ return (
     </p>
   </div>
 </div>
-        
+        <div className="mb-6 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-5">
+  <h2 className="text-xl font-black text-white">
+    ➕ Canlı Öğrenci Ekle
+  </h2>
+
+  <div className="mt-4 grid gap-3 md:grid-cols-3">
+    <input
+      value={newStudentName}
+      onChange={(e) => setNewStudentName(e.target.value)}
+      placeholder="Ad Soyad"
+      className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900"
+    />
+
+    <input
+      value={newStudentEmail}
+      onChange={(e) => setNewStudentEmail(e.target.value)}
+      placeholder="Email"
+      className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900"
+    />
+
+    <button
+      type="button"
+      onClick={handleAddLiveStudent}
+      className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-black text-white hover:bg-emerald-600"
+    >
+      Öğrenciyi Ekle
+    </button>
+  </div>
+
+  <div className="mt-4 flex flex-wrap gap-3">
+    {(["A1", "A2", "B1"] as const).map((level) => (
+      <button
+        key={level}
+        type="button"
+        onClick={() => {
+          setNewStudentLevels((prev) =>
+            prev.includes(level)
+              ? prev.filter((item) => item !== level)
+              : [...prev, level]
+          );
+        }}
+        className={`rounded-full px-5 py-2 text-sm font-black transition ${
+          newStudentLevels.includes(level)
+            ? "bg-yellow-400 text-slate-950"
+            : "bg-white/10 text-white hover:bg-white/20"
+        }`}
+      >
+        {newStudentLevels.includes(level) ? "✓" : "＋"} {level}
+      </button>
+    ))}
+  </div>
+
+  <p className="mt-3 text-xs text-emerald-100">
+    Geçici şifre: <span className="font-black">123456</span>
+  </p>
+</div>
         <div className="mb-5 flex flex-wrap gap-3">
   {[
     { key: "all", label: "Tüm Öğrenciler" },
