@@ -1,26 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 type User = {
-  username: string;
+  id?: string;
+  username?: string;
+  email?: string;
+  name?: string;
   full_name?: string;
   role?: string;
   is_active?: boolean;
+  created_at?: string;
 };
 
 export default function StudentManagementPage() {
   const [students, setStudents] = useState<User[]>([]);
 
   useEffect(() => {
-    const users = JSON.parse(
-      localStorage.getItem("mock_users") || "[]"
-    );
+  async function loadStudents() {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("role", "student")
+      .order("created_at", { ascending: false });
 
-    setStudents(
-      users.filter((user: User) => user.role === "student")
-    );
-  }, []);
+    if (error) {
+      console.log(error);
+      alert("Öğrenciler yüklenemedi.");
+      return;
+    }
+
+    setStudents(data || []);
+  }
+
+  loadStudents();
+}, []);
 
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
@@ -44,16 +59,16 @@ export default function StudentManagementPage() {
             <tbody>
               {students.map((student) => (
                 <tr
-                  key={student.username}
+                  key={student.id || student.email || student.username}
                   className="border-t border-white/10"
                 >
                   <td className="p-4">
-                    {student.username}
-                  </td>
+  {student.email || student.username || "-"}
+</td>
 
                   <td className="p-4">
-                    {student.full_name || "-"}
-                  </td>
+  {student.name || student.full_name || "-"}
+</td>
 
                   <td className="p-4">
                     {student.is_active ? (
