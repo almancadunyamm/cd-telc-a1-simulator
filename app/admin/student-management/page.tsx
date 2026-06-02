@@ -151,6 +151,7 @@ return (
                 <th className="p-4 text-left">Ad Soyad</th>
                 <th className="p-4 text-left">Durum</th>
                 <th className="p-4 text-left">Tip</th>
+                <th className="p-4 text-left">İşlem</th>
               </tr>
             </thead>
 
@@ -183,6 +184,38 @@ return (
   <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black">
     {getStudentType(student)}
   </span>
+</td>
+<td className="p-4">
+  <button
+    type="button"
+    onClick={async () => {
+      const confirmed = window.confirm(
+        `${student.email || student.username} hesabını silmek istediğinizden emin misiniz?`
+      );
+
+      if (!confirmed) return;
+
+      const { error } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", student.id);
+
+      if (error) {
+        alert("Öğrenci silinemedi.");
+        console.log(error);
+        return;
+      }
+
+      setStudents((prev) =>
+        prev.filter((item) => item.id !== student.id)
+      );
+
+      alert("Öğrenci silindi.");
+    }}
+    className="rounded-xl bg-red-500/15 px-3 py-2 text-xs font-black text-red-300 hover:bg-red-500/25"
+  >
+    Sil
+  </button>
 </td>
                 </tr>
               ))}
