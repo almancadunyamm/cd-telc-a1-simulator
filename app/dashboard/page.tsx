@@ -22,6 +22,7 @@ import {
   FileText,
   MessageCircle,
 } from "lucide-react";
+import { theme1Questions } from "@/app/data/mastery/theme1";
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
@@ -623,6 +624,7 @@ const earnedBadges = [
   tr: string;
   de: string;
   options: string[];
+  difficulty?: "easy" | "medium" | "hard";
 };
 
 const masteryThemes = [
@@ -749,158 +751,7 @@ const masteryThemes = [
 ];
 
 const masteryQuestions: MasteryQuestion[] = [
-  {
-    id: 1,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 1,
-    lessonTitle: "Tanışma + sein fiili",
-    tr: "Cümleyi tamamla: Ich _____ Ahmet.",
-    de: "bin",
-    options: ["bin", "bist", "ist", "sind"],
-  },
-  {
-    id: 2,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 1,
-    lessonTitle: "Tanışma + sein fiili",
-    tr: "Hangisi doğru Almanca cümledir?",
-    de: "Ich bin Student.",
-    options: ["Ich bin Student.", "Ich bist Student.", "Ich ist Student.", "Ich sind Student."],
-  },
-  {
-    id: 3,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 1,
-    lessonTitle: "Tanışma + sein fiili",
-    tr: "Sen öğretmensin.",
-    de: "Du bist Lehrer.",
-    options: ["Du bin Lehrer.", "Du bist Lehrer.", "Du ist Lehrer.", "Du sind Lehrer."],
-  },
-  {
-    id: 4,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 1,
-    lessonTitle: "Tanışma + sein fiili",
-    tr: "Hangisi temel cümle yapısına uygundur?",
-    de: "Ich bin in Deutschland.",
-    options: ["Ich bin in Deutschland.", "Bin ich in Deutschland.", "Ich in Deutschland bin.", "In Deutschland ich bin."],
-  },
-  {
-    id: 5,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 1,
-    lessonTitle: "Tanışma + sein fiili",
-    tr: "O İstanbul'da.",
-    de: "Er ist in Istanbul.",
-    options: ["Er bin in Istanbul.", "Er bist in Istanbul.", "Er ist in Istanbul.", "Er sind in Istanbul."],
-  },
-
-  {
-    id: 6,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 2,
-    lessonTitle: "Kişi zamirleri + cümle kurma",
-    tr: "Ben Türkiye'den geliyorum.",
-    de: "Ich komme aus der Türkei.",
-    options: ["Ich komme aus der Türkei.", "Du kommst aus der Türkei.", "Er kommt aus der Türkei.", "Wir kommen aus der Türkei."],
-  },
-  {
-    id: 7,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 2,
-    lessonTitle: "Kişi zamirleri + cümle kurma",
-    tr: "Cümleyi tamamla: Du _____ aus Deutschland.",
-    de: "kommst",
-    options: ["komme", "kommst", "kommt", "kommen"],
-  },
-  {
-    id: 8,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 2,
-    lessonTitle: "Kişi zamirleri + cümle kurma",
-    tr: "O Türkiye'den geliyor.",
-    de: "Er kommt aus der Türkei.",
-    options: ["Er komme aus der Türkei.", "Er kommst aus der Türkei.", "Er kommt aus der Türkei.", "Er kommen aus der Türkei."],
-  },
-  {
-    id: 9,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 2,
-    lessonTitle: "Kişi zamirleri + cümle kurma",
-    tr: "Ben 25 yaşındayım.",
-    de: "Ich bin 25 Jahre alt.",
-    options: ["Ich habe 25 Jahre.", "Ich bin 25 Jahre alt.", "Ich komme 25 Jahre.", "Ich wohne 25 Jahre."],
-  },
-  {
-    id: 10,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 2,
-    lessonTitle: "Kişi zamirleri + cümle kurma",
-    tr: "Hangisi kişi zamiri + fiil çekimi bakımından doğrudur?",
-    de: "Wir kommen aus Istanbul.",
-    options: ["Wir komme aus Istanbul.", "Wir kommst aus Istanbul.", "Wir kommt aus Istanbul.", "Wir kommen aus Istanbul."],
-  },
-
-  {
-    id: 11,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 3,
-    lessonTitle: "Soru cümleleri (W-Fragen)",
-    tr: "Senin adın ne?",
-    de: "Wie heißt du?",
-    options: ["Wie heißt du?", "Woher kommst du?", "Wo wohnst du?", "Wie alt bist du?"],
-  },
-  {
-    id: 12,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 3,
-    lessonTitle: "Soru cümleleri (W-Fragen)",
-    tr: "Nereden geliyorsun?",
-    de: "Woher kommst du?",
-    options: ["Wie heißt du?", "Woher kommst du?", "Wo wohnst du?", "Wie alt bist du?"],
-  },
-  {
-    id: 13,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 3,
-    lessonTitle: "Soru cümleleri (W-Fragen)",
-    tr: "Kaç yaşındasın?",
-    de: "Wie alt bist du?",
-    options: ["Wie alt bist du?", "Wie heißt du?", "Woher kommst du?", "Wo wohnst du?"],
-  },
-  {
-    id: 14,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 3,
-    lessonTitle: "Soru cümleleri (W-Fragen)",
-    tr: "Hangisi doğru soru cümlesidir?",
-    de: "Wo wohnst du?",
-    options: ["Wo du wohnst?", "Wo wohnst du?", "Du wohnst wo?", "Wohnst wo du?"],
-  },
-  {
-    id: 15,
-    themeId: 1,
-    themeTitle: "Kendini Tanıtma",
-    lessonNumber: 3,
-    lessonTitle: "Soru cümleleri (W-Fragen)",
-    tr: "Aşağıdaki soruya uygun cevap hangisidir? — Woher kommst du?",
-    de: "Ich komme aus der Türkei.",
-    options: ["Ich heiße Ahmet.", "Ich bin 25 Jahre alt.", "Ich komme aus der Türkei.", "Ich wohne in Istanbul."],
-  },
+  ...theme1Questions,
 ];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
