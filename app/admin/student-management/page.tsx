@@ -342,10 +342,14 @@ const { error } = await supabase
   .or(`email.eq.${studentEmail},username.eq.${studentEmail}`);
 
       if (error) {
-        alert("Öğrenci silinemedi.");
-        console.log(error);
-        return;
-      }
+  console.log("DELETE ERROR:", error);
+
+  alert(
+    JSON.stringify(error, null, 2)
+  );
+
+  return;
+}
 
       setStudents((prev) =>
         prev.filter((item) => item.id !== student.id)
