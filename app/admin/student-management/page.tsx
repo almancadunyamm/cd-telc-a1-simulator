@@ -339,7 +339,7 @@ await supabase
 const { error } = await supabase
   .from("users")
   .delete()
-  .or(`email.eq.${studentEmail},username.eq.${studentEmail}`);
+  .eq("email", studentEmail);
 
       if (error) {
   console.log("DELETE ERROR:", error);
