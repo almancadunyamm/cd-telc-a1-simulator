@@ -321,42 +321,58 @@ return (
   <button
     type="button"
     onClick={async () => {
-      const confirmed = window.confirm(
-        `${student.email || student.username} hesabını silmek istediğinizden emin misiniz?`
-      );
+  const studentEmail = String(student.email || "")
+    .trim()
+    .toLowerCase();
 
-      if (!confirmed) return;
+  if (!studentEmail) {
+    alert("Bu öğrencinin email bilgisi olmadığı için silinemiyor.");
+    return;
+  }
 
-      const studentEmail = String(student.email || student.username || "")
-  .trim()
-  .toLowerCase();
-
-await supabase
-  .from("orders")
-  .delete()
-  .eq("username", studentEmail);
-
-const { error } = await supabase
-  .from("users")
-  .delete()
-  .eq("id", student.id);
-
-      if (error) {
-  console.log("DELETE ERROR:", error);
-
-  alert(
-    JSON.stringify(error, null, 2)
+  const confirmed = window.confirm(
+    `${studentEmail} hesabını kalıcı olarak silmek istediğinizden emin misiniz?`
   );
 
-  return;
-}
+  if (!confirmed) return;
 
-      setStudents((prev) =>
-        prev.filter((item) => item.id !== student.id)
-      );
+  const { data: deletedUsers, error: userError } = await supabase
+    .from("users")
+    .delete()
+    .eq("email", studentEmail)
+    .select();
 
-      alert("Öğrenci silindi.");
-    }}
+  if (userError) {
+    alert(JSON.stringify(userError, null, 2));
+    return;
+  }
+
+  if (!deletedUsers || deletedUsers.length === 0) {
+    alert("Öğrenci users tablosunda bulunamadı, bu yüzden silinemedi.");
+    return;
+  }
+
+  await supabase
+    .from("orders")
+    .delete()
+    .eq("username", studentEmail);
+
+  setStudents((prev) =>
+    prev.filter(
+      (item) =>
+        String(item.email || "").trim().toLowerCase() !== studentEmail
+    )
+  );
+
+  setOrders((prev) =>
+    prev.filter(
+      (order) =>
+        String(order.username || "").trim().toLowerCase() !== studentEmail
+    )
+  );
+
+  alert("Öğrenci kalıcı olarak silindi.");
+}}
     className="rounded-xl bg-red-500/15 px-3 py-2 text-xs font-black text-red-300 hover:bg-red-500/25"
   >
     Sil
