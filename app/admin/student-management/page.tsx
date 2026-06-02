@@ -336,26 +336,40 @@ return (
 
   if (!confirmed) return;
 
-  const { data: deletedUsers, error: userError } = await supabase
+  let deletedUsers: any[] | null = null;
+let userError: any = null;
+
+if (student.id) {
+  const result = await supabase
+    .from("users")
+    .delete()
+    .eq("id", student.id)
+    .select();
+
+  deletedUsers = result.data;
+  userError = result.error;
+}
+
+if ((!deletedUsers || deletedUsers.length === 0) && studentEmail) {
+  const result = await supabase
     .from("users")
     .delete()
     .eq("email", studentEmail)
     .select();
 
-  if (userError) {
-    alert(JSON.stringify(userError, null, 2));
-    return;
-  }
+  deletedUsers = result.data;
+  userError = result.error;
+}
 
-  if (!deletedUsers || deletedUsers.length === 0) {
-    alert("Öğrenci users tablosunda bulunamadı, bu yüzden silinemedi.");
-    return;
-  }
+if (userError) {
+  alert(JSON.stringify(userError, null, 2));
+  return;
+}
 
   await supabase
-    .from("orders")
-    .delete()
-    .eq("username", studentEmail);
+  .from("orders")
+  .delete()
+  .eq("username", studentEmail);
 
   setStudents((prev) =>
     prev.filter(
@@ -371,7 +385,7 @@ return (
     )
   );
 
-  alert("Öğrenci kalıcı olarak silindi.");
+  alert("Öğrenci ve bağlantılı siparişleri temizlendi.");
 }}
     className="rounded-xl bg-red-500/15 px-3 py-2 text-xs font-black text-red-300 hover:bg-red-500/25"
   >
