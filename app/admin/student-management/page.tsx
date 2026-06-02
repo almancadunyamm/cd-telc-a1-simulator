@@ -84,26 +84,43 @@ const filteredStudents = students.filter((student) => {
 
   return true;
 });
-const totalStudents = students.length;
 
-const liveStudents = students.filter(
-  (student) => getStudentType(student) === "Canlı"
-).length;
-
-const digitalStudents = students.filter(
-  (student) => getStudentType(student) === "Dijital"
-).length;
-
-const passiveStudents = students.filter(
-  (student) => !student.is_active
-).length;
 return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl">
 
         <h1 className="mb-6 text-3xl font-black">
-          🎓 Öğrenci Yönetimi
-        </h1>
+  🎓 Öğrenci Yönetimi
+</h1>
+
+<div className="mb-6 grid gap-4 md:grid-cols-4">
+  <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+    <p className="text-sm font-black text-slate-400">Toplam Öğrenci</p>
+    <p className="mt-2 text-3xl font-black text-white">{students.length}</p>
+  </div>
+
+  <div className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-5">
+    <p className="text-sm font-black text-emerald-200">Canlı Öğrenci</p>
+    <p className="mt-2 text-3xl font-black text-emerald-100">
+      {students.filter((student) => getStudentType(student) === "Canlı").length}
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-blue-400/20 bg-blue-500/10 p-5">
+    <p className="text-sm font-black text-blue-200">Dijital Öğrenci</p>
+    <p className="mt-2 text-3xl font-black text-blue-100">
+      {students.filter((student) => getStudentType(student) === "Dijital").length}
+    </p>
+  </div>
+
+  <div className="rounded-3xl border border-red-400/20 bg-red-500/10 p-5">
+    <p className="text-sm font-black text-red-200">Pasif Öğrenci</p>
+    <p className="mt-2 text-3xl font-black text-red-100">
+      {students.filter((student) => !student.is_active).length}
+    </p>
+  </div>
+</div>
+        
         <div className="mb-5 flex flex-wrap gap-3">
   {[
     { key: "all", label: "Tüm Öğrenciler" },
