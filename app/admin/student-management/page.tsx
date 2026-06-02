@@ -327,10 +327,19 @@ return (
 
       if (!confirmed) return;
 
-      const { error } = await supabase
-        .from("users")
-        .delete()
-        .eq("id", student.id);
+      const studentEmail = String(student.email || student.username || "")
+  .trim()
+  .toLowerCase();
+
+await supabase
+  .from("orders")
+  .delete()
+  .eq("username", studentEmail);
+
+const { error } = await supabase
+  .from("users")
+  .delete()
+  .or(`email.eq.${studentEmail},username.eq.${studentEmail}`);
 
       if (error) {
         alert("Öğrenci silinemedi.");

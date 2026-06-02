@@ -3461,7 +3461,8 @@ createPendingOrder({
   </div>
 )}
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
- {activeAccessLevels.includes(selectedMasteryLevel) && (
+ {activeAccessLevels.includes(selectedMasteryLevel) &&
+  selectedMasteryLevel === "A1" && (
   <>
     <button
       type="button"
@@ -3493,8 +3494,26 @@ createPendingOrder({
 )}
 </div>
       </div>
+{activeAccessLevels.includes(selectedMasteryLevel) &&
+  selectedMasteryLevel !== "A1" && (
+    <div className="mt-6 rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm">
+      <p className="text-xs font-black uppercase tracking-widest text-blue-700">
+        Yakında aktif olacak
+      </p>
 
-      {activeAccessLevels.includes(selectedMasteryLevel) && (
+      <h3 className="mt-2 text-2xl font-black text-slate-900">
+        {selectedMasteryLevel} Ustalık Testleri hazırlanıyor
+      </h3>
+
+      <p className="mt-3 text-sm leading-6 text-slate-600">
+        Bu seviyenin Ustalık Testleri şu anda içerik hazırlık aşamasında.
+        Şimdilik ders kayıtları ve PDF materyalleriyle çalışmaya devam
+        edebilirsin.
+      </p>
+    </div>
+  )}
+      {activeAccessLevels.includes(selectedMasteryLevel) &&
+  selectedMasteryLevel === "A1" && (
       <div id="mastery-theme-cards" className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {masteryThemes.map((theme) => {
           const isActive = theme.id === selectedMasteryThemeId;
@@ -3568,7 +3587,9 @@ const progressPercent = getThemeProgressPercent(theme.id);
         })}
       </div>
 )}
-      {activeAccessLevels.includes(selectedMasteryLevel) && selectedMasteryTheme && (
+      {activeAccessLevels.includes(selectedMasteryLevel) &&
+  selectedMasteryLevel === "A1" &&
+  selectedMasteryTheme && (
   <div id="mastery-test-area" className="mt-8 scroll-mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
           {!masteryFinished ? (
             <>
