@@ -325,69 +325,40 @@ return (
     .trim()
     .toLowerCase();
 
-  if (!studentEmail) {
-    alert("Bu öğrencinin email bilgisi olmadığı için silinemiyor.");
+  if (!student.id) {
+    alert("Bu öğrencinin ID bilgisi yok. Silinemiyor.");
     return;
   }
 
   const confirmed = window.confirm(
-    `${studentEmail} hesabını kalıcı olarak silmek istediğinizden emin misiniz?`
+    `${studentEmail || student.name} hesabını kalıcı olarak silmek istediğinizden emin misiniz?`
   );
 
   if (!confirmed) return;
 
-  let deletedUsers: any[] | null = null;
-let userError: any = null;
-alert(
-  JSON.stringify(
-    {
-      id: student.id,
-      email: student.email,
-      username: student.username,
-      name: student.name,
-      full_name: student.full_name,
-    },
-    null,
-    2
-  )
-);
-if (student.id) {
-  const result = await supabase
+  await supabase
+    .from("orders")
+    .delete()
+    .eq("username", studentEmail);
+
+  const { data: deletedUsers, error: userError } = await supabase
     .from("users")
     .delete()
     .eq("id", student.id)
     .select();
 
-  deletedUsers = result.data;
-  userError = result.error;
-}
+  if (userError) {
+    alert(JSON.stringify(userError, null, 2));
+    return;
+  }
 
-if ((!deletedUsers || deletedUsers.length === 0) && studentEmail) {
-  const result = await supabase
-    .from("users")
-    .delete()
-    .eq("email", studentEmail)
-    .select();
-
-  deletedUsers = result.data;
-  userError = result.error;
-}
-
-if (userError) {
-  alert(JSON.stringify(userError, null, 2));
-  return;
-}
-
-  await supabase
-  .from("orders")
-  .delete()
-  .eq("username", studentEmail);
+  if (!deletedUsers || deletedUsers.length === 0) {
+    alert("Silme işlemi users tablosunda kayıt bulamadı.");
+    return;
+  }
 
   setStudents((prev) =>
-    prev.filter(
-      (item) =>
-        String(item.email || "").trim().toLowerCase() !== studentEmail
-    )
+    prev.filter((item) => item.id !== student.id)
   );
 
   setOrders((prev) =>
@@ -397,7 +368,7 @@ if (userError) {
     )
   );
 
-  alert("Öğrenci ve bağlantılı siparişleri temizlendi.");
+  alert("Öğrenci kalıcı olarak silindi.");
 }}
     className="rounded-xl bg-red-500/15 px-3 py-2 text-xs font-black text-red-300 hover:bg-red-500/25"
   >
