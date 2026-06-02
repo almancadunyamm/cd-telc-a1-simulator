@@ -338,7 +338,19 @@ return (
 
   let deletedUsers: any[] | null = null;
 let userError: any = null;
-
+alert(
+  JSON.stringify(
+    {
+      id: student.id,
+      email: student.email,
+      username: student.username,
+      name: student.name,
+      full_name: student.full_name,
+    },
+    null,
+    2
+  )
+);
 if (student.id) {
   const result = await supabase
     .from("users")
