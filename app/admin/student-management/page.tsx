@@ -341,7 +341,11 @@ return (
     .delete()
     .eq("username", studentEmail);
 
-  const { data: deletedUsers, error: userError } = await supabase
+  await supabase
+  .from("users")
+  .update({ is_active: true })
+  .eq("id", student.id);
+    const { data: deletedUsers, error: userError } = await supabase
     .from("users")
     .delete()
     .eq("id", student.id)
