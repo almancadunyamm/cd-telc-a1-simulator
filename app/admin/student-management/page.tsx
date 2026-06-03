@@ -171,7 +171,9 @@ if (!selectedClassId) {
       }
     }
   }
-  await supabase.from("student_classes").insert({
+  await supabase.from("student_classes").delete().eq("student_email", email);
+
+await supabase.from("student_classes").insert({
   student_email: email,
   class_id: selectedClassId,
 });
