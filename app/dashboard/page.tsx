@@ -882,7 +882,7 @@ const handleMasteryAnswer = (answer: string) => {
 } else {
   setMasteryIndex(nextIndex);
 }
-    }, 1200);
+    }, 3600);
 
     return;
   }
