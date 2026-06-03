@@ -22,10 +22,12 @@ const [studentFilter, setStudentFilter] = useState<
 >("all");
 const [newStudentName, setNewStudentName] = useState("");
 const [newStudentEmail, setNewStudentEmail] = useState("");
+const [classes, setClasses] = useState<any[]>([]);
+const [selectedClassId, setSelectedClassId] = useState("");
 const [newStudentLevels, setNewStudentLevels] = useState<("A1" | "A2" | "B1")[]>(["A1"]);
 
   useEffect(() => {
-  async function loadStudents() {
+  async function loadData() {
     const { data, error } = await supabase
       .from("users")
       .select("*")
@@ -39,14 +41,22 @@ const [newStudentLevels, setNewStudentLevels] = useState<("A1" | "A2" | "B1")[]>
     }
 
     setStudents(data || []);
-    const { data: orderData } = await supabase
-  .from("orders")
-  .select("*");
 
-setOrders(orderData || []);
+    const { data: orderData } = await supabase
+      .from("orders")
+      .select("*");
+
+    setOrders(orderData || []);
+
+    const { data: classData } = await supabase
+      .from("classes")
+      .select("*")
+      .order("level");
+
+    setClasses(classData || []);
   }
 
-  loadStudents();
+  loadData();
 }, []);
 
   const getStudentOrders = (student: User) => {
@@ -90,7 +100,10 @@ const filteredStudents = students.filter((student) => {
 async function handleAddLiveStudent() {
   const email = newStudentEmail.trim().toLowerCase();
   const name = newStudentName.trim();
-
+if (!selectedClassId) {
+  alert("Bir sınıf seçmelisin.");
+  return;
+}
   if (!email || !name) {
     alert("Ad soyad ve email zorunlu.");
     return;
@@ -158,6 +171,10 @@ async function handleAddLiveStudent() {
       }
     }
   }
+  await supabase.from("student_classes").insert({
+  student_email: email,
+  class_id: selectedClassId,
+});
 
   alert("Canlı öğrenci başarıyla eklendi.");
   window.location.reload();
@@ -202,7 +219,7 @@ return (
     ➕ Canlı Öğrenci Ekle
   </h2>
 
-  <div className="mt-4 grid gap-3 md:grid-cols-3">
+  <div className="mt-4 grid gap-3 md:grid-cols-4">
     <input
       value={newStudentName}
       onChange={(e) => setNewStudentName(e.target.value)}
@@ -211,11 +228,25 @@ return (
     />
 
     <input
-      value={newStudentEmail}
-      onChange={(e) => setNewStudentEmail(e.target.value)}
-      placeholder="Email"
-      className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900"
-    />
+  value={newStudentEmail}
+  onChange={(e) => setNewStudentEmail(e.target.value)}
+  placeholder="Email"
+  className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900"
+/>
+
+<select
+  value={selectedClassId}
+  onChange={(e) => setSelectedClassId(e.target.value)}
+  className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900"
+>
+  <option value="">Sınıf Seç</option>
+
+  {classes.map((cls) => (
+    <option key={cls.id} value={cls.id}>
+      {cls.name}
+    </option>
+  ))}
+</select>
 
     <button
       type="button"
