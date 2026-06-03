@@ -23,6 +23,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { theme1Questions } from "@/app/data/mastery/theme1";
+import { theme2Questions } from "@/app/data/mastery/theme2";
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
@@ -751,7 +752,12 @@ const masteryThemes = [
 ];
 
 const masteryQuestions: MasteryQuestion[] = [
-  ...theme1Questions.map((question) => ({
+  ...theme1Questions.map((question: any) => ({
+    ...question,
+    options: [...question.options],
+  })),
+
+  ...theme2Questions.map((question: any) => ({
     ...question,
     options: [...question.options],
   })),
