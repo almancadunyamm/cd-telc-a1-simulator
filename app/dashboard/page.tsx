@@ -1625,6 +1625,15 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
   setSelectedLesson(lesson);
   setShowUpsell(false);
 
+  setTimeout(() => {
+  document
+    .getElementById("lesson-player")
+    ?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+}, 100);
+
   localStorage.setItem("last_selected_lesson", JSON.stringify(lesson));
 }
 
@@ -2386,7 +2395,10 @@ window.open(worksheet.url, "_blank");
   <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-200/30 blur-3xl" />
   <div className="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-purple-200/30 blur-3xl" />
 
-  <div className="relative flex min-h-[340px] flex-col items-center justify-center text-center">
+  <div
+  id="lesson-player"
+  className="relative flex min-h-[340px] flex-col items-center justify-center text-center"
+>
     <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-white shadow-lg shadow-blue-100 ring-1 ring-blue-100">
       <span className="text-5xl">▶️</span>
     </div>
