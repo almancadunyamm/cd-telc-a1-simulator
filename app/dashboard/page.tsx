@@ -1603,38 +1603,19 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
 }
 
   function handleLessonClick(lesson: TeacherLesson) {
-  const hasClassAccess = true;
-
-  const hasPackageAccess = canAccessLessonPackage(
-    effectivePackageType,
-    lesson.packageType || "starter"
-  );
-
-  if (!hasClassAccess || !hasPackageAccess || accessExpired) {
-    setShowUpsell(true);
-
-    setTimeout(() => {
-      document
-        .getElementById("upgrade-box")
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 100);
-
-    return;
-  }
-
   setSelectedLesson(lesson);
   setShowUpsell(false);
 
-  setTimeout(() => {
-  document
-    .getElementById("lesson-player")
-    ?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-}, 100);
-
   localStorage.setItem("last_selected_lesson", JSON.stringify(lesson));
+
+  setTimeout(() => {
+    document
+      .getElementById("lesson-player")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+  }, 150);
 }
 
   async function handleUpgrade(packageType: PackageType) {
@@ -2391,14 +2372,14 @@ window.open(worksheet.url, "_blank");
 )}
               </div>
             ) : lessonsForList.length > 0 ? (
-              <div className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-white via-blue-50 to-purple-50 p-8 shadow-sm">
+            <div
+  id="lesson-player"
+  className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-white via-blue-50 to-purple-50 p-8 shadow-sm"
+>
   <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-200/30 blur-3xl" />
   <div className="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-purple-200/30 blur-3xl" />
 
-  <div
-  id="lesson-player"
-  className="relative flex min-h-[340px] flex-col items-center justify-center text-center"
->
+  <div className="relative flex min-h-[340px] flex-col items-center justify-center text-center">
     <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-white shadow-lg shadow-blue-100 ring-1 ring-blue-100">
       <span className="text-5xl">▶️</span>
     </div>
@@ -2713,12 +2694,7 @@ const isOpen =
                     return;
                   }
 
-                  setSelectedLesson(lesson);
-
-                  localStorage.setItem(
-                    "last_selected_lesson",
-                    JSON.stringify(lesson)
-                  );
+                  handleLessonClick(lesson);
                 }}
                 className={`relative w-full overflow-hidden rounded-2xl border p-4 text-left transition ${
                   isOpen
