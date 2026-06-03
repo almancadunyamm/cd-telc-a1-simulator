@@ -26,6 +26,7 @@ import { theme1Questions } from "@/app/data/mastery/theme1";
 import { theme2Questions } from "@/app/data/mastery/theme2";
 import { theme3Questions } from "@/app/data/mastery/theme3";
 import { theme4Questions } from "@/app/data/mastery/theme4";
+import { theme5Questions } from "@/app/data/mastery/theme5";
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
@@ -676,7 +677,7 @@ const masteryThemes = [
     title: "Yemek & İçecek",
     germanTitle: "Essen & Trinken",
     lessons: [
-      { number: 13, title: "Yiyecekler" },
+      { number: 13, title: "Yiyecekler + Saatler" },
       { number: 14, title: "mögen + gern" },
       { number: 15, title: "Akkusativ" },
     ],
@@ -768,6 +769,10 @@ const masteryQuestions: MasteryQuestion[] = [
   options: [...question.options],
 })),
 ...theme4Questions.map((question: any) => ({
+  ...question,
+  options: [...question.options],
+})),
+...theme5Questions.map((question: any) => ({
   ...question,
   options: [...question.options],
 })),
