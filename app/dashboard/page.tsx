@@ -2620,19 +2620,23 @@ window.open(worksheet.url, "_blank");
 
     {(["starter", "practice", "master"] as PackageType[])
   .filter((packageGroup) => {
+  const currentValue = getPackageValue(effectivePackageType);
+
   // Canlı kurs öğrencisi:
-  // Başlangıç resmi dersleri + Gelişim canlı ders kayıtları görünür.
-  // Zirve şimdilik görünmez.
+  // Başlangıç açık, Gelişim kilitli teaser olarak görünsün.
+  // Zirve şimdilik görünmesin.
   if (hasAnyLiveCourseOrder) {
     return packageGroup === "starter" || packageGroup === "practice";
   }
 
-  const currentValue = getPackageValue(effectivePackageType);
-
+  // Dijital Başlangıç:
+  // Başlangıç açık, Gelişim kilitli teaser olarak görünsün.
   if (currentValue <= 1) {
     return packageGroup === "starter" || packageGroup === "practice";
   }
 
+  // Dijital Gelişim:
+  // Başlangıç + Gelişim açık, Zirve kilitli teaser olarak görünsün.
   if (currentValue === 2) {
     return (
       packageGroup === "starter" ||
