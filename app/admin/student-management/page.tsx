@@ -355,12 +355,6 @@ return (
     alert(JSON.stringify(userError, null, 2));
     return;
   }
-
-  if (!deletedUsers || deletedUsers.length === 0) {
-    alert("Silme işlemi users tablosunda kayıt bulamadı.");
-    return;
-  }
-
   setStudents((prev) =>
     prev.filter((item) => item.id !== student.id)
   );
