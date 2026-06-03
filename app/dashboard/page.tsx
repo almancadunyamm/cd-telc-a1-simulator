@@ -952,6 +952,20 @@ const currentB1Task =
   const [selectedLesson, setSelectedLesson] = useState<TeacherLesson | null>(
     null
   );
+  useEffect(() => {
+  if (!selectedLesson) return;
+
+  setTimeout(() => {
+    const player = document.getElementById("lesson-player");
+
+    if (!player) return;
+
+    player.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, 500);
+}, [selectedLesson]);
   const [showUpsell, setShowUpsell] = useState(false);
   const [upsellPackage, setUpsellPackage] = useState<PackageType>("practice");
   const [showExamNotice, setShowExamNotice] = useState(false);
@@ -1607,20 +1621,6 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
   setShowUpsell(false);
 
   localStorage.setItem("last_selected_lesson", JSON.stringify(lesson));
-
-  setTimeout(() => {
-  const player = document.getElementById("lesson-player");
-
-  if (!player) return;
-
-  const y =
-    player.getBoundingClientRect().top + window.scrollY - 16;
-
-  window.scrollTo({
-    top: y,
-    behavior: "smooth",
-  });
-}, 300);
 }
 
   async function handleUpgrade(packageType: PackageType) {
@@ -2187,7 +2187,10 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
             {selectedLesson ? (
   <div id="lesson-watch-area">
     
-    <div className="relative aspect-video overflow-hidden rounded-3xl bg-black shadow-2xl ring-1 ring-black/10">
+    <div
+  id="lesson-player"
+  className="relative aspect-video overflow-hidden rounded-3xl bg-black shadow-2xl ring-1 ring-black/10"
+>
   <iframe
     src={getEmbedUrl(selectedLesson.videoUrl)}
     title={selectedLesson.title}
@@ -2378,7 +2381,6 @@ window.open(worksheet.url, "_blank");
               </div>
             ) : lessonsForList.length > 0 ? (
             <div
-  id="lesson-player"
   className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-white via-blue-50 to-purple-50 p-8 shadow-sm"
 >
   <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-200/30 blur-3xl" />
