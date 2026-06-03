@@ -795,10 +795,12 @@ const getRandomMasteryQuestions = (themeId: number) => {
 
 
     return [...lessonQuestions]
-
-      .sort(() => Math.random() - 0.5)
-
-      .slice(0, 5);
+  .sort(() => Math.random() - 0.5)
+  .slice(0, 5)
+  .map((question) => ({
+    ...question,
+    options: [...question.options].sort(() => Math.random() - 0.5),
+  }));
 
   });
 
