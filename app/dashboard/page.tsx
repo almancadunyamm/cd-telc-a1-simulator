@@ -666,7 +666,7 @@ const masteryThemes = [
     title: "Günlük Hayat",
     germanTitle: "Tagesablauf",
     lessons: [
-      { number: 10, title: "Günlük fiiller" },
+      { number: 10, title: "Günlük fiiller + Sayılar" },
       { number: 11, title: "Saatler" },
       { number: 12, title: "Fiil çekimi: Präsens" },
     ],
