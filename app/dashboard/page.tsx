@@ -1403,13 +1403,15 @@ const pendingOrders =
       : false;
 
     if (hasAnyLiveCourseOrder) {
-  const isDigitalStarterLesson =
-    isDigitalLesson && (lesson.packageType || "starter") === "starter";
+  const lessonPackage = lesson.packageType || "starter";
 
-  return (
-    (isLiveLesson && hasClassAccess) ||
-    isDigitalStarterLesson
-  );
+  const isDigitalStarterLesson =
+    isDigitalLesson && lessonPackage === "starter";
+
+  const isAccessibleLiveLesson =
+    isLiveLesson && hasClassAccess;
+
+  return isDigitalStarterLesson || isAccessibleLiveLesson;
 }
 
     if (isDigitalLesson) {
@@ -2692,10 +2694,20 @@ window.open(worksheet.url, "_blank");
 }
 
   if (packageGroup === "practice") {
+    if (packageGroup === "practice") {
+  if (hasAnyLiveCourseOrder) {
     return (
-      isDigitalPackage &&
+      isLiveClassLesson &&
+      hasClassAccess &&
       (lesson.packageType || "starter") === "practice"
     );
+  }
+
+  return (
+    isDigitalPackage &&
+    (lesson.packageType || "starter") === "practice"
+  );
+}
   }
 
   if (packageGroup === "master") {
