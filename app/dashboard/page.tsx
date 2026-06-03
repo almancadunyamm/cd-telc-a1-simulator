@@ -971,6 +971,9 @@ const currentB1Task =
   const [showUpsell, setShowUpsell] = useState(false);
   const [upsellPackage, setUpsellPackage] = useState<PackageType>("practice");
   const [showExamNotice, setShowExamNotice] = useState(false);
+  const [profileName, setProfileName] = useState("");
+const [profileEmail, setProfileEmail] = useState("");
+const [profilePassword, setProfilePassword] = useState("");
 
   useEffect(() => {
   const rawPaymentAttempt = localStorage.getItem("last_payment_attempt");
@@ -1003,6 +1006,8 @@ const currentB1Task =
 
     const parsedUser = JSON.parse(rawUser) as LoggedUser;
     setCurrentUser(parsedUser);
+    setProfileName(parsedUser.name || "");
+setProfileEmail(parsedUser.username || "");
     const savedPendingSlug =
   localStorage.getItem("pending_payment_slug") ||
   localStorage.getItem("selected_product_slug") ||
@@ -1566,6 +1571,65 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
   const activePackageCount = userClasses.length;
   const upgradeOffers = getUpgradeOffers(effectivePackageType);
 
+  async function handleUpdateProfile() {
+  if (!currentUser) return;
+
+  const oldEmail = String(currentUser.username || "")
+    .trim()
+    .toLowerCase();
+
+  const newEmail = profileEmail.trim().toLowerCase();
+  const newName = profileName.trim();
+  const newPassword = profilePassword.trim();
+
+  if (!newEmail || !newName) {
+    alert("Ad soyad ve email boş bırakılamaz.");
+    return;
+  }
+
+  const updateData: any = {
+    email: newEmail,
+    name: newName,
+  };
+
+  if (newPassword) {
+    updateData.password = newPassword;
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update(updateData)
+    .eq("email", oldEmail);
+
+  if (error) {
+    alert("Profil güncellenemedi: " + error.message);
+    return;
+  }
+
+  if (oldEmail !== newEmail) {
+    await supabase
+      .from("orders")
+      .update({ username: newEmail })
+      .eq("username", oldEmail);
+
+    await supabase
+      .from("student_class_access")
+      .update({ username: newEmail })
+      .eq("username", oldEmail);
+  }
+
+  const updatedUser = {
+    ...currentUser,
+    username: newEmail,
+    name: newName,
+  };
+
+  localStorage.setItem("mock_logged_user", JSON.stringify(updatedUser));
+  setCurrentUser(updatedUser);
+  setProfilePassword("");
+
+  alert("Profil bilgileri güncellendi.");
+}
   function handleLogout() {
     localStorage.removeItem("mock_logged_user");
     router.push("/");
@@ -3185,14 +3249,40 @@ createPendingOrder({
       </p>
 
       <div className="mt-6 space-y-3">
-        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-          Kullanıcı adı: {currentUser.username}
-        </div>
+  <input
+    value={profileName}
+    onChange={(e) => setProfileName(e.target.value)}
+    placeholder="Ad Soyad"
+    className="w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none ring-1 ring-slate-200 focus:ring-blue-300"
+  />
 
-        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-          Aktif paket: {getPackageLabel(effectivePackageType)}
-        </div>
-      </div>
+  <input
+    value={profileEmail}
+    onChange={(e) => setProfileEmail(e.target.value)}
+    placeholder="Email"
+    className="w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none ring-1 ring-slate-200 focus:ring-blue-300"
+  />
+
+  <input
+    type="password"
+    value={profilePassword}
+    onChange={(e) => setProfilePassword(e.target.value)}
+    placeholder="Yeni şifre boş bırakılırsa değişmez"
+    className="w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none ring-1 ring-slate-200 focus:ring-blue-300"
+  />
+
+  <button
+    type="button"
+    onClick={handleUpdateProfile}
+    className="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-black text-white shadow-lg hover:bg-blue-700"
+  >
+    Profil Bilgilerini Güncelle
+  </button>
+
+  <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
+    Aktif paket: {getPackageLabel(effectivePackageType)}
+  </div>
+</div>
     </div>
 
     {/* AKSİYONLAR */}
