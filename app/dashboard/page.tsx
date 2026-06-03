@@ -800,6 +800,9 @@ useEffect(() => {
   loadMasteryProgress();
 }, [currentUser, currentUsername, selectedMasteryLevel]);
 
+const firstIncompleteThemeId =
+  masteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))
+    ?.id || 1;
 const selectedMasteryTheme = masteryThemes.find(
   (theme) => theme.id === selectedMasteryThemeId
 );
@@ -3627,7 +3630,7 @@ createPendingOrder({
     <button
       type="button"
       onClick={() => {
-        resetMasteryTest(selectedMasteryThemeId);
+        resetMasteryTest(firstIncompleteThemeId);
         setTimeout(() => {
           document
             .getElementById("mastery-test-area")
@@ -3875,7 +3878,7 @@ const progressPercent = getThemeProgressPercent(theme.id);
 
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 {isThemePassed
-                  ? `Tema ${selectedMasteryTheme.id} başarıyla tamamlandı. Bir sonraki tema yakında açılacak.`
+                  ? `Tema ${selectedMasteryTheme.id} başarıyla tamamlandı. Bir sonraki temaya geçebilirsin.`
                   : "Bazı derslerde eksiklerin görünüyor. En az 3/5 başarı gereken dersleri tekrar izlemeni öneriyoruz."}
               </p>
 
@@ -3947,6 +3950,25 @@ const progressPercent = getThemeProgressPercent(theme.id);
       🚀 Gelişim Paketine Geç
     </button>
   </div>
+)}
+              {isThemePassed && selectedMasteryTheme.id < masteryThemes.length && (
+  <button
+    type="button"
+    onClick={() => {
+      const nextThemeId = selectedMasteryTheme.id + 1;
+      setSelectedMasteryThemeId(nextThemeId);
+      resetMasteryTest(nextThemeId);
+
+      setTimeout(() => {
+        document
+          .getElementById("mastery-test-area")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }}
+    className="mt-8 mr-3 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-black text-white hover:bg-emerald-700"
+  >
+    Sonraki Temaya Geç
+  </button>
 )}
               <button
                 type="button"
