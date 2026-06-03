@@ -774,9 +774,9 @@ const [masteryFeedback, setMasteryFeedback] = useState<"correct" | "wrong" | nul
 const [completedMasteryThemes, setCompletedMasteryThemes] = useState<number[]>([]);
 useEffect(() => {
   async function loadMasteryProgress() {
-    const username = String(currentUsername || "")
-      .trim()
-      .toLowerCase();
+    const username = String(currentUser?.username || currentUsername || "")
+  .trim()
+  .toLowerCase();
 
     if (!username || username === "guest") return;
 
@@ -798,7 +798,7 @@ useEffect(() => {
   }
 
   loadMasteryProgress();
-}, [currentUsername, selectedMasteryLevel]);
+}, [currentUser, currentUsername, selectedMasteryLevel]);
 
 const selectedMasteryTheme = masteryThemes.find(
   (theme) => theme.id === selectedMasteryThemeId
@@ -886,7 +886,7 @@ const handleMasteryAnswer = (answer: string) => {
   if (answer === currentMasteryQuestion.de) {
     setMasteryFeedback("correct");
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const nextIndex = masteryIndex + 1;
 
       setMasteryAnswers((prev) => [...prev, currentMasteryQuestion]);
@@ -912,17 +912,27 @@ const handleMasteryAnswer = (answer: string) => {
     : [...prev, selectedMasteryThemeId]
 );
 
-supabase.from("mastery_progress").upsert(
-  {
-    username: String(currentUsername || "").trim().toLowerCase(),
-    level: selectedMasteryLevel,
-    theme_id: selectedMasteryThemeId,
-    status: "completed",
-  },
-  {
-    onConflict: "username,level,theme_id",
-  }
-);
+const masteryUsername = String(currentUser?.username || currentUsername || "")
+  .trim()
+  .toLowerCase();
+
+const { error: masterySaveError } = await supabase
+  .from("mastery_progress")
+  .upsert(
+    {
+      username: masteryUsername,
+      level: selectedMasteryLevel,
+      theme_id: selectedMasteryThemeId,
+      status: "completed",
+    },
+    {
+      onConflict: "username,level,theme_id",
+    }
+  );
+
+if (masterySaveError) {
+  alert("Ustalık ilerlemesi kaydedilemedi: " + masterySaveError.message);
+}
   }
 } else {
   setMasteryIndex(nextIndex);
