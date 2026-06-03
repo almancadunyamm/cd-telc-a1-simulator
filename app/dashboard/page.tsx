@@ -25,6 +25,7 @@ import {
 import { theme1Questions } from "@/app/data/mastery/theme1";
 import { theme2Questions } from "@/app/data/mastery/theme2";
 import { theme3Questions } from "@/app/data/mastery/theme3";
+import { theme4Questions } from "@/app/data/mastery/theme4";
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
@@ -763,6 +764,10 @@ const masteryQuestions: MasteryQuestion[] = [
     options: [...question.options],
   })),
   ...theme3Questions.map((question) => ({
+  ...question,
+  options: [...question.options],
+})),
+...theme4Questions.map((question: any) => ({
   ...question,
   options: [...question.options],
 })),
