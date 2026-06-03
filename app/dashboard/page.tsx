@@ -3587,7 +3587,10 @@ const progressPercent = getThemeProgressPercent(theme.id);
       {activeAccessLevels.includes(selectedMasteryLevel) &&
   selectedMasteryLevel === "A1" &&
   selectedMasteryTheme && (
-  <div id="mastery-test-area" className="mt-8 scroll-mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
+  <div
+  id="mastery-test-area"
+  className="mt-8 scroll-mt-6 rounded-[2rem] bg-white px-3 py-6 shadow-sm sm:px-6"
+>
           {!masteryFinished ? (
             <>
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -3617,7 +3620,7 @@ const progressPercent = getThemeProgressPercent(theme.id);
               </div>
 
               {currentMasteryQuestion ? (
-                <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+                <div className="mt-6">
                   <div className="rounded-3xl border border-slate-100 bg-slate-50 p-3 sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs font-black uppercase tracking-widest text-blue-600">
@@ -3678,56 +3681,16 @@ const progressPercent = getThemeProgressPercent(theme.id);
                         Dersi tekrar izleyip yeniden denemeni öneriyoruz.
                       </div>
                     )}
-                  </div>
-
-                  <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-                      Ders bazlı başarı
-                    </p>
-
-                    <div className="mt-4 space-y-3">
-                      {selectedMasteryTheme.lessons.map((lesson) => {
-                        const score = getLessonScore(lesson.number);
-
-                        return (
-                          <div
-                            key={lesson.number}
-                            className="rounded-2xl bg-slate-50 p-4"
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <div>
-                                <p className="text-sm font-black text-slate-900">
-                                  Ders {lesson.number}
-                                </p>
-                                <p className="mt-1 text-xs font-bold text-slate-500">
-                                  {lesson.title}
-                                </p>
-                              </div>
-
-                              <p className="text-sm font-black text-slate-900">
-                                {score}/5
-                              </p>
-                            </div>
-
-                            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
-                              <div
-                                className="h-full rounded-full bg-emerald-500"
-                                style={{ width: `${(score / 5) * 100}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
                     <button
-                      type="button"
-                      onClick={() => resetMasteryTest(selectedMasteryTheme.id)}
-                      className="mt-6 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-50"
-                    >
-                      🔄 Testi Sıfırla
-                    </button>
+  type="button"
+  onClick={() => resetMasteryTest(selectedMasteryTheme.id)}
+  className="mt-5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-50"
+>
+  🔄 Testi Sıfırla
+</button>
                   </div>
+
+                  
                 </div>
               ) : (
                 <div className="mt-6 rounded-3xl bg-slate-50 p-8 text-center">
