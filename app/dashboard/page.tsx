@@ -1609,13 +1609,18 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
   localStorage.setItem("last_selected_lesson", JSON.stringify(lesson));
 
   setTimeout(() => {
-    document
-      .getElementById("lesson-player")
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-  }, 150);
+  const player = document.getElementById("lesson-player");
+
+  if (!player) return;
+
+  const y =
+    player.getBoundingClientRect().top + window.scrollY - 16;
+
+  window.scrollTo({
+    top: y,
+    behavior: "smooth",
+  });
+}, 300);
 }
 
   async function handleUpgrade(packageType: PackageType) {
