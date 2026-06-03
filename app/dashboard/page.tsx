@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { theme1Questions } from "@/app/data/mastery/theme1";
 import { theme2Questions } from "@/app/data/mastery/theme2";
+import { theme3Questions } from "@/app/data/mastery/theme3";
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
@@ -761,6 +762,10 @@ const masteryQuestions: MasteryQuestion[] = [
     ...question,
     options: [...question.options],
   })),
+  ...theme3Questions.map((question) => ({
+  ...question,
+  options: [...question.options],
+})),
 ];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
