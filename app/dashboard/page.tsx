@@ -882,7 +882,7 @@ const handleMasteryAnswer = (answer: string) => {
 } else {
   setMasteryIndex(nextIndex);
 }
-    }, 3600);
+    }, 1800);
 
     return;
   }
@@ -898,7 +898,7 @@ const handleMasteryAnswer = (answer: string) => {
     }
 
     setMasteryLives((prev) => prev - 1);
-  }, 1800);
+  }, 3600);
 };
   
   const openedLessonCount = Number(
