@@ -3357,8 +3357,8 @@ createPendingOrder({
   </section>
 )}
 {activeDashboardTab === "vocabulary" && (
-  <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
-    <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 p-6">
+  <section className="mb-8">
+    <div className="rounded-[2rem] bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 px-3 py-6 sm:px-6">
       <div>
         <p className="text-sm font-black uppercase tracking-widest text-emerald-700">
           Kelime & Ustalık Testleri
@@ -3589,7 +3589,7 @@ const progressPercent = getThemeProgressPercent(theme.id);
   selectedMasteryTheme && (
   <div
   id="mastery-test-area"
-  className="mt-8 scroll-mt-6 rounded-[2rem] bg-white px-3 py-6 shadow-sm sm:px-6"
+  className="-mx-1 mt-8 scroll-mt-6 rounded-[2rem] bg-white px-2 py-6 shadow-sm sm:mx-0 sm:px-6"
 >
           {!masteryFinished ? (
             <>
@@ -3621,7 +3621,7 @@ const progressPercent = getThemeProgressPercent(theme.id);
 
               {currentMasteryQuestion ? (
                 <div className="mt-6">
-                  <div className="rounded-3xl border border-slate-100 bg-slate-50 p-3 sm:p-6">
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50 p-2 sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs font-black uppercase tracking-widest text-blue-600">
                         Soru {masteryIndex + 1} / {selectedMasteryQuestions.length}
