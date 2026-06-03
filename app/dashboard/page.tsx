@@ -772,6 +772,33 @@ const [activeMasteryQuestions, setActiveMasteryQuestions] = useState<MasteryQues
 const [masteryFinished, setMasteryFinished] = useState(false);
 const [masteryFeedback, setMasteryFeedback] = useState<"correct" | "wrong" | null>(null);
 const [completedMasteryThemes, setCompletedMasteryThemes] = useState<number[]>([]);
+useEffect(() => {
+  async function loadMasteryProgress() {
+    const username = String(currentUsername || "")
+      .trim()
+      .toLowerCase();
+
+    if (!username || username === "guest") return;
+
+    const { data, error } = await supabase
+      .from("mastery_progress")
+      .select("theme_id")
+      .eq("username", username)
+      .eq("level", selectedMasteryLevel)
+      .eq("status", "completed");
+
+    if (error) {
+      console.log("Mastery progress yüklenemedi:", error);
+      return;
+    }
+
+    setCompletedMasteryThemes(
+      (data || []).map((item: any) => item.theme_id)
+    );
+  }
+
+  loadMasteryProgress();
+}, [currentUsername, selectedMasteryLevel]);
 
 const selectedMasteryTheme = masteryThemes.find(
   (theme) => theme.id === selectedMasteryThemeId
@@ -880,10 +907,22 @@ const handleMasteryAnswer = (answer: string) => {
 
   if (passedAllLessons) {
     setCompletedMasteryThemes((prev) =>
-      prev.includes(selectedMasteryThemeId)
-        ? prev
-        : [...prev, selectedMasteryThemeId]
-    );
+  prev.includes(selectedMasteryThemeId)
+    ? prev
+    : [...prev, selectedMasteryThemeId]
+);
+
+supabase.from("mastery_progress").upsert(
+  {
+    username: String(currentUsername || "").trim().toLowerCase(),
+    level: selectedMasteryLevel,
+    theme_id: selectedMasteryThemeId,
+    status: "completed",
+  },
+  {
+    onConflict: "username,level,theme_id",
+  }
+);
   }
 } else {
   setMasteryIndex(nextIndex);
