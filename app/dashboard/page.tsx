@@ -2143,7 +2143,7 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
 </aside>
 <div className="relative mb-4 block w-full max-w-full overflow-hidden lg:hidden">
   <div className="w-full overflow-x-auto rounded-2xl bg-white p-3 shadow">
-    <div className="flex max-w-full gap-2 overflow-x-auto pr-24">
+    <div className="flex max-w-full gap-2 overflow-x-auto pr-20">
       {[
   { key: "home", label: "Ana Sayfa", icon: "🏠" },
   { key: "lessons", label: "Dersler", icon: "🎬" },
@@ -2172,10 +2172,6 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
       ))}
     </div>
   </div>
-<div className="pointer-events-none absolute right-2 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1 rounded-full bg-slate-900/85 px-3 py-2 text-xs font-black text-white shadow-lg">
-  Kaydır
-  <span className="text-lg">→</span>
-</div>
 
 <div className="pointer-events-none absolute right-0 top-0 h-full w-20 rounded-r-2xl bg-gradient-to-l from-white via-white/80 to-transparent" />
 </div>
