@@ -797,6 +797,34 @@ const [activeMasteryQuestions, setActiveMasteryQuestions] = useState<MasteryQues
 const [masteryFinished, setMasteryFinished] = useState(false);
 const [masteryFeedback, setMasteryFeedback] = useState<"correct" | "wrong" | null>(null);
 const [completedMasteryThemes, setCompletedMasteryThemes] = useState<number[]>([]);
+const completedThemeCount = completedMasteryThemes.length;
+
+const masteryBadgeTitle =
+  completedThemeCount >= 12
+    ? "TELC Şampiyonu"
+    : completedThemeCount >= 9
+    ? "Süper Usta"
+    : completedThemeCount >= 6
+    ? "Kelime Ustası"
+    : completedThemeCount >= 3
+    ? "Tema Avcısı"
+    : "Başlangıç Yolcusu";
+
+const nextBadgeTarget =
+  completedThemeCount >= 12
+    ? 12
+    : completedThemeCount >= 9
+    ? 12
+    : completedThemeCount >= 6
+    ? 9
+    : completedThemeCount >= 3
+    ? 6
+    : 3;
+
+const remainingThemesForBadge = Math.max(
+  0,
+  nextBadgeTarget - completedThemeCount
+);
 useEffect(() => {
   async function loadMasteryProgress() {
     const username = String(currentUser?.username || currentUsername || "")
@@ -3702,78 +3730,106 @@ createPendingOrder({
   )}
       {activeAccessLevels.includes(selectedMasteryLevel) &&
   selectedMasteryLevel === "A1" && (
-      <div id="mastery-theme-cards" className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {masteryThemes.map((theme) => {
-          const isActive = theme.id === selectedMasteryThemeId;
-          const isUnlocked = theme.id <= 6;
-          const isCompleted = completedMasteryThemes.includes(theme.id);
-const progressPercent = getThemeProgressPercent(theme.id);
+      <>
+  <div className="mt-6 rounded-3xl border border-yellow-200 bg-gradient-to-br from-yellow-50 via-white to-emerald-50 p-5 shadow-sm">
+    <p className="text-xs font-black uppercase tracking-widest text-yellow-700">
+      🎖 Mevcut Ünvan
+    </p>
 
-          return (
-            <button
-              key={theme.id}
-              type="button"
-              onClick={() => {
-                if (!isUnlocked) return;
-                resetMasteryTest(theme.id);
-              }}
-              className={`rounded-3xl border p-5 text-left shadow-sm transition ${
-                isActive
-                  ? "border-emerald-300 bg-white ring-4 ring-emerald-100"
-                  : "border-white/70 bg-white/70 hover:bg-white"
-              } ${!isUnlocked ? "cursor-not-allowed opacity-75" : ""}`}
+    <h3 className="mt-2 text-2xl font-black text-slate-900">
+      {masteryBadgeTitle}
+    </h3>
+
+    <p className="mt-2 text-sm font-bold text-slate-600">
+      {completedThemeCount >= 12
+        ? "Tebrikler! En yüksek ünvanı kazandın."
+        : `Bir sonraki ünvana ${remainingThemesForBadge} tema kaldı.`}
+    </p>
+  </div>
+
+  <div
+    id="mastery-theme-cards"
+    className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+  >
+    {masteryThemes.map((theme) => {
+      const isActive = theme.id === selectedMasteryThemeId;
+      const isUnlocked = theme.id <= 6;
+      const isCompleted = completedMasteryThemes.includes(theme.id);
+      const progressPercent = getThemeProgressPercent(theme.id);
+
+      return (
+        <button
+          key={theme.id}
+          type="button"
+          onClick={() => {
+            if (!isUnlocked) return;
+            resetMasteryTest(theme.id);
+          }}
+          className={`rounded-3xl border p-5 text-left shadow-sm transition ${
+            isActive
+              ? "border-emerald-300 bg-white ring-4 ring-emerald-100"
+              : "border-white/70 bg-white/70 hover:bg-white"
+          } ${!isUnlocked ? "cursor-not-allowed opacity-75" : ""}`}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Tema {theme.id}
+              </p>
+
+              <h3 className="mt-2 text-lg font-black text-slate-900">
+                {theme.title}
+              </h3>
+
+              <p className="mt-1 text-xs font-bold text-slate-500">
+                {theme.germanTitle}
+              </p>
+            </div>
+
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-black ${
+                isUnlocked
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-amber-100 text-amber-700"
+              }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-                    Tema {theme.id}
-                  </p>
-                  <h3 className="mt-2 text-lg font-black text-slate-900">
-                    {theme.title}
-                  </h3>
-                  <p className="mt-1 text-xs font-bold text-slate-500">
-                    {theme.germanTitle}
-                  </p>
-                </div>
+              {isCompleted
+                ? "Tamamlandı"
+                : isUnlocked
+                ? "Başlangıç Paketi"
+                : "Gelişim Paketi"}
+            </span>
+          </div>
 
-                <span
-  className={`rounded-full px-3 py-1 text-xs font-black ${
-    isUnlocked
-      ? "bg-emerald-100 text-emerald-700"
-      : "bg-amber-100 text-amber-700"
-  }`}
->
-  {isCompleted ? "Tamamlandı" : isUnlocked ? "Başlangıç Paketi" : "Gelişim Paketi"}
-</span>
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-xs font-black text-slate-500">
+              <span>İlerleme</span>
+              <span>{progressPercent}%</span>
+            </div>
+
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            {theme.lessons.map((lesson) => (
+              <div
+                key={lesson.number}
+                className="rounded-2xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600"
+              >
+                Ders {lesson.number}: {lesson.title}
               </div>
-
-              <div className="mt-4">
-  <div className="flex items-center justify-between text-xs font-black text-slate-500">
-    <span>İlerleme</span>
-    <span>{progressPercent}%</span>
+            ))}
+          </div>
+        </button>
+      );
+    })}
   </div>
-
-  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-    <div
-      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all"
-      style={{ width: `${progressPercent}%` }}
-    />
-  </div>
-</div>
-              <div className="mt-4 space-y-2">
-                {theme.lessons.map((lesson) => (
-                  <div
-                    key={lesson.number}
-                    className="rounded-2xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600"
-                  >
-                    Ders {lesson.number}: {lesson.title}
-                  </div>
-                ))}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+</>
 )}
       {activeAccessLevels.includes(selectedMasteryLevel) &&
   selectedMasteryLevel === "A1" &&
