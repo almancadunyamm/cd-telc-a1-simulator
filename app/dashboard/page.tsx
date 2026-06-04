@@ -33,6 +33,7 @@ import { theme8Questions } from "@/app/data/mastery/theme8";
 import { theme9Questions } from "@/app/data/mastery/theme9";
 import { theme10Questions } from "@/app/data/mastery/theme10";
 import { theme11Questions } from "@/app/data/mastery/theme11";
+import { theme12Questions } from "@/app/data/mastery/theme12";
 
 
 type Level = "A1" | "A2" | "B1";
@@ -751,12 +752,12 @@ const masteryThemes = [
   },
   {
     id: 12,
-    title: "Randevu & İletişim",
+    title: "Schreiben ( Mektup & Form)",
     germanTitle: "Termin & Kommunikation",
     lessons: [
-      { number: 34, title: "Telefon konuşmaları" },
-      { number: 35, title: "Tarih & saat" },
-      { number: 36, title: "Genel tekrar + TELC simülasyon" },
+      { number: 34, title: "Form doldurma + Mektup" },
+      { number: 35, title: "Örnek mektup kalıpları" },
+      { number: 36, title: "Genel tekrar" },
     ],
   },
 ];
@@ -807,6 +808,10 @@ const masteryQuestions: MasteryQuestion[] = [
   ...question,
   options: [...question.options],
 })),
+...theme12Questions.map((question: any) => ({
+  ...question,
+  options: [...question.options],
+})),
 ];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -819,6 +824,7 @@ const [masteryFinished, setMasteryFinished] = useState(false);
 const [masteryFeedback, setMasteryFeedback] = useState<"correct" | "wrong" | null>(null);
 const [completedMasteryThemes, setCompletedMasteryThemes] = useState<number[]>([]);
 const completedThemeCount = completedMasteryThemes.length;
+const isTelcChampion = completedMasteryThemes.includes(12);
 
 const masteryBadgeTitle =
   completedThemeCount >= 12
@@ -3752,6 +3758,45 @@ createPendingOrder({
       {activeAccessLevels.includes(selectedMasteryLevel) &&
   selectedMasteryLevel === "A1" && (
       <>
+  {isTelcChampion && (
+  <div className="mt-6 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-yellow-50 p-6 shadow-lg">
+    <div className="text-center">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-4xl">
+        🏆
+      </div>
+
+      <h2 className="mt-4 text-3xl font-black text-slate-900">
+        TELC Şampiyonu!
+      </h2>
+
+      <p className="mt-3 text-sm font-bold leading-6 text-slate-600">
+        Tebrikler! 12 temayı ve 36 dersi başarıyla tamamladın.
+        Artık A1 temel hazırlık sürecini bitirdin.
+      </p>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <p className="text-2xl font-black text-emerald-600">12</p>
+          <p className="text-xs font-bold text-slate-500">Tema Tamamlandı</p>
+        </div>
+
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <p className="text-2xl font-black text-blue-600">36</p>
+          <p className="text-xs font-bold text-slate-500">Ders Bitirildi</p>
+        </div>
+
+        <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <p className="text-2xl font-black text-yellow-600">A1</p>
+          <p className="text-xs font-bold text-slate-500">Hazırlık Tamam</p>
+        </div>
+      </div>
+
+      <p className="mt-5 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-lg">
+        🎓 Almanca Okulum A1 Ustalık Yolculuğu Tamamlandı
+      </p>
+    </div>
+  </div>
+)}
   <div className="mt-6 rounded-3xl border border-yellow-200 bg-gradient-to-br from-yellow-50 via-white to-emerald-50 p-5 shadow-sm">
     <p className="text-xs font-black uppercase tracking-widest text-yellow-700">
       🎖 Mevcut Ünvan
