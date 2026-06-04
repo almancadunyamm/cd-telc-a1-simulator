@@ -1824,6 +1824,16 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
   const newName = profileName.trim();
   const newPassword = profilePassword.trim();
 
+  const oldStudentKey = String(currentUsername || "")
+  .trim()
+  .toLowerCase();
+
+const newStudentKey = String(profileEmail || currentUsername || "")
+  .trim()
+  .toLowerCase();
+
+const newDisplayName = String(profileName || "").trim();
+
   if (!newEmail || !newName) {
     alert("Ad soyad ve email boş bırakılamaz.");
     return;
@@ -1849,16 +1859,31 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
   }
 
   if (oldEmail !== newEmail) {
-    await supabase
-      .from("orders")
-      .update({ username: newEmail })
-      .eq("username", oldEmail);
+  await supabase
+    .from("orders")
+    .update({ username: newEmail })
+    .eq("username", oldEmail);
 
-    await supabase
-      .from("student_class_access")
-      .update({ username: newEmail })
-      .eq("username", oldEmail);
-  }
+  await supabase
+    .from("student_class_access")
+    .update({ username: newEmail })
+    .eq("username", oldEmail);
+
+  await supabase
+    .from("mastery_progress")
+    .update({
+      student_key: newEmail,
+      username: newName,
+    })
+    .or(`student_key.eq.${oldEmail},username.eq.${oldEmail}`);
+} else {
+  await supabase
+    .from("mastery_progress")
+    .update({
+      username: newName,
+    })
+    .eq("student_key", oldEmail);
+}
 
   const updatedUser = {
     ...currentUser,
