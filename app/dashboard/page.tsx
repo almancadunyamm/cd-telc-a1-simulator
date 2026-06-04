@@ -30,6 +30,7 @@ import { theme5Questions } from "@/app/data/mastery/theme5";
 import { theme6Questions } from "@/app/data/mastery/theme6";
 import { theme7Questions } from "@/app/data/mastery/theme7";
 import { theme8Questions } from "@/app/data/mastery/theme8";
+import { theme9Questions } from "@/app/data/mastery/theme9";
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
@@ -784,6 +785,10 @@ const masteryQuestions: MasteryQuestion[] = [
   options: [...question.options],
 })),
 ...theme7Questions.map((question: any) => ({
+  ...question,
+  options: [...question.options],
+})),
+...theme8Questions.map((question: any) => ({
   ...question,
   options: [...question.options],
 })),
