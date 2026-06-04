@@ -824,7 +824,9 @@ const [masteryFinished, setMasteryFinished] = useState(false);
 const [masteryFeedback, setMasteryFeedback] = useState<"correct" | "wrong" | null>(null);
 const [completedMasteryThemes, setCompletedMasteryThemes] = useState<number[]>([]);
 const completedThemeCount = completedMasteryThemes.length;
-const isTelcChampion = completedMasteryThemes.includes(12);
+const isTelcChampion = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].every((id) =>
+  completedMasteryThemes.includes(id)
+);
 
 const masteryBadgeTitle =
   completedThemeCount >= 12
@@ -3827,8 +3829,13 @@ const hasDevelopmentAccess =
   effectivePackageType === "master" ||
   hasAnyLiveCourseOrder;
 
-const isUnlocked =
+const hasPackageAccess =
   isStarterTheme || (isDevelopmentTheme && hasDevelopmentAccess);
+
+const isPreviousThemeCompleted =
+  theme.id === 1 || completedMasteryThemes.includes(theme.id - 1);
+
+const isUnlocked = hasPackageAccess && isPreviousThemeCompleted;
       const isCompleted = completedMasteryThemes.includes(theme.id);
       const progressPercent = getThemeProgressPercent(theme.id);
 
@@ -3837,14 +3844,27 @@ const isUnlocked =
           key={theme.id}
           type="button"
           onClick={() => {
-            if (!isUnlocked) return;
-            resetMasteryTest(theme.id);
-          }}
+  if (!hasPackageAccess) {
+    alert(
+      "🚀 Bu tema Gelişim Paketi ile açılır.\n\nTema 7-12 arasındaki premium ustalık testleri için Gelişim Paketine geçmelisiniz."
+    );
+    return;
+  }
+
+  if (!isPreviousThemeCompleted) {
+    alert(
+      `🔒 Önce Tema ${theme.id - 1}'i tamamlamalısınız.\n\nUstalık yolculuğu sırayla ilerler.`
+    );
+    return;
+  }
+
+  resetMasteryTest(theme.id);
+}}
           className={`rounded-3xl border p-5 text-left shadow-sm transition ${
             isActive
               ? "border-emerald-300 bg-white ring-4 ring-emerald-100"
               : "border-white/70 bg-white/70 hover:bg-white"
-          } ${!isUnlocked ? "cursor-not-allowed opacity-75" : ""}`}
+          } ${!isUnlocked ? "cursor-not-allowed opacity-60 grayscale" : ""}`}
         >
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -3870,6 +3890,10 @@ const isUnlocked =
             >
               {isCompleted
   ? "Tamamlandı"
+  : !hasPackageAccess
+  ? "Gelişim Paketi"
+  : !isPreviousThemeCompleted
+  ? "Kilitli"
   : isStarterTheme
   ? "Başlangıç Paketi"
   : "Gelişim Paketi"}
