@@ -827,6 +827,10 @@ const completedThemeCount = completedMasteryThemes.length;
 const isTelcChampion = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].every((id) =>
   completedMasteryThemes.includes(id)
 );
+const [masteryLockModal, setMasteryLockModal] = useState<{
+  type: "premium" | "sequence";
+  themeId: number;
+} | null>(null);
 
 const masteryBadgeTitle =
   completedThemeCount >= 12
@@ -3845,18 +3849,20 @@ const isUnlocked = hasPackageAccess && isPreviousThemeCompleted;
           type="button"
           onClick={() => {
   if (!hasPackageAccess) {
-    alert(
-      "🚀 Bu tema Gelişim Paketi ile açılır.\n\nTema 7-12 arasındaki premium ustalık testleri için Gelişim Paketine geçmelisiniz."
-    );
-    return;
-  }
+  setMasteryLockModal({
+    type: "premium",
+    themeId: theme.id,
+  });
+  return;
+}
 
-  if (!isPreviousThemeCompleted) {
-    alert(
-      `🔒 Önce Tema ${theme.id - 1}'i tamamlamalısınız.\n\nUstalık yolculuğu sırayla ilerler.`
-    );
-    return;
-  }
+if (!isPreviousThemeCompleted) {
+  setMasteryLockModal({
+    type: "sequence",
+    themeId: theme.id,
+  });
+  return;
+}
 
   resetMasteryTest(theme.id);
 }}
@@ -3928,6 +3934,69 @@ const isUnlocked = hasPackageAccess && isPreviousThemeCompleted;
       );
     })}
   </div>
+  {masteryLockModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-yellow-200 text-4xl shadow-inner">
+        {masteryLockModal.type === "premium" ? "🚀" : "🔒"}
+      </div>
+
+      <h2 className="mt-5 text-center text-2xl font-black text-slate-900">
+        {masteryLockModal.type === "premium"
+          ? "Gelişim Paketi ile Devam Et"
+          : "Sıradaki Tema Henüz Kilitli"}
+      </h2>
+
+      <p className="mt-3 text-center text-sm font-semibold leading-6 text-slate-600">
+        {masteryLockModal.type === "premium"
+          ? "Başlangıç Paketi ilk 6 temayı kapsar. Tema 7’den itibaren premium ustalık yolculuğu Gelişim Paketi ile açılır."
+          : `Tema ${masteryLockModal.themeId} için önce Tema ${
+              masteryLockModal.themeId - 1
+            } başarıyla tamamlanmalıdır.`}
+      </p>
+
+      <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+        {masteryLockModal.type === "premium" ? (
+          <div className="space-y-2 text-sm font-bold text-slate-700">
+            <p>✓ Tema 7-12 arası premium ustalık testleri</p>
+            <p>✓ TELC A1 final tekrar havuzu</p>
+            <p>✓ Sağlık, Tatil ve Schreiben temaları</p>
+            <p>✓ Şampiyonluk rozetine giden yol</p>
+          </div>
+        ) : (
+          <div className="space-y-2 text-sm font-bold text-slate-700">
+            <p>✓ Ustalık yolu sırayla ilerler</p>
+            <p>✓ Her tema bir öncekinin üzerine kurulur</p>
+            <p>✓ Bu sistem bilgiyi kalıcı hale getirir</p>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 grid gap-3">
+        {masteryLockModal.type === "premium" && (
+          <button
+            type="button"
+            onClick={() => {
+              setActiveDashboardTab("packages");
+              setMasteryLockModal(null);
+            }}
+            className="rounded-2xl bg-gradient-to-r from-emerald-600 to-blue-600 px-4 py-3 text-sm font-black text-white shadow-lg transition hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Gelişim Paketlerini İncele
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setMasteryLockModal(null)}
+          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+        >
+          Tamam, Anladım
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 </>
 )}
       {activeAccessLevels.includes(selectedMasteryLevel) &&
