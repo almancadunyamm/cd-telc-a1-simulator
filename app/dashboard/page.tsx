@@ -742,7 +742,7 @@ const masteryThemes = [
     title: "Tatil",
     germanTitle: "Urlaub",
     lessons: [
-      { number: 31, title: "Seyahat" },
+      { number: 31, title: "Tatil-Aylar-Havadurumu" },
       { number: 32, title: "Perfekt tanıtım" },
       { number: 33, title: "Otel & rezervasyon" },
     ],
