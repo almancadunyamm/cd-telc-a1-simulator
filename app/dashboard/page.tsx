@@ -842,7 +842,16 @@ const masteryBadgeTitle =
     : completedThemeCount >= 3
     ? "Tema Avcısı"
     : "Başlangıç Yolcusu";
-
+const masteryLeaders = [
+  { name: "Ahmet Çelik", badge: "TELC Şampiyonu", type: "Canlı Sınıf", themes: 12 },
+  { name: "Ayfer Kılıç", badge: "Süper Usta", type: "Canlı Sınıf", themes: 9 },
+  { name: "Mehmet Yılmaz", badge: "Kelime Ustası", type: "Dijital", themes: 6 },
+  { name: "Zeynep Demir", badge: "Tema Avcısı", type: "Canlı Sınıf", themes: 3 },
+  { name: "Elif Kaya", badge: "Tema Avcısı", type: "Dijital", themes: 3 },
+  { name: "Hasan Aydın", badge: "Başlangıç Yolcusu", type: "Dijital", themes: 2 },
+  { name: "Merve Şahin", badge: "Başlangıç Yolcusu", type: "Canlı Sınıf", themes: 1 },
+  { name: "Yusuf Arslan", badge: "Başlangıç Yolcusu", type: "Dijital", themes: 1 },
+];
 const nextBadgeTarget =
   completedThemeCount >= 12
     ? 12
@@ -3818,6 +3827,64 @@ createPendingOrder({
         : `Bir sonraki ünvana ${remainingThemesForBadge} tema kaldı.`}
     </p>
   </div>
+  <div className="mt-6 rounded-3xl border border-white/70 bg-white/80 p-5 shadow-lg backdrop-blur">
+  <div className="flex items-center justify-between gap-3">
+    <div>
+      <p className="text-xs font-black uppercase tracking-widest text-emerald-600">
+        🏆 Ustalık Liderleri
+      </p>
+      <h3 className="mt-1 text-xl font-black text-slate-900">
+        Bu Haftanın Öne Çıkanları
+      </h3>
+    </div>
+
+    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
+      Canlı
+    </span>
+  </div>
+
+  <div className="mt-5 space-y-3">
+    {masteryLeaders.map((leader, index) => (
+      <div
+        key={`${leader.name}-${index}`}
+        className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-yellow-100 to-emerald-100 text-sm font-black text-slate-700">
+            {index + 1}
+          </div>
+
+          <div>
+            <p className="text-sm font-black text-slate-900">
+              {leader.name}
+            </p>
+            <p className="text-xs font-bold text-slate-500">
+              {leader.badge} · {leader.type}
+            </p>
+          </div>
+        </div>
+
+        <div className="text-right">
+          <p className="text-sm font-black text-emerald-600">
+            {leader.themes}/12
+          </p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Tema
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div className="mt-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-blue-600 p-4 text-white">
+    <p className="text-sm font-black">
+      🚀 Canlı sınıf öğrencileri bu hafta daha hızlı ilerliyor.
+    </p>
+    <p className="mt-1 text-xs font-semibold text-white/80">
+      Ustalık testlerini tamamla, sen de liderler arasında görün.
+    </p>
+  </div>
+</div>
 
   <div
     id="mastery-theme-cards"
