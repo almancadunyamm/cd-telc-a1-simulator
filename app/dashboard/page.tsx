@@ -357,6 +357,9 @@ useEffect(() => {
 }, [lastActiveDate]);
 const loggedUser = JSON.parse(localStorage.getItem("mock_logged_user") || "{}");
 const currentUsername = loggedUser?.username || "guest";
+const studentKey = String(currentUsername || "")
+  .trim()
+  .toLowerCase();
 useEffect(() => {
   const interval = setInterval(async () => {
     const rawLoggedUser = localStorage.getItem("mock_logged_user");
@@ -872,7 +875,7 @@ useEffect(() => {
   async function loadRealMasteryLeaders() {
     const { data, error } = await supabase
       .from("mastery_progress")
-      .select("username, theme_id, level, status")
+      .select("student_key, username, theme_id, level, status")
       .eq("level", "A1")
       .eq("status", "completed");
 
@@ -884,23 +887,44 @@ useEffect(() => {
     const grouped: Record<string, Set<number>> = {};
 
     (data || []).forEach((item: any) => {
-      const username = String(item.username || "").trim();
+      const key = String(item.student_key || item.username || "")
+        .trim()
+        .toLowerCase();
 
-      if (!username || username === "guest") return;
+      if (!key || key === "guest") return;
 
-      if (!grouped[username]) {
-        grouped[username] = new Set<number>();
+      if (!grouped[key]) {
+        grouped[key] = new Set<number>();
       }
 
-      grouped[username].add(Number(item.theme_id));
+      grouped[key].add(Number(item.theme_id));
+    });
+
+    const studentKeys = Object.keys(grouped);
+
+    const { data: usersForLeaders } = await supabase
+      .from("users")
+      .select("email, name, username")
+      .in("email", studentKeys);
+
+    const userNameMap: Record<string, string> = {};
+
+    (usersForLeaders || []).forEach((user: any) => {
+      const key = String(user.email || user.username || "")
+        .trim()
+        .toLowerCase();
+
+      userNameMap[key] = String(
+        user.name || user.username || user.email || ""
+      ).trim();
     });
 
     const leaders = Object.entries(grouped)
-      .map(([username, themeSet]) => {
+      .map(([key, themeSet]) => {
         const themeCount = themeSet.size;
 
         return {
-          name: username,
+          name: userNameMap[key] || key,
           themes: themeCount,
           badge: getMasteryBadgeByThemeCount(themeCount),
           type: themeCount >= 7 ? "Canlı Sınıf" : "Dijital",
@@ -940,7 +964,7 @@ useEffect(() => {
     const { data, error } = await supabase
       .from("mastery_progress")
       .select("theme_id")
-      .eq("username", username)
+      .eq("student_key", studentKey)
       .eq("level", selectedMasteryLevel)
       .eq("status", "completed");
 
@@ -955,7 +979,7 @@ useEffect(() => {
   }
 
   loadMasteryProgress();
-}, [currentUser, currentUsername, selectedMasteryLevel]);
+}, [currentUser, currentUsername, studentKey, selectedMasteryLevel]);
 
 const firstIncompleteThemeId =
   masteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))
@@ -1080,13 +1104,14 @@ const { error: masterySaveError } = await supabase
   .from("mastery_progress")
   .upsert(
     {
-      username: masteryUsername,
+      student_key: studentKey,
+      username: studentKey,
       level: selectedMasteryLevel,
       theme_id: selectedMasteryThemeId,
       status: "completed",
     },
     {
-      onConflict: "username,level,theme_id",
+      onConflict: "student_key,level,theme_id",
     }
   );
 
