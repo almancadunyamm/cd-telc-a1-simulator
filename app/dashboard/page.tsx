@@ -721,8 +721,8 @@ const masteryThemes = [
     title: "Ulaşım & Yol Tarifi",
     germanTitle: "Verkehr & Wegbeschreibung",
     lessons: [
-      { number: 25, title: "Ulaşım araçları" },
-      { number: 26, title: "Emir cümlesi: Imperativ" },
+      { number: 25, title: "Genel konuşma kalıpları" },
+      { number: 26, title: "Ulaşım araçları + Emir cümlesi" },
       { number: 27, title: "Yönler" },
     ],
   },
@@ -792,7 +792,7 @@ const masteryQuestions: MasteryQuestion[] = [
   ...question,
   options: [...question.options],
 })),
-...theme8Questions.map((question: any) => ({
+...theme9Questions.map((question: any) => ({
   ...question,
   options: [...question.options],
 })),
@@ -3763,7 +3763,16 @@ createPendingOrder({
   >
     {masteryThemes.map((theme) => {
       const isActive = theme.id === selectedMasteryThemeId;
-      const isUnlocked = theme.id <= 6;
+      const isStarterTheme = theme.id <= 6;
+const isDevelopmentTheme = theme.id >= 7 && theme.id <= 12;
+
+const hasDevelopmentAccess =
+  effectivePackageType === "practice" ||
+  effectivePackageType === "master" ||
+  hasAnyLiveCourseOrder;
+
+const isUnlocked =
+  isStarterTheme || (isDevelopmentTheme && hasDevelopmentAccess);
       const isCompleted = completedMasteryThemes.includes(theme.id);
       const progressPercent = getThemeProgressPercent(theme.id);
 
@@ -3804,10 +3813,10 @@ createPendingOrder({
               }`}
             >
               {isCompleted
-                ? "Tamamlandı"
-                : isUnlocked
-                ? "Başlangıç Paketi"
-                : "Gelişim Paketi"}
+  ? "Tamamlandı"
+  : isStarterTheme
+  ? "Başlangıç Paketi"
+  : "Gelişim Paketi"}
             </span>
           </div>
 
