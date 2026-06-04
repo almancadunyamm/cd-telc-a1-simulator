@@ -86,9 +86,9 @@ export const theme9Questions = [
   lessonNumber: 25,
   lessonTitle: "Genel Tekrar",
   tr: "Bugün nasılsın?",
-  de: "Wie geht es dir?",
+  de: "Wie geht es dir heute?",
   options: [
-    "Wie geht es dir?",
+    "Wie geht es dir heute?",
     "Wie heißt du?",
     "Wo wohnst du?",
     "Wie alt bist du?"
