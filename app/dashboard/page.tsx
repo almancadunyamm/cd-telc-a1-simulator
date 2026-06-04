@@ -32,6 +32,8 @@ import { theme7Questions } from "@/app/data/mastery/theme7";
 import { theme8Questions } from "@/app/data/mastery/theme8";
 import { theme9Questions } from "@/app/data/mastery/theme9";
 import { theme10Questions } from "@/app/data/mastery/theme10";
+import { theme11Questions } from "@/app/data/mastery/theme11";
+
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
@@ -740,11 +742,11 @@ const masteryThemes = [
   {
     id: 11,
     title: "Tatil",
-    germanTitle: "Urlaub",
+    germanTitle: "Urlaub & Otel & Farben",
     lessons: [
       { number: 31, title: "Tatil-Aylar-Havadurumu" },
       { number: 32, title: "Perfekt tanıtım" },
-      { number: 33, title: "Otel & rezervasyon" },
+      { number: 33, title: "Otel+Günler+Renkler" },
     ],
   },
   {
@@ -798,6 +800,10 @@ const masteryQuestions: MasteryQuestion[] = [
   options: [...question.options],
 })),
 ...theme10Questions.map((question: any) => ({
+  ...question,
+  options: [...question.options],
+})),
+...theme11Questions.map((question: any) => ({
   ...question,
   options: [...question.options],
 })),
