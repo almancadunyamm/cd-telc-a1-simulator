@@ -842,7 +842,7 @@ const masteryBadgeTitle =
     : completedThemeCount >= 3
     ? "Tema Avcısı"
     : "Başlangıç Yolcusu";
-const masteryLeaders = [
+const fallbackMasteryLeaders = [
   { name: "Ahmet Çelik", badge: "TELC Şampiyonu", type: "Canlı Sınıf", themes: 12 },
   { name: "Ayfer Kılıç", badge: "Süper Usta", type: "Canlı Sınıf", themes: 9 },
   { name: "Mehmet Yılmaz", badge: "Kelime Ustası", type: "Dijital", themes: 6 },
@@ -852,6 +852,68 @@ const masteryLeaders = [
   { name: "Merve Şahin", badge: "Başlangıç Yolcusu", type: "Canlı Sınıf", themes: 1 },
   { name: "Yusuf Arslan", badge: "Başlangıç Yolcusu", type: "Dijital", themes: 1 },
 ];
+
+const [realMasteryLeaders, setRealMasteryLeaders] = useState<
+  { name: string; badge: string; type: string; themes: number }[]
+>([]);
+
+const masteryLeaders = [
+  ...realMasteryLeaders,
+  ...fallbackMasteryLeaders,
+].slice(0, 8);
+const getMasteryBadgeByThemeCount = (themeCount: number) => {
+  if (themeCount >= 12) return "TELC Şampiyonu";
+  if (themeCount >= 9) return "Süper Usta";
+  if (themeCount >= 6) return "Kelime Ustası";
+  if (themeCount >= 3) return "Tema Avcısı";
+  return "Başlangıç Yolcusu";
+};
+useEffect(() => {
+  async function loadRealMasteryLeaders() {
+    const { data, error } = await supabase
+      .from("mastery_progress")
+      .select("username, theme_id, level, status")
+      .eq("level", "A1")
+      .eq("status", "completed");
+
+    if (error) {
+      console.log("Ustalık liderleri yüklenemedi:", error);
+      return;
+    }
+
+    const grouped: Record<string, Set<number>> = {};
+
+    (data || []).forEach((item: any) => {
+      const username = String(item.username || "").trim();
+
+      if (!username || username === "guest") return;
+
+      if (!grouped[username]) {
+        grouped[username] = new Set<number>();
+      }
+
+      grouped[username].add(Number(item.theme_id));
+    });
+
+    const leaders = Object.entries(grouped)
+      .map(([username, themeSet]) => {
+        const themeCount = themeSet.size;
+
+        return {
+          name: username,
+          themes: themeCount,
+          badge: getMasteryBadgeByThemeCount(themeCount),
+          type: themeCount >= 7 ? "Canlı Sınıf" : "Dijital",
+        };
+      })
+      .sort((a, b) => b.themes - a.themes)
+      .slice(0, 8);
+
+    setRealMasteryLeaders(leaders);
+  }
+
+  loadRealMasteryLeaders();
+}, []);
 const nextBadgeTarget =
   completedThemeCount >= 12
     ? 12
@@ -3860,6 +3922,7 @@ createPendingOrder({
             </p>
             <p className="text-xs font-bold text-slate-500">
               {leader.badge} · {leader.type}
+{!realMasteryLeaders.some((real) => real.name === leader.name) && " · Örnek"}
             </p>
           </div>
         </div>
