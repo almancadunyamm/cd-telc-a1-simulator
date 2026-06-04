@@ -1105,7 +1105,7 @@ const { error: masterySaveError } = await supabase
   .upsert(
     {
       student_key: studentKey,
-      username: studentKey,
+      username: currentUser?.name || profileName || studentKey,
       level: selectedMasteryLevel,
       theme_id: selectedMasteryThemeId,
       status: "completed",
