@@ -191,6 +191,8 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [dogru, setDogru] = useState(0);
   const [yanlis, setYanlis] = useState(0);
   const [selectedWordLevel, setSelectedWordLevel] = useState<"A1" | "A2" | "B1">("A1");
+  const [completedWordThemes, setCompletedWordThemes] = useState<number[]>([]);
+  
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
     const kelimeler = shuffle(KELIMELER[secilenTema].kelimeler).slice(0, 15);
@@ -366,16 +368,26 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                   effectivePackageType === "master" ||
                   hasAnyLiveCourseOrder;
 
-                const isLocked = temaNo > 6 && !hasDevelopmentAccess;
+                const hasPackageAccess = temaNo <= 6 || hasDevelopmentAccess;
+
+const isPreviousThemeCompleted =
+  temaNo === 1 || completedWordThemes.includes(temaNo - 1);
+
+const isLocked = !hasPackageAccess || !isPreviousThemeCompleted;
 
                 return (
                   <button
                     key={key}
                     onClick={() => {
-                      if (isLocked) {
-                        alert("Bu tema Gelişim Paketi ile açılır.");
-                        return;
-                      }
+                      if (!hasPackageAccess) {
+  alert("Bu tema Gelişim Paketi ile açılır.");
+  return;
+}
+
+if (!isPreviousThemeCompleted) {
+  alert(`Önce Tema ${temaNo - 1} kelime oyununu tamamlamalısınız.`);
+  return;
+}
 
                       setTema(key);
                     }}
@@ -400,8 +412,12 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                         letterSpacing: 1,
                       }}
                     >
-                      {isLocked ? "🔒 " : ""}
-                      TEMA {temaNo}
+                      {completedWordThemes.includes(temaNo)
+  ? "✅ "
+  : isLocked
+  ? "🔒 "
+  : "🔥 "}
+TEMA {temaNo}
                     </div>
 
                     <div style={{ fontSize: 15, fontWeight: 900 }}>
@@ -409,8 +425,16 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                     </div>
 
                     <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
-                      {val.kelimeler.length} kelime
-                    </div>
+  {val.kelimeler.length} kelime
+</div>
+
+<div style={{ fontSize: 11, color: "#059669", marginTop: 8, fontWeight: 800 }}>
+  {completedWordThemes.includes(temaNo)
+    ? "Tamamlandı"
+    : isLocked
+    ? "Kilitli"
+    : "Başlamaya hazır"}
+</div>
                   </button>
                 );
               }
@@ -523,6 +547,13 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
 
   if (oyunBitti) {
   const basari = Math.round((dogru / sorular.length) * 100);
+  const currentThemeNumber = tema
+  ? Number(String(tema).replace("tema", ""))
+  : 1;
+
+if (basari >= 80 && !completedWordThemes.includes(currentThemeNumber)) {
+  setCompletedWordThemes((prev) => [...prev, currentThemeNumber]);
+}
   const mesaj = basari >= 80 ? "Harika! 🏆" : basari >= 60 ? "İyi iş! 👍" : "Tekrar dene! 💪";
 
   return (
