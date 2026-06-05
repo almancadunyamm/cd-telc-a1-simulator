@@ -920,19 +920,17 @@ useEffect(() => {
     const studentKeys = Object.keys(grouped);
 
     const { data: usersForLeaders } = await supabase
-      .from("users")
-      .select("email, name, username")
-      .in("email", studentKeys);
+      .from("kullanıcılar")
+      .select("e-posta, isim")
+      .in("e-posta", studentKeys);
 
     const userNameMap: Record<string, string> = {};
 
     (usersForLeaders || []).forEach((user: any) => {
-      const emailKey = String(user.email || "").trim().toLowerCase();
-      const usernameKey = String(user.username || "").trim().toLowerCase();
-      const fullName = String(user.name || "").trim();
+      const emailKey = String(user["e-posta"] || "").trim().toLowerCase();
+      const fullName = String(user["isim"] || "").trim();
 
       if (emailKey) userNameMap[emailKey] = fullName;
-      if (usernameKey) userNameMap[usernameKey] = fullName;
     });
 
     const leaders = Object.entries(grouped)
