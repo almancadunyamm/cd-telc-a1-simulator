@@ -927,11 +927,12 @@ useEffect(() => {
     const userNameMap: Record<string, string> = {};
 
     (usersForLeaders || []).forEach((user: any) => {
-      const key = String(user.email || user.username || "")
-        .trim()
-        .toLowerCase();
+      const emailKey = String(user.email || "").trim().toLowerCase();
+      const usernameKey = String(user.username || "").trim().toLowerCase();
+      const fullName = String(user.name || "").trim();
 
-      userNameMap[key] = String(user.name || "").trim();
+      if (emailKey) userNameMap[emailKey] = fullName;
+      if (usernameKey) userNameMap[usernameKey] = fullName;
     });
 
     const leaders = Object.entries(grouped)
@@ -939,9 +940,9 @@ useEffect(() => {
         const themeCount = themeSet.size;
 
         const displayName =
-          userNameMap[key] && !userNameMap[key].includes("@")
+          userNameMap[key] && userNameMap[key].length > 0 && !userNameMap[key].includes("@")
             ? userNameMap[key]
-            : "Almanca Okulum Öğrencisi";
+            : key; // isim bulunamazsa student_key'i göster, debug içingit add .
 
         return {
           name: displayName,
