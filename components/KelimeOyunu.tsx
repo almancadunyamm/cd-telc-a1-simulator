@@ -396,6 +396,12 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     }
     loadProgress();
   }, [currentUserEmail]);
+  useEffect(() => {
+    if (!oyunBitti || !tema) return;
+    const basari = Math.round((dogru / sorular.length) * 100);
+    const tamamlandi = basari >= 80;
+    kaydetIlerleme(tema, dogru, sorular.length, tamamlandi);
+  }, [oyunBitti]);
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
     const kelimeler = shuffle(KELIMELER[secilenTema].kelimeler).slice(0, 15);
@@ -580,7 +586,6 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   if (oyunBitti) {
     const basari = Math.round((dogru / sorular.length) * 100);
     const tamamlandi = basari >= 80;
-    if (tema) kaydetIlerleme(tema, dogru, sorular.length, tamamlandi);
     const yeniToplam = toplamDogru + dogru;
     const yeniRozet = getRozet(yeniToplam);
     const eskiRozet = getRozet(toplamDogru);
