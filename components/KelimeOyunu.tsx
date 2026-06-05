@@ -617,16 +617,43 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
             <div style={{ background: "linear-gradient(135deg, #ecfdf5, #eff6ff)", borderRadius: 12, padding: "10px", fontSize: 16, fontWeight: 900, color: "#059669" }}>Başarı: %{basari}</div>
           </div>
 
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => oyunuBaslat(tema, mod!)}
-              style={{ background: "linear-gradient(135deg, #10b981, #2563eb)", border: "none", borderRadius: 14, padding: "14px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-              🔄 Tekrar Oyna
-            </button>
-            <button onClick={() => { setTema(null); setMod(null); }}
-              style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 14, padding: "14px 24px", color: "#0f172a", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-              🏠 Ana Menü
-            </button>
+          {/* Rozet bilgisi */}
+        <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 16, padding: "16px", marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Mevcut Rozet</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: getRozet(yeniToplam).renk }}>
+            {getRozet(yeniToplam).icon} {getRozet(yeniToplam).ad}
           </div>
+          <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>{yeniToplam} toplam doğru kelime</div>
+          {getSonrakiRozet(yeniToplam) && (
+            <div style={{ fontSize: 12, color: "#059669", marginTop: 4, fontWeight: 700 }}>
+              Sonraki rozete {getSonrakiRozet(yeniToplam)!.min - yeniToplam} kelime kaldı
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+          {/* Sonraki tema butonu */}
+          {tamamlandi && tema && Number(String(tema).replace("tema", "")) < 12 && (
+            <button onClick={() => {
+              const sonrakiTemaNo = Number(String(tema).replace("tema", "")) + 1;
+              const sonrakiTema = `tema${sonrakiTemaNo}` as TemaKey;
+              setTema(sonrakiTema);
+              setMod(null);
+              setOyunBitti(false);
+            }}
+              style={{ background: "linear-gradient(135deg, #10b981, #059669)", border: "none", borderRadius: 14, padding: "14px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+              ➡️ Sonraki Temaya Geç
+            </button>
+          )}
+          <button onClick={() => oyunuBaslat(tema, mod!)}
+            style={{ background: "linear-gradient(135deg, #10b981, #2563eb)", border: "none", borderRadius: 14, padding: "14px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+            🔄 Tekrar Oyna
+          </button>
+          <button onClick={() => { setTema(null); setMod(null); }}
+            style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 14, padding: "14px 24px", color: "#0f172a", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+            🏠 Ana Menü
+          </button>
+        </div>
         </div>
       </div>
     );
