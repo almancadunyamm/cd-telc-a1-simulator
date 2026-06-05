@@ -3,7 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { getShopierLink } from "@/lib/billing/shopier-links";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import KelimeOyunu from "@/components/KelimeOyunu";
+import dynamic from "next/dynamic";
+const KelimeOyunu = dynamic(() => import("@/components/KelimeOyunu"), { ssr: false });
 import {
   createPendingOrder,
   getActiveOrderForUserAndLevel,
@@ -3751,7 +3752,7 @@ createPendingOrder({
       </p>
     </div>
     <div className="mt-6">
-      <div id="kelime-oyunu-root" />
+      <KelimeOyunu />
     </div>
   </section>
 )}
