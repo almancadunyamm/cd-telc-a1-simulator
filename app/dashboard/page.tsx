@@ -3752,7 +3752,10 @@ createPendingOrder({
       </p>
     </div>
     <div className="mt-6">
-      <KelimeOyunu />
+      <KelimeOyunu
+  effectivePackageType={effectivePackageType}
+  hasAnyLiveCourseOrder={hasAnyLiveCourseOrder}
+/>
     </div>
   </section>
 )}

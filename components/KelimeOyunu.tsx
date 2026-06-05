@@ -173,7 +173,12 @@ function getWrongOptions(correct: string, pool: Kelime[], count = 3): string[] {
   return shuffle(others).slice(0, count);
 }
 
-export default function KelimeOyunu() {
+type Props = {
+  effectivePackageType?: string;
+  hasAnyLiveCourseOrder?: boolean;
+};
+
+export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder }: Props) {
   const [tema, setTema] = useState<TemaKey | null>(null);
   const [mod, setMod] = useState<Mod | null>(null);
   const [sorular, setSorular] = useState<Soru[]>([]);
@@ -256,9 +261,22 @@ export default function KelimeOyunu() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             {(Object.entries(KELIMELER) as [TemaKey, typeof KELIMELER[TemaKey]][]).map(([key, val], i) => (
-              <button key={key} onClick={() => setTema(key)}
-                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 14, padding: "16px 14px", color: "#fff", cursor: "pointer", textAlign: "left" }}>
-                <div style={{ fontSize: 11, color: "#a78bfa", marginBottom: 4, fontWeight: 600 }}>TEMA {i + 1}</div>
+              <button key={key} onClick={() => {
+                  const temaNo = i + 1;
+                  const hasDevelopmentAccess =
+                    effectivePackageType === "practice" ||
+                    effectivePackageType === "master" ||
+                    hasAnyLiveCourseOrder;
+                  if (temaNo > 6 && !hasDevelopmentAccess) {
+                    alert("Bu tema Gelişim Paketi ile açılır.");
+                    return;
+                  }
+                  setTema(key);
+                }}
+                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 14, padding: "16px 14px", color: "#fff", cursor: "pointer", textAlign: "left", opacity: (i + 1) > 6 && !(effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder) ? 0.5 : 1 }}>
+                <div style={{ fontSize: 11, color: "#a78bfa", marginBottom: 4, fontWeight: 600 }}>
+                  {(i + 1) > 6 && !(effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder) ? "🔒 " : ""}TEMA {i + 1}
+                </div>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>{val.ad}</div>
                 <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>{val.kelimeler.length} kelime</div>
               </button>
