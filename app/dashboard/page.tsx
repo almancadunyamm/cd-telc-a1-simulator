@@ -871,6 +871,23 @@ const getMasteryBadgeByThemeCount = (themeCount: number) => {
   if (themeCount >= 3) return "Tema Avcısı";
   return "Başlangıç Yolcusu";
 };
+
+const nextBadgeTarget =
+  completedThemeCount >= 12
+    ? 12
+    : completedThemeCount >= 9
+    ? 12
+    : completedThemeCount >= 6
+    ? 9
+    : completedThemeCount >= 3
+    ? 6
+    : 3;
+
+const remainingThemesForBadge = Math.max(
+  0,
+  nextBadgeTarget - completedThemeCount
+);
+
 useEffect(() => {
   async function loadRealMasteryLeaders() {
     const { data, error } = await supabase
@@ -914,17 +931,20 @@ useEffect(() => {
         .trim()
         .toLowerCase();
 
-      userNameMap[key] = String(
-        user.name || user.username || user.email || ""
-      ).trim();
+      userNameMap[key] = String(user.name || "").trim();
     });
 
     const leaders = Object.entries(grouped)
       .map(([key, themeSet]) => {
         const themeCount = themeSet.size;
 
+        const displayName =
+          userNameMap[key] && !userNameMap[key].includes("@")
+            ? userNameMap[key]
+            : "Almanca Okulum Öğrencisi";
+
         return {
-          name: userNameMap[key] || key,
+          name: displayName,
           themes: themeCount,
           badge: getMasteryBadgeByThemeCount(themeCount),
           type: themeCount >= 7 ? "Canlı Sınıf" : "Dijital",
@@ -938,21 +958,6 @@ useEffect(() => {
 
   loadRealMasteryLeaders();
 }, []);
-const nextBadgeTarget =
-  completedThemeCount >= 12
-    ? 12
-    : completedThemeCount >= 9
-    ? 12
-    : completedThemeCount >= 6
-    ? 9
-    : completedThemeCount >= 3
-    ? 6
-    : 3;
-
-const remainingThemesForBadge = Math.max(
-  0,
-  nextBadgeTarget - completedThemeCount
-);
 useEffect(() => {
   async function loadMasteryProgress() {
     const username = String(currentUser?.username || currentUsername || "")
@@ -3967,9 +3972,9 @@ createPendingOrder({
           </div>
 
           <div>
-            <p className="text-sm font-black text-slate-900">
-              {leader.name}
-            </p>
+            <p className="max-w-[170px] truncate text-sm font-black text-slate-900 sm:max-w-none">
+  {leader.name}
+</p>
             <p className="text-xs font-bold text-slate-500">
               {leader.badge} · {leader.type}
 {!realMasteryLeaders.some((real) => real.name === leader.name) && " · Örnek"}
