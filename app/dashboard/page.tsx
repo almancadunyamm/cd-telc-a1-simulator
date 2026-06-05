@@ -892,7 +892,7 @@ useEffect(() => {
   async function loadRealMasteryLeaders() {
     const { data, error } = await supabase
       .from("mastery_progress")
-      .select("student_key, username, theme_id, level, status")
+      .select("username, theme_id, level, status")
       .eq("level", "A1")
       .eq("status", "completed");
 
@@ -904,7 +904,7 @@ useEffect(() => {
     const grouped: Record<string, Set<number>> = {};
 
     (data || []).forEach((item: any) => {
-      const key = String(item.student_key || item.username || "")
+      const key = String(item.username || "")
         .trim()
         .toLowerCase();
 
@@ -920,15 +920,15 @@ useEffect(() => {
     const studentKeys = Object.keys(grouped);
 
     const { data: usersForLeaders } = await supabase
-      .from("kullanıcılar")
-      .select("e-posta, isim")
-      .in("e-posta", studentKeys);
+      .from("users")
+      .select("email, name")
+      .in("email", studentKeys);
 
     const userNameMap: Record<string, string> = {};
 
     (usersForLeaders || []).forEach((user: any) => {
-      const emailKey = String(user["e-posta"] || "").trim().toLowerCase();
-      const fullName = String(user["isim"] || "").trim();
+      const emailKey = String(user.email || "").trim().toLowerCase();
+      const fullName = String(user.name || "").trim();
 
       if (emailKey) userNameMap[emailKey] = fullName;
     });
