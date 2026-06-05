@@ -3740,23 +3740,10 @@ createPendingOrder({
 )}
 {activeDashboardTab === "wordgame" && (
   <section className="mb-8">
-    <div className="rounded-[2rem] bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 px-3 py-6 sm:px-6">
-      <p className="text-sm font-black uppercase tracking-widest text-violet-700">
-        Kelime Arenası
-      </p>
-      <h2 className="mt-3 text-3xl font-black text-slate-900">
-        🎮 Goethe A1 Kelime Pratiği
-      </h2>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-        360 kelime, 12 tema. Almanca → Türkçe veya Türkçe → Almanca modunda çalış.
-      </p>
-    </div>
-    <div className="mt-6">
-      <KelimeOyunu
-  effectivePackageType={effectivePackageType}
-  hasAnyLiveCourseOrder={hasAnyLiveCourseOrder}
-/>
-    </div>
+    <KelimeOyunu
+      effectivePackageType={effectivePackageType}
+      hasAnyLiveCourseOrder={hasAnyLiveCourseOrder}
+    />
   </section>
 )}
 {activeDashboardTab === "vocabulary" && (
