@@ -359,16 +359,9 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
         <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 99, marginBottom: 24, overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${ilerleme}%`, background: "linear-gradient(90deg, #a78bfa, #7c3aed)", borderRadius: 99, transition: "width 0.3s" }} />
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <button onClick={() => { setTema(null); setMod(null); setOyunBitti(false); }}
-            style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, padding: "6px 12px", color: "#999", cursor: "pointer", fontSize: 13 }}>
-            ← Geri
-          </button>
-          <div style={{ fontSize: 13, color: "#666" }}>
-            {suankiIndex + 1} / {sorular.length}
-            {streak >= 3 && <span style={{ marginLeft: 12, color: "#fbbf24", fontWeight: 700 }}>🔥 {streak} seri!</span>}
-          </div>
-          <div style={{ width: 60 }} />
+        <div style={{ textAlign: "center", fontSize: 13, color: "#666", marginBottom: 20 }}>
+          {suankiIndex + 1} / {sorular.length}
+          {streak >= 3 && <span style={{ marginLeft: 12, color: "#fbbf24", fontWeight: 700 }}>🔥 {streak} seri!</span>}
         </div>
         <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 24, padding: "40px 24px", textAlign: "center", marginBottom: 24, minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div>
@@ -391,6 +384,12 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
               </button>
             );
           })}
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+            <button onClick={() => { setTema(null); setMod(null); setOyunBitti(false); }}
+              style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, padding: "8px 20px", color: "#999", cursor: "pointer", fontSize: 13 }}>
+              ← Geri Dön
+            </button>
+          </div>
         </div>
       </div>
     </div>
