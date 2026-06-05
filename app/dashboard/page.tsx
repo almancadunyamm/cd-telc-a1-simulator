@@ -2123,7 +2123,8 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
           "🏠 Ana Sayfa",
           "🎬 Dersler",
           "🎤 Pratik",
-          "📚 Kelime",
+          "📚 Ustalık",
+          "🎮 Kelime Oyunu",
           "📊 İlerleme",
           "🏆 Rozetler",
         ].map((item, index) => (
@@ -2426,7 +2427,8 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
   {[
   { key: "home", label: "Ana Sayfa", icon: "🏠" },
   { key: "lessons", label: "Dersler", icon: "🎬" },
-  { key: "vocabulary", label: "Kelime", icon: "📚" },
+  { key: "vocabulary", label: "Ustalık", icon: "📚" },
+  { key: "wordgame", label: "Kelime Oyunu", icon: "🎮" },
   { key: "practice", label: "Pratik", icon: "🎤" },
   { key: "materials", label: "PDF", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
@@ -2484,7 +2486,8 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
       {[
   { key: "home", label: "Ana Sayfa", icon: "🏠" },
   { key: "lessons", label: "Dersler", icon: "🎬" },
-  { key: "vocabulary", label: "Kelime", icon: "📚" },
+  { key: "vocabulary", label: "Ustalık", icon: "📚" },
+  { key: "wordgame", label: "Kelime Oyunu", icon: "🎮" },
   { key: "practice", label: "Pratik", icon: "🎤" },
   { key: "materials", label: "PDF Merkezi", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
