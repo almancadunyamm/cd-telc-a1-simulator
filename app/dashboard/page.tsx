@@ -2126,7 +2126,7 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
           "🎬 Dersler",
           "🎤 Pratik",
           "📚 Ustalık",
-          "🎮 Kelime Oyunu",
+          "🎮 Kelime Arenası",
           "📊 İlerleme",
           "🏆 Rozetler",
         ].map((item, index) => (
@@ -2430,7 +2430,7 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
   { key: "home", label: "Ana Sayfa", icon: "🏠" },
   { key: "lessons", label: "Dersler", icon: "🎬" },
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
-  { key: "wordgame", label: "Kelime Oyunu", icon: "🎮" },
+  { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "practice", label: "Pratik", icon: "🎤" },
   { key: "materials", label: "PDF", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
@@ -2489,7 +2489,7 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
   { key: "home", label: "Ana Sayfa", icon: "🏠" },
   { key: "lessons", label: "Dersler", icon: "🎬" },
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
-  { key: "wordgame", label: "Kelime Oyunu", icon: "🎮" },
+  { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "practice", label: "Pratik", icon: "🎤" },
   { key: "materials", label: "PDF Merkezi", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
@@ -3742,7 +3742,7 @@ createPendingOrder({
   <section className="mb-8">
     <div className="rounded-[2rem] bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 px-3 py-6 sm:px-6">
       <p className="text-sm font-black uppercase tracking-widest text-violet-700">
-        Kelime Oyunu
+        Kelime Arenası
       </p>
       <h2 className="mt-3 text-3xl font-black text-slate-900">
         🎮 Goethe A1 Kelime Pratiği

@@ -190,6 +190,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [streak, setStreak] = useState(0);
   const [dogru, setDogru] = useState(0);
   const [yanlis, setYanlis] = useState(0);
+  const [selectedWordLevel, setSelectedWordLevel] = useState<"A1" | "A2" | "B1">("A1");
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
     const kelimeler = shuffle(KELIMELER[secilenTema].kelimeler).slice(0, 15);
@@ -251,147 +252,565 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const canIkonu = (dolu: boolean) => (dolu ? "❤️" : "🖤");
 
   if (!tema) {
-    return (
-      <div style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", fontFamily: "'Segoe UI', sans-serif", color: "#fff", padding: "24px 16px", borderRadius: 24 }}>
-        <div style={{ maxWidth: 600, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>🎮</div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0 }}>Kelime Oyunu</h1>
-            <p style={{ color: "#a78bfa", marginTop: 8, fontSize: 15 }}>Goethe A1 — 360 kelime, 12 tema</p>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            {(Object.entries(KELIMELER) as [TemaKey, typeof KELIMELER[TemaKey]][]).map(([key, val], i) => (
-              <button key={key} onClick={() => {
-                  const temaNo = i + 1;
-                  const hasDevelopmentAccess =
-                    effectivePackageType === "practice" ||
-                    effectivePackageType === "master" ||
-                    hasAnyLiveCourseOrder;
-                  if (temaNo > 6 && !hasDevelopmentAccess) {
-                    alert("Bu tema Gelişim Paketi ile açılır.");
-                    return;
-                  }
-                  setTema(key);
-                }}
-                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 14, padding: "16px 14px", color: "#fff", cursor: "pointer", textAlign: "left", opacity: (i + 1) > 6 && !(effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder) ? 0.5 : 1 }}>
-                <div style={{ fontSize: 11, color: "#a78bfa", marginBottom: 4, fontWeight: 600 }}>
-                  {(i + 1) > 6 && !(effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder) ? "🔒 " : ""}TEMA {i + 1}
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>{val.ad}</div>
-                <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>{val.kelimeler.length} kelime</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div
+      style={{
+        background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)",
+        fontFamily: "'Segoe UI', sans-serif",
+        color: "#0f172a",
+        padding: "24px 16px",
+        borderRadius: 24,
+        border: "1px solid #dbeafe",
+        boxShadow: "0 20px 60px rgba(15, 23, 42, 0.08)",
+      }}
+    >
+      <div style={{ maxWidth: 760, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ fontSize: 48, marginBottom: 8 }}>🎮</div>
 
-  if (!mod) {
-    return (
-      <div style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", fontFamily: "'Segoe UI', sans-serif", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, borderRadius: 24 }}>
-        <div style={{ maxWidth: 400, width: "100%", textAlign: "center" }}>
-          <div style={{ fontSize: 42, marginBottom: 12 }}>⚙️</div>
-          <h2 style={{ fontSize: 22, margin: "0 0 8px" }}>{KELIMELER[tema].ad}</h2>
-          <p style={{ color: "#a78bfa", fontSize: 14, marginBottom: 32 }}>Hangi yönde çalışmak istersin?</p>
-          {([
-            { id: "de_to_tr" as Mod, icon: "🇩🇪→🇹🇷", label: "Almanca → Türkçe", desc: "Almanca kelimeyi gör, Türkçesini bul" },
-            { id: "tr_to_de" as Mod, icon: "🇹🇷→🇩🇪", label: "Türkçe → Almanca", desc: "Türkçe anlamı gör, Almancasını bul" },
-          ]).map((m) => (
-            <button key={m.id} onClick={() => oyunuBaslat(tema, m.id)}
-              style={{ display: "block", width: "100%", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 16, padding: "20px 24px", color: "#fff", cursor: "pointer", textAlign: "left", marginBottom: 14 }}>
-              <div style={{ fontSize: 22, marginBottom: 6 }}>{m.icon}</div>
-              <div style={{ fontWeight: 700, fontSize: 16 }}>{m.label}</div>
-              <div style={{ fontSize: 13, color: "#999", marginTop: 4 }}>{m.desc}</div>
-            </button>
-          ))}
-          <button onClick={() => setTema(null)} style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 14, marginTop: 8 }}>← Geri dön</button>
+          <p
+            style={{
+              color: "#059669",
+              fontWeight: 900,
+              letterSpacing: 2,
+              fontSize: 12,
+              margin: 0,
+              textTransform: "uppercase",
+            }}
+          >
+            Kelime Oyunu
+          </p>
+
+          <h1 style={{ fontSize: 32, fontWeight: 900, margin: "8px 0 0" }}>
+            TELC Almanca Kelime Arenası
+          </h1>
+
+          <p style={{ color: "#64748b", marginTop: 10, fontSize: 15 }}>
+            A1 • A2 • B1 seviyeleri için tema bazlı kelime pratiği
+          </p>
         </div>
+
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          {(["A1", "A2", "B1"] as const).map((level) => {
+            const isActive = selectedWordLevel === level;
+            const isLocked = level !== "A1";
+
+            return (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setSelectedWordLevel(level)}
+                className={`rounded-2xl px-5 py-3 text-sm font-black shadow-sm transition ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-emerald-200"
+                    : "border border-emerald-100 bg-white text-slate-700 hover:bg-emerald-50"
+                }`}
+              >
+                {isLocked ? "🔒 " : "✅ "}
+                {level}
+              </button>
+            );
+          })}
+        </div>
+
+        {selectedWordLevel !== "A1" ? (
+          <div className="mt-8 rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-emerald-50 p-8 text-center shadow-lg">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-4xl">
+              🚀
+            </div>
+
+            <h2 className="mt-5 text-3xl font-black text-slate-900">
+              {selectedWordLevel} Kelime Arenası Hazırlanıyor
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-2xl text-sm font-semibold leading-6 text-slate-600">
+              {selectedWordLevel} seviyesi için kelime oyunu çok yakında açılacak.
+              Bu bölümde tema bazlı kelimeler, tekrar sistemi, rozetler ve premium pratikler yer alacak.
+            </p>
+
+            <div className="mx-auto mt-6 grid max-w-3xl gap-3 md:grid-cols-3">
+              <div className="rounded-2xl bg-white p-4 shadow-sm">
+                <p className="text-2xl font-black text-emerald-600">500+</p>
+                <p className="text-xs font-bold text-slate-500">Yeni Kelime</p>
+              </div>
+
+              <div className="rounded-2xl bg-white p-4 shadow-sm">
+                <p className="text-2xl font-black text-blue-600">15+</p>
+                <p className="text-xs font-bold text-slate-500">Yeni Tema</p>
+              </div>
+
+              <div className="rounded-2xl bg-white p-4 shadow-sm">
+                <p className="text-2xl font-black text-yellow-600">⭐</p>
+                <p className="text-xs font-bold text-slate-500">Premium Erişim</p>
+              </div>
+            </div>
+
+            <p className="mt-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-blue-600 px-4 py-3 text-sm font-black text-white">
+              Gelişim ve Zirve öğrencileri yeni seviyelere ilk erişenler olacak.
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+              gap: 14,
+              marginTop: 28,
+            }}
+          >
+            {(Object.entries(KELIMELER) as [TemaKey, typeof KELIMELER[TemaKey]][]).map(
+              ([key, val], i) => {
+                const temaNo = i + 1;
+                const hasDevelopmentAccess =
+                  effectivePackageType === "practice" ||
+                  effectivePackageType === "master" ||
+                  hasAnyLiveCourseOrder;
+
+                const isLocked = temaNo > 6 && !hasDevelopmentAccess;
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      if (isLocked) {
+                        alert("Bu tema Gelişim Paketi ile açılır.");
+                        return;
+                      }
+
+                      setTema(key);
+                    }}
+                    style={{
+                      background: "#ffffff",
+                      border: "1px solid #dbeafe",
+                      borderRadius: 20,
+                      padding: "18px 16px",
+                      color: "#0f172a",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      opacity: isLocked ? 0.55 : 1,
+                      boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: isLocked ? "#b45309" : "#059669",
+                        marginBottom: 6,
+                        fontWeight: 900,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      {isLocked ? "🔒 " : ""}
+                      TEMA {temaNo}
+                    </div>
+
+                    <div style={{ fontSize: 15, fontWeight: 900 }}>
+                      {val.ad}
+                    </div>
+
+                    <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
+                      {val.kelimeler.length} kelime
+                    </div>
+                  </button>
+                );
+              }
+            )}
+          </div>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+ if (!mod) {
+  return (
+    <div
+      style={{
+        background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)",
+        fontFamily: "'Segoe UI', sans-serif",
+        color: "#0f172a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        borderRadius: 24,
+        border: "1px solid #dbeafe",
+        boxShadow: "0 20px 60px rgba(15, 23, 42, 0.08)",
+      }}
+    >
+      <div style={{ maxWidth: 460, width: "100%", textAlign: "center" }}>
+        <div style={{ fontSize: 42, marginBottom: 12 }}>⚙️</div>
+
+        <p
+          style={{
+            color: "#059669",
+            fontWeight: 900,
+            letterSpacing: 2,
+            fontSize: 12,
+            margin: 0,
+            textTransform: "uppercase",
+          }}
+        >
+          Çalışma Modu
+        </p>
+
+        <h2 style={{ fontSize: 26, margin: "8px 0 8px", fontWeight: 900 }}>
+          {KELIMELER[tema].ad}
+        </h2>
+
+        <p style={{ color: "#64748b", fontSize: 14, marginBottom: 28 }}>
+          Hangi yönde çalışmak istersin?
+        </p>
+
+        {[
+          {
+            id: "de_to_tr" as Mod,
+            icon: "🇩🇪→🇹🇷",
+            label: "Almanca → Türkçe",
+            desc: "Almanca kelimeyi gör, Türkçesini bul",
+          },
+          {
+            id: "tr_to_de" as Mod,
+            icon: "🇹🇷→🇩🇪",
+            label: "Türkçe → Almanca",
+            desc: "Türkçe anlamı gör, Almancasını bul",
+          },
+        ].map((m) => (
+          <button
+            key={m.id}
+            onClick={() => oyunuBaslat(tema, m.id)}
+            style={{
+              display: "block",
+              width: "100%",
+              background: "#ffffff",
+              border: "1px solid #dbeafe",
+              borderRadius: 20,
+              padding: "20px 24px",
+              color: "#0f172a",
+              cursor: "pointer",
+              textAlign: "left",
+              marginBottom: 14,
+              boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+            }}
+          >
+            <div style={{ fontSize: 22, marginBottom: 6 }}>{m.icon}</div>
+            <div style={{ fontWeight: 900, fontSize: 16 }}>{m.label}</div>
+            <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
+              {m.desc}
+            </div>
+          </button>
+        ))}
+
+        <button
+          onClick={() => setTema(null)}
+          style={{
+            background: "none",
+            border: "1px solid #dbeafe",
+            borderRadius: 12,
+            color: "#64748b",
+            cursor: "pointer",
+            fontSize: 14,
+            marginTop: 8,
+            padding: "10px 18px",
+          }}
+        >
+          ← Geri dön
+        </button>
+      </div>
+    </div>
+  );
+}
 
   if (oyunBitti) {
-    const basari = Math.round((dogru / sorular.length) * 100);
-    const mesaj = basari >= 80 ? "Harika! 🏆" : basari >= 60 ? "İyi iş! 👍" : "Tekrar dene! 💪";
-    return (
-      <div style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", fontFamily: "'Segoe UI', sans-serif", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, borderRadius: 24 }}>
-        <div style={{ maxWidth: 380, width: "100%", textAlign: "center" }}>
-          <div style={{ fontSize: 64, marginBottom: 16 }}>{basari >= 80 ? "🏆" : basari >= 60 ? "⭐" : "🔄"}</div>
-          <h2 style={{ fontSize: 26, fontWeight: 800, margin: "0 0 8px" }}>{mesaj}</h2>
-          <div style={{ background: "rgba(255,255,255,0.07)", borderRadius: 20, padding: "24px", margin: "24px 0" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 16 }}>
-              {[{ label: "Skor", val: skor, color: "#a78bfa" }, { label: "Doğru", val: dogru, color: "#34d399" }, { label: "Yanlış", val: yanlis, color: "#f87171" }].map((s) => (
-                <div key={s.label}>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.val}</div>
-                  <div style={{ fontSize: 12, color: "#888" }}>{s.label}</div>
+  const basari = Math.round((dogru / sorular.length) * 100);
+  const mesaj = basari >= 80 ? "Harika! 🏆" : basari >= 60 ? "İyi iş! 👍" : "Tekrar dene! 💪";
+
+  return (
+    <div
+      style={{
+        background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)",
+        fontFamily: "'Segoe UI', sans-serif",
+        color: "#0f172a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        borderRadius: 24,
+        border: "1px solid #dbeafe",
+        boxShadow: "0 20px 60px rgba(15, 23, 42, 0.08)",
+      }}
+    >
+      <div style={{ maxWidth: 420, width: "100%", textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>
+          {basari >= 80 ? "🏆" : basari >= 60 ? "⭐" : "🔄"}
+        </div>
+
+        <h2 style={{ fontSize: 28, fontWeight: 900, margin: "0 0 8px" }}>
+          {mesaj}
+        </h2>
+
+        <div
+          style={{
+            background: "#ffffff",
+            border: "1px solid #dbeafe",
+            borderRadius: 24,
+            padding: "24px",
+            margin: "24px 0",
+            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: 16,
+              marginBottom: 16,
+            }}
+          >
+            {[
+              { label: "Skor", val: skor, color: "#2563eb" },
+              { label: "Doğru", val: dogru, color: "#059669" },
+              { label: "Yanlış", val: yanlis, color: "#dc2626" },
+            ].map((s) => (
+              <div key={s.label}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: s.color }}>
+                  {s.val}
                 </div>
-              ))}
-            </div>
-            <div style={{ background: "rgba(167,139,250,0.1)", borderRadius: 12, padding: "12px", fontSize: 18, fontWeight: 700, color: "#a78bfa" }}>Başarı: %{basari}</div>
+                <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>
+                  {s.label}
+                </div>
+              </div>
+            ))}
           </div>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => oyunuBaslat(tema, mod!)}
-              style={{ background: "linear-gradient(135deg, #a78bfa, #7c3aed)", border: "none", borderRadius: 12, padding: "14px 28px", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>
-              🔄 Tekrar Oyna
-            </button>
-            <button onClick={() => { setTema(null); setMod(null); }}
-              style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 12, padding: "14px 28px", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>
-              🏠 Ana Menü
-            </button>
+
+          <div
+            style={{
+              background: "linear-gradient(135deg, #ecfdf5, #eff6ff)",
+              borderRadius: 14,
+              padding: "12px",
+              fontSize: 18,
+              fontWeight: 900,
+              color: "#059669",
+            }}
+          >
+            Başarı: %{basari}
           </div>
         </div>
+
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+          <button
+            onClick={() => oyunuBaslat(tema, mod!)}
+            style={{
+              background: "linear-gradient(135deg, #10b981, #2563eb)",
+              border: "none",
+              borderRadius: 14,
+              padding: "14px 28px",
+              color: "#fff",
+              fontWeight: 900,
+              cursor: "pointer",
+              fontSize: 15,
+            }}
+          >
+            🔄 Tekrar Oyna
+          </button>
+
+          <button
+            onClick={() => {
+              setTema(null);
+              setMod(null);
+            }}
+            style={{
+              background: "#ffffff",
+              border: "1px solid #dbeafe",
+              borderRadius: 14,
+              padding: "14px 28px",
+              color: "#0f172a",
+              fontWeight: 900,
+              cursor: "pointer",
+              fontSize: 15,
+            }}
+          >
+            🏠 Ana Menü
+          </button>
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   const suankiSoru = sorular[suankiIndex];
   const ilerleme = (suankiIndex / sorular.length) * 100;
 
   return (
-    <div style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", fontFamily: "'Segoe UI', sans-serif", color: "#fff", padding: "20px 16px", borderRadius: 24 }}>
-      <div style={{ maxWidth: 520, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <div style={{ fontSize: 13, color: "#a78bfa", fontWeight: 600 }}>{KELIMELER[tema].ad}</div>
-          <div style={{ display: "flex", gap: 4, fontSize: 20 }}>{[1, 2, 3].map((i) => canIkonu(i <= canlar))}</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24" }}>{skor} puan</div>
+  <div
+    style={{
+      background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)",
+      fontFamily: "'Segoe UI', sans-serif",
+      color: "#0f172a",
+      padding: "20px 16px",
+      borderRadius: 24,
+      border: "1px solid #dbeafe",
+      boxShadow: "0 20px 60px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    <div style={{ maxWidth: 560, margin: "0 auto" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ fontSize: 13, color: "#059669", fontWeight: 900 }}>
+          {KELIMELER[tema].ad}
         </div>
-        <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 99, marginBottom: 24, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${ilerleme}%`, background: "linear-gradient(90deg, #a78bfa, #7c3aed)", borderRadius: 99, transition: "width 0.3s" }} />
+
+        <div style={{ display: "flex", gap: 4, fontSize: 20 }}>
+          {[1, 2, 3].map((i) => canIkonu(i <= canlar))}
         </div>
-        <div style={{ textAlign: "center", fontSize: 13, color: "#666", marginBottom: 20 }}>
-          {suankiIndex + 1} / {sorular.length}
-          {streak >= 3 && <span style={{ marginLeft: 12, color: "#fbbf24", fontWeight: 700 }}>🔥 {streak} seri!</span>}
+
+        <div style={{ fontSize: 13, fontWeight: 900, color: "#2563eb" }}>
+          {skor} puan
         </div>
-        <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 24, padding: "40px 24px", textAlign: "center", marginBottom: 24, minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div>
-            <div style={{ fontSize: 11, color: "#666", marginBottom: 12, textTransform: "uppercase", letterSpacing: 2 }}>{mod === "de_to_tr" ? "Almanca" : "Türkçe"}</div>
-            <div style={{ fontSize: 32, fontWeight: 800 }}>{suankiSoru.soru}</div>
+      </div>
+
+      <div
+        style={{
+          height: 8,
+          background: "#dbeafe",
+          borderRadius: 99,
+          marginBottom: 24,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${ilerleme}%`,
+            background: "linear-gradient(90deg, #10b981, #2563eb)",
+            borderRadius: 99,
+            transition: "width 0.3s",
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          textAlign: "center",
+          fontSize: 13,
+          color: "#64748b",
+          marginBottom: 20,
+          fontWeight: 700,
+        }}
+      >
+        {suankiIndex + 1} / {sorular.length}
+        {streak >= 3 && (
+          <span style={{ marginLeft: 12, color: "#f59e0b", fontWeight: 900 }}>
+            🔥 {streak} seri!
+          </span>
+        )}
+      </div>
+
+      <div
+        style={{
+          background: "#ffffff",
+          border: "1px solid #dbeafe",
+          borderRadius: 24,
+          padding: "40px 24px",
+          textAlign: "center",
+          marginBottom: 24,
+          minHeight: 120,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#64748b",
+              marginBottom: 12,
+              textTransform: "uppercase",
+              letterSpacing: 2,
+              fontWeight: 900,
+            }}
+          >
+            {mod === "de_to_tr" ? "Almanca" : "Türkçe"}
           </div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          {suankiSoru.secenekler.map((s, i) => {
-            let bg = "rgba(255,255,255,0.07)";
-            let border = "1px solid rgba(255,255,255,0.12)";
-            if (secilenCevap) {
-              if (s === suankiSoru.dogru) { bg = "rgba(52,211,153,0.2)"; border = "2px solid #34d399"; }
-              else if (s === secilenCevap) { bg = "rgba(248,113,113,0.2)"; border = "2px solid #f87171"; }
-            }
-            return (
-              <button key={i} onClick={() => cevapSec(s)}
-                style={{ background: bg, border, borderRadius: 16, padding: "18px 14px", color: "#fff", cursor: secilenCevap ? "default" : "pointer", fontSize: 14, fontWeight: 600, transition: "all 0.2s", lineHeight: 1.3 }}>
-                {s}
-              </button>
-            );
-          })}
-        <div style={{ textAlign: "center", marginTop: 16 }}>
-            <button onClick={() => { setTema(null); setMod(null); setOyunBitti(false); }}
-              style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, padding: "8px 20px", color: "#999", cursor: "pointer", fontSize: 13 }}>
-              ← Geri Dön
-            </button>
+
+          <div style={{ fontSize: 32, fontWeight: 900, color: "#0f172a" }}>
+            {suankiSoru.soru}
           </div>
         </div>
       </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        {suankiSoru.secenekler.map((s, i) => {
+          let bg = "#ffffff";
+          let border = "1px solid #dbeafe";
+          let color = "#0f172a";
+
+          if (secilenCevap) {
+            if (s === suankiSoru.dogru) {
+              bg = "#ecfdf5";
+              border = "2px solid #10b981";
+              color = "#065f46";
+            } else if (s === secilenCevap) {
+              bg = "#fef2f2";
+              border = "2px solid #ef4444";
+              color = "#991b1b";
+            }
+          }
+
+          return (
+            <button
+              key={i}
+              onClick={() => cevapSec(s)}
+              style={{
+                background: bg,
+                border,
+                borderRadius: 16,
+                padding: "18px 14px",
+                color,
+                cursor: secilenCevap ? "default" : "pointer",
+                fontSize: 14,
+                fontWeight: 900,
+                transition: "all 0.2s",
+                lineHeight: 1.3,
+                boxShadow: "0 8px 20px rgba(15, 23, 42, 0.05)",
+              }}
+            >
+              {s}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 18 }}>
+        <button
+          onClick={() => {
+            setTema(null);
+            setMod(null);
+            setOyunBitti(false);
+          }}
+          style={{
+            background: "#ffffff",
+            border: "1px solid #dbeafe",
+            borderRadius: 12,
+            padding: "10px 22px",
+            color: "#64748b",
+            cursor: "pointer",
+            fontSize: 13,
+            fontWeight: 900,
+          }}
+        >
+          ← Geri Dön
+        </button>
+      </div>
     </div>
-  );
+  </div>
+);
 }
