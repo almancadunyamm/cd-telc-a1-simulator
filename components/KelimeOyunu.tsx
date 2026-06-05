@@ -247,7 +247,7 @@ export default function KelimeOyunu() {
 
   if (!tema) {
     return (
-      <div style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", fontFamily: "'Segoe UI', sans-serif", color: "#fff", padding: "24px 16px", borderRadius: 24 }}>
+      <div style={{ background: "transparent", fontFamily: "'Segoe UI', sans-serif", color: "#fff", padding: "24px 16px", borderRadius: 24 }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>🎮</div>
@@ -271,7 +271,7 @@ export default function KelimeOyunu() {
 
   if (!mod) {
     return (
-      <div style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", fontFamily: "'Segoe UI', sans-serif", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, borderRadius: 24 }}>
+      <div style={{ background: "transparent", fontFamily: "'Segoe UI', sans-serif", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, borderRadius: 24 }}>
         <div style={{ maxWidth: 400, width: "100%", textAlign: "center" }}>
           <div style={{ fontSize: 42, marginBottom: 12 }}>⚙️</div>
           <h2 style={{ fontSize: 22, margin: "0 0 8px" }}>{KELIMELER[tema].ad}</h2>
@@ -297,7 +297,7 @@ export default function KelimeOyunu() {
     const basari = Math.round((dogru / sorular.length) * 100);
     const mesaj = basari >= 80 ? "Harika! 🏆" : basari >= 60 ? "İyi iş! 👍" : "Tekrar dene! 💪";
     return (
-      <div style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", fontFamily: "'Segoe UI', sans-serif", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, borderRadius: 24 }}>
+      <div style={{ background: "transparent", fontFamily: "'Segoe UI', sans-serif", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, borderRadius: 24 }}>
         <div style={{ maxWidth: 380, width: "100%", textAlign: "center" }}>
           <div style={{ fontSize: 64, marginBottom: 16 }}>{basari >= 80 ? "🏆" : basari >= 60 ? "⭐" : "🔄"}</div>
           <h2 style={{ fontSize: 26, fontWeight: 800, margin: "0 0 8px" }}>{mesaj}</h2>
@@ -331,7 +331,7 @@ export default function KelimeOyunu() {
   const ilerleme = (suankiIndex / sorular.length) * 100;
 
   return (
-    <div style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", fontFamily: "'Segoe UI', sans-serif", color: "#fff", padding: "20px 16px", borderRadius: 24 }}>
+    <div style={{ background: "transparent", fontFamily: "'Segoe UI', sans-serif", color: "#fff", padding: "20px 16px", borderRadius: 24 }}>
       <div style={{ maxWidth: 520, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div style={{ fontSize: 13, color: "#a78bfa", fontWeight: 600 }}>{KELIMELER[tema].ad}</div>
