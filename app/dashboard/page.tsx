@@ -3741,9 +3741,10 @@ createPendingOrder({
 {activeDashboardTab === "wordgame" && (
   <section className="mb-8">
     <KelimeOyunu
-      effectivePackageType={effectivePackageType}
-      hasAnyLiveCourseOrder={hasAnyLiveCourseOrder}
-    />
+  effectivePackageType={effectivePackageType}
+  hasAnyLiveCourseOrder={hasAnyLiveCourseOrder}
+  currentUserEmail={currentUser?.username || currentUsername || ""}
+/>
   </section>
 )}
 {activeDashboardTab === "vocabulary" && (
