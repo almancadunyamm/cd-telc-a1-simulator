@@ -3744,6 +3744,7 @@ createPendingOrder({
   effectivePackageType={effectivePackageType}
   hasAnyLiveCourseOrder={hasAnyLiveCourseOrder}
   currentUserEmail={currentUser?.username || currentUsername || ""}
+  currentUserName={currentUser?.name || ""}
 />
   </section>
 )}

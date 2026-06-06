@@ -358,9 +358,10 @@ type Props = {
   effectivePackageType?: string;
   hasAnyLiveCourseOrder?: boolean;
   currentUserEmail?: string;
+  currentUserName?: string;
 };
 
-export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail }: Props) {
+export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName }: Props) {
   const [tema, setTema] = useState<TemaKey | null>(null);
   const [mod, setMod] = useState<Mod | null>(null);
   const [sorular, setSorular] = useState<Soru[]>([]);
@@ -376,7 +377,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [completedWordThemes, setCompletedWordThemes] = useState<number[]>([]);
   const [toplamDogru, setToplamDogru] = useState(0);
   const [yukluyor, setYukluyor] = useState(true);
-  const [liderler, setLiderler] = useState<{display_name: string, toplam_dogru: number, streak_count: number, rozet_adi: string, rozet_icon: string}[]>([]);
+  const [liderler, setLiderler] = useState<{display_name: string, toplam_dogru: number, streak_count: number, rozet_adi: string, rozet_icon: string, ogrenci_turu: string}[]>([]);
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
@@ -400,7 +401,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     async function loadLiderler() {
       const { data } = await supabase
         .from("word_leaderboard")
-        .select("display_name, toplam_dogru, streak_count, rozet_adi, rozet_icon")
+        .select("display_name, toplam_dogru, streak_count, rozet_adi, rozet_icon, ogrenci_turu")
         .order("toplam_dogru", { ascending: false })
         .limit(8);
       if (data) setLiderler(data);
@@ -495,13 +496,15 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
 
     // Liderboard güncelle
     const rozet = getRozet(yeniToplam);
+    const ogrenciTuru = hasAnyLiveCourseOrder ? "Canlı Sınıf" : "Dijital";
     await supabase.from("word_leaderboard").upsert({
       user_email: currentUserEmail,
-      display_name: currentUserEmail,
+      display_name: currentUserName || currentUserEmail,
       toplam_dogru: yeniToplam,
       streak_count: yeniStreak,
       rozet_adi: rozet.ad,
       rozet_icon: rozet.icon,
+      ogrenci_turu: ogrenciTuru,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_email" });
   };
@@ -575,7 +578,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                           {lider.display_name?.includes("@") ? "Almanca Okulum Öğrencisi" : lider.display_name}
                         </div>
                         <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
-                          {lider.rozet_icon} {lider.rozet_adi} {lider.streak_count > 1 ? `· 🔥 ${lider.streak_count} gün seri` : ""}
+                          {lider.rozet_icon} {lider.rozet_adi} · {lider.ogrenci_turu || "Dijital"} {lider.streak_count > 1 ? `· 🔥 ${lider.streak_count} gün seri` : ""}
                         </div>
                       </div>
                     </div>
