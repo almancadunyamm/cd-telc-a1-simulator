@@ -627,7 +627,16 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                   }}
                     style={{ background: isCompleted ? "#f0fdf4" : "#ffffff", border: isCompleted ? "1px solid #86efac" : "1px solid #dbeafe", borderRadius: 18, padding: "18px 16px", color: "#0f172a", cursor: isLocked ? "not-allowed" : "pointer", textAlign: "left", opacity: isLocked ? 0.55 : 1, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
                     <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginBottom: 6, fontWeight: 900, letterSpacing: 1 }}>
-                      {isCompleted ? "✅ " : isLocked ? "🔒 " : "🔥 "}TEMA {temaNo}
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+  {isCompleted ? (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  ) : isLocked ? (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  ) : (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+  )}
+  TEMA {temaNo}
+</span>
                     </div>
                     <div style={{ fontSize: 15, fontWeight: 900 }}>{val.ad}</div>
                     <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>{val.kelimeler.length} kelime</div>
