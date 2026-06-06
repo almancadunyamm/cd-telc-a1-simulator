@@ -376,6 +376,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [completedWordThemes, setCompletedWordThemes] = useState<number[]>([]);
   const [toplamDogru, setToplamDogru] = useState(0);
   const [yukluyor, setYukluyor] = useState(true);
+  const [liderler, setLiderler] = useState<{display_name: string, toplam_dogru: number, streak_count: number, rozet_adi: string, rozet_icon: string}[]>([]);
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
@@ -395,6 +396,16 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       setYukluyor(false);
     }
     loadProgress();
+
+    async function loadLiderler() {
+      const { data } = await supabase
+        .from("word_leaderboard")
+        .select("display_name, toplam_dogru, streak_count, rozet_adi, rozet_icon")
+        .order("toplam_dogru", { ascending: false })
+        .limit(8);
+      if (data) setLiderler(data);
+    }
+    loadLiderler();
   }, [currentUserEmail]);
   useEffect(() => {
     if (!oyunBitti || !tema) return;
@@ -542,6 +553,41 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
             </div>
           )}
 
+          {/* Liderlik Tablosu */}
+          {liderler.length > 0 && (
+            <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px 24px", marginBottom: 24, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase" }}>🏆 Kelime Liderleri</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", marginTop: 4 }}>Bu Haftanın Öne Çıkanları</div>
+                </div>
+                <span style={{ background: "#ecfdf5", color: "#059669", borderRadius: 99, padding: "4px 12px", fontSize: 12, fontWeight: 900 }}>Canlı</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {liderler.map((lider, index) => (
+                  <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", borderRadius: 14, padding: "12px 16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 99, background: "linear-gradient(135deg, #ecfdf5, #dbeafe)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, color: "#0f172a" }}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>
+                          {lider.display_name?.includes("@") ? "Almanca Okulum Öğrencisi" : lider.display_name}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                          {lider.rozet_icon} {lider.rozet_adi} {lider.streak_count > 1 ? `· 🔥 ${lider.streak_count} gün seri` : ""}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: "#059669" }}>{lider.toplam_dogru}</div>
+                      <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>kelime</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {/* Seviye seçici */}
           <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
             {(["A1", "A2", "B1"] as const).map((level) => (
