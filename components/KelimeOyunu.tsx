@@ -510,7 +510,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     const ogrenciTuru = hasAnyLiveCourseOrder ? "Canlı Sınıf" : "Dijital";
     await supabase.from("word_leaderboard").upsert({
       user_email: currentUserEmail,
-      display_name: currentUserName || currentUserEmail,
+      display_name: (currentUserName && !currentUserName.includes("@") && currentUserName.trim() !== "") ? currentUserName : (currentUserEmail || ""),
       toplam_dogru: yeniGenelToplam,
       streak_count: yeniStreak,
       rozet_adi: rozet.ad,
