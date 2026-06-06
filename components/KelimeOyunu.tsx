@@ -584,10 +584,24 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
 
           {/* Tema kartları */}
           {selectedWordLevel !== "A1" ? (
-            <div style={{ background: "#ffffff", border: "1px solid #fde68a", borderRadius: 20, padding: "32px 24px", textAlign: "center" }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>🚀</div>
-              <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 8px" }}>{selectedWordLevel} Kelime Arenası Yakında</h2>
-              <p style={{ color: "#64748b", fontSize: 14 }}>Bu seviye için kelime oyunu hazırlanıyor.</p>
+            <div style={{ background: "linear-gradient(135deg, #fffbeb, #fff)", border: "1px solid #fde68a", borderRadius: 20, padding: "28px 24px", textAlign: "center" }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
+              <p style={{ fontSize: 11, fontWeight: 900, color: "#b45309", letterSpacing: 2, textTransform: "uppercase", margin: "0 0 8px" }}>Premium Seviye Kilitli</p>
+              <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 8px" }}>{selectedWordLevel} Kelime Arenası seni bekliyor</h2>
+              <p style={{ color: "#64748b", fontSize: 14, margin: "0 0 20px" }}>
+                {selectedWordLevel} seviyesi için kelime oyunu çok yakında açılacak. Gelişim ve Zirve öğrencileri ilk erişenler olacak.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
+                {([{ val: "500+", label: "Yeni Kelime", color: "#059669" }, { val: "15+", label: "Yeni Tema", color: "#2563eb" }, { val: "⭐", label: "Premium Erişim", color: "#f59e0b" }] as const).map(s => (
+                  <div key={s.label} style={{ background: "#ffffff", borderRadius: 14, padding: "14px 8px", boxShadow: "0 4px 12px rgba(15,23,42,0.06)" }}>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: s.color }}>{s.val}</div>
+                    <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, marginTop: 4 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: "linear-gradient(135deg, #059669, #2563eb)", borderRadius: 14, padding: "12px", color: "#fff", fontSize: 13, fontWeight: 900 }}>
+                Gelişim ve Zirve öğrencileri yeni seviyelere ilk erişenler olacak.
+              </div>
             </div>
           ) : (
             <>
