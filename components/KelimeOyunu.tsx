@@ -448,6 +448,28 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       const temaNo = Number(String(temaKey).replace("tema", ""));
       setCompletedWordThemes(prev => prev.includes(temaNo) ? prev : [...prev, temaNo]);
     }
+
+    // Streak hesapla
+    const bugun = new Date().toISOString().split("T")[0];
+    const { data: streakData } = await supabase
+      .from("word_progress")
+      .select("last_played_date, streak_count")
+      .eq("user_email", currentUserEmail)
+      .limit(1)
+      .single();
+
+    let yeniStreak = 1;
+    if (streakData?.last_played_date) {
+      const dun = new Date();
+      dun.setDate(dun.getDate() - 1);
+      const dunStr = dun.toISOString().split("T")[0];
+      if (streakData.last_played_date === bugun) {
+        yeniStreak = streakData.streak_count || 1;
+      } else if (streakData.last_played_date === dunStr) {
+        yeniStreak = (streakData.streak_count || 0) + 1;
+      }
+    }
+
     await supabase.from("word_progress").upsert({
       user_email: currentUserEmail,
       tema_key: temaKey,
@@ -455,8 +477,22 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       dogru_sayisi: dogruSayisi,
       toplam_soru: toplamSoru,
       tamamlandi,
+      streak_count: yeniStreak,
+      last_played_date: bugun,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_email,tema_key,mod" });
+
+    // Liderboard güncelle
+    const rozet = getRozet(yeniToplam);
+    await supabase.from("word_leaderboard").upsert({
+      user_email: currentUserEmail,
+      display_name: currentUserEmail,
+      toplam_dogru: yeniToplam,
+      streak_count: yeniStreak,
+      rozet_adi: rozet.ad,
+      rozet_icon: rozet.icon,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_email" });
   };
 
   const canIkonu = (dolu: boolean) => (dolu ? "❤️" : "🖤");
