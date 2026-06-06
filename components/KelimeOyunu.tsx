@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 type Kelime = { de: string; tr: string };
 type TemaKey = keyof typeof KELIMELER;
 type Mod = "de_to_tr" | "tr_to_de";
-type Soru = { soru: string; dogru: string; secenekler: string[] };
+type Soru = { soru: string; dogru: string; yanlis: string; secenekler: string[] };
 
 const KELIMELER = {
   tema1: { ad: "Kendini Tanıtma", kelimeler: [
@@ -340,15 +340,12 @@ const ROZETLER = [
 function getRozet(toplam: number) {
   return ROZETLER.find(r => toplam >= r.min && toplam <= r.max) || ROZETLER[0];
 }
-
 function getSonrakiRozet(toplam: number) {
   return ROZETLER.find(r => r.min > toplam) || null;
 }
-
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
-
 function getWrongOptions(correct: string, pool: Kelime[], count = 3): string[] {
   const others = pool.filter((k) => k.tr !== correct).map((k) => k.tr);
   return shuffle(others).slice(0, count);
@@ -373,11 +370,16 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [streak, setStreak] = useState(0);
   const [dogru, setDogru] = useState(0);
   const [yanlis, setYanlis] = useState(0);
+  const [yanlisKelimeler, setYanlisKelimeler] = useState<{soru: string, dogru: string, verilen: string}[]>([]);
   const [selectedWordLevel, setSelectedWordLevel] = useState<"A1" | "A2" | "B1">("A1");
   const [completedWordThemes, setCompletedWordThemes] = useState<number[]>([]);
   const [toplamDogru, setToplamDogru] = useState(0);
   const [yukluyor, setYukluyor] = useState(true);
   const [liderler, setLiderler] = useState<{display_name: string, toplam_dogru: number, streak_count: number, rozet_adi: string, rozet_icon: string, ogrenci_turu: string}[]>([]);
+  const [yanlisGoster, setYanlisGoster] = useState(false);
+
+  // Her tema için toplam doğru sayısını tut
+  const [temaDogruSayilari, setTemaDogruSayilari] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
@@ -393,6 +395,10 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
         setCompletedWordThemes(tamamlananTemalar);
         const toplam = data.reduce((acc, d) => acc + (d.dogru_sayisi || 0), 0);
         setToplamDogru(toplam);
+        // Her tema için doğru sayısı
+        const sayilar: Record<string, number> = {};
+        data.forEach(d => { sayilar[d.tema_key] = (sayilar[d.tema_key] || 0) + (d.dogru_sayisi || 0); });
+        setTemaDogruSayilari(sayilar);
       }
       setYukluyor(false);
     }
@@ -408,29 +414,37 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     }
     loadLiderler();
   }, [currentUserEmail]);
+
   useEffect(() => {
     if (!oyunBitti || !tema) return;
     const basari = Math.round((dogru / sorular.length) * 100);
-    const tamamlandi = basari >= 80;
-    kaydetIlerleme(tema, dogru, sorular.length, tamamlandi);
+    const temaNo = Number(String(tema).replace("tema", ""));
+    const toplamKelimeSayisi = KELIMELER[tema].kelimeler.length;
+    const mevcutDogru = temaDogruSayilari[tema] || 0;
+    const yeniTemaToplamDogru = mevcutDogru + dogru;
+    const tamamlandi = yeniTemaToplamDogru >= Math.ceil(toplamKelimeSayisi * 0.8);
+    kaydetIlerleme(tema, dogru, sorular.length, tamamlandi, yeniTemaToplamDogru);
   }, [oyunBitti]);
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
-    const kelimeler = shuffle(KELIMELER[secilenTema].kelimeler).slice(0, 15);
-    const hazirSorular: Soru[] = kelimeler.map((k) => {
+    // Daha önce çözülmemiş kelimeleri önceliklendir
+    const tumKelimeler = KELIMELER[secilenTema].kelimeler;
+    const secilen = shuffle(tumKelimeler).slice(0, 15);
+    const hazirSorular: Soru[] = secilen.map((k) => {
       const dogruCevap = secilenMod === "de_to_tr" ? k.tr : k.de;
       const soru = secilenMod === "de_to_tr" ? k.de : k.tr;
       const yanlislar = secilenMod === "de_to_tr"
-        ? getWrongOptions(k.tr, KELIMELER[secilenTema].kelimeler)
-        : shuffle(KELIMELER[secilenTema].kelimeler.filter((x) => x.de !== k.de)).slice(0, 3).map((x) => x.de);
-      return { soru, dogru: dogruCevap, secenekler: shuffle([dogruCevap, ...yanlislar]) };
+        ? getWrongOptions(k.tr, tumKelimeler)
+        : shuffle(tumKelimeler.filter((x) => x.de !== k.de)).slice(0, 3).map((x) => x.de);
+      return { soru, dogru: dogruCevap, yanlis: "", secenekler: shuffle([dogruCevap, ...yanlislar]) };
     });
     setSorular(hazirSorular);
     setSuankiIndex(0); setCanlar(3); setSkor(0);
     setSecilenCevap(null); setOyunBitti(false);
     setStreak(0); setDogru(0); setYanlis(0);
+    setYanlisKelimeler([]); setYanlisGoster(false);
     setTema(secilenTema); setMod(secilenMod);
-  }, []);
+  }, [temaDogruSayilari]);
 
   const cevapSec = (cevap: string) => {
     if (secilenCevap) return;
@@ -441,6 +455,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       setTimeout(() => sonrakiSoru(), 900);
     } else {
       setCanlar((c) => c - 1); setStreak(0); setYanlis((y) => y + 1);
+      setYanlisKelimeler(prev => [...prev, { soru: mevcutSoru.soru, dogru: mevcutSoru.dogru, verilen: cevap }]);
       if (canlar - 1 <= 0) setTimeout(() => setOyunBitti(true), 900);
       else setTimeout(() => sonrakiSoru(), 900);
     }
@@ -452,41 +467,38 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     else setSuankiIndex((i) => i + 1);
   };
 
-  const kaydetIlerleme = async (temaKey: TemaKey, dogruSayisi: number, toplamSoru: number, tamamlandi: boolean) => {
+  const kaydetIlerleme = async (temaKey: TemaKey, dogruSayisi: number, toplamSoru: number, tamamlandi: boolean, yeniTemaToplamDogru: number) => {
     if (!currentUserEmail) return;
-    const yeniToplam = toplamDogru + dogruSayisi;
-    setToplamDogru(yeniToplam);
+    const yeniGenelToplam = toplamDogru + dogruSayisi;
+    setToplamDogru(yeniGenelToplam);
+    setTemaDogruSayilari(prev => ({ ...prev, [temaKey]: yeniTemaToplamDogru }));
     if (tamamlandi) {
       const temaNo = Number(String(temaKey).replace("tema", ""));
       setCompletedWordThemes(prev => prev.includes(temaNo) ? prev : [...prev, temaNo]);
     }
 
-    // Streak hesapla
     const bugun = new Date().toISOString().split("T")[0];
     const { data: streakData } = await supabase
       .from("word_progress")
       .select("last_played_date, streak_count")
       .eq("user_email", currentUserEmail)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     let yeniStreak = 1;
     if (streakData?.last_played_date) {
       const dun = new Date();
       dun.setDate(dun.getDate() - 1);
       const dunStr = dun.toISOString().split("T")[0];
-      if (streakData.last_played_date === bugun) {
-        yeniStreak = streakData.streak_count || 1;
-      } else if (streakData.last_played_date === dunStr) {
-        yeniStreak = (streakData.streak_count || 0) + 1;
-      }
+      if (streakData.last_played_date === bugun) yeniStreak = streakData.streak_count || 1;
+      else if (streakData.last_played_date === dunStr) yeniStreak = (streakData.streak_count || 0) + 1;
     }
 
     await supabase.from("word_progress").upsert({
       user_email: currentUserEmail,
       tema_key: temaKey,
       mod: mod || "de_to_tr",
-      dogru_sayisi: dogruSayisi,
+      dogru_sayisi: yeniTemaToplamDogru,
       toplam_soru: toplamSoru,
       tamamlandi,
       streak_count: yeniStreak,
@@ -494,13 +506,12 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_email,tema_key,mod" });
 
-    // Liderboard güncelle
-    const rozet = getRozet(yeniToplam);
+    const rozet = getRozet(yeniGenelToplam);
     const ogrenciTuru = hasAnyLiveCourseOrder ? "Canlı Sınıf" : "Dijital";
     await supabase.from("word_leaderboard").upsert({
       user_email: currentUserEmail,
       display_name: currentUserName || currentUserEmail,
-      toplam_dogru: yeniToplam,
+      toplam_dogru: yeniGenelToplam,
       streak_count: yeniStreak,
       rozet_adi: rozet.ad,
       rozet_icon: rozet.icon,
@@ -516,13 +527,13 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     ? Math.round(((toplamDogru - mevcutRozet.min) / (sonrakiRozet.min - mevcutRozet.min)) * 100)
     : 100;
 
+  const S = { background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" };
+
   // TEMA SEÇİM EKRANI
   if (!tema) {
     return (
-      <div style={{ background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", padding: "24px 16px", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" }}>
+      <div style={{ ...S, padding: "24px 16px" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
-
-          {/* Başlık */}
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             <div style={{ fontSize: 44, marginBottom: 8 }}>🎮</div>
             <p style={{ color: "#059669", fontWeight: 900, letterSpacing: 2, fontSize: 12, margin: 0, textTransform: "uppercase" }}>Kelime Oyunu</p>
@@ -530,15 +541,12 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
             <p style={{ color: "#64748b", marginTop: 8, fontSize: 14 }}>TELC & Goethe A1 — Tema bazlı kelime pratiği</p>
           </div>
 
-          {/* Rozet Kartı */}
           {!yukluyor && (
             <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px 24px", marginBottom: 24, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                 <div>
                   <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase" }}>Mevcut Rozet</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: mevcutRozet.renk, marginTop: 4 }}>
-                    {mevcutRozet.icon} {mevcutRozet.ad}
-                  </div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: mevcutRozet.renk, marginTop: 4 }}>{mevcutRozet.icon} {mevcutRozet.ad}</div>
                   <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{toplamDogru} doğru kelime</div>
                 </div>
                 {sonrakiRozet && (
@@ -556,7 +564,6 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
             </div>
           )}
 
-          {/* Liderlik Tablosu */}
           {liderler.length > 0 && (
             <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px 24px", marginBottom: 24, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -570,16 +577,10 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                 {liderler.map((lider, index) => (
                   <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", borderRadius: 14, padding: "12px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 99, background: "linear-gradient(135deg, #ecfdf5, #dbeafe)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, color: "#0f172a" }}>
-                        {index + 1}
-                      </div>
+                      <div style={{ width: 32, height: 32, borderRadius: 99, background: "linear-gradient(135deg, #ecfdf5, #dbeafe)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14 }}>{index + 1}</div>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>
-                          {lider.display_name?.includes("@") ? "Almanca Okulum Öğrencisi" : lider.display_name}
-                        </div>
-                        <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
-                          {lider.rozet_icon} {lider.rozet_adi} · {lider.ogrenci_turu || "Dijital"} {lider.streak_count > 1 ? `· 🔥 ${lider.streak_count} gün seri` : ""}
-                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>{lider.display_name?.includes("@") ? "Almanca Okulum Öğrencisi" : lider.display_name}</div>
+                        <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{lider.rozet_icon} {lider.rozet_adi} · {lider.ogrenci_turu || "Dijital"}{lider.streak_count > 1 ? ` · 🔥 ${lider.streak_count} gün seri` : ""}</div>
                       </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
@@ -591,7 +592,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
               </div>
             </div>
           )}
-          {/* Seviye seçici */}
+
           <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
             {(["A1", "A2", "B1"] as const).map((level) => (
               <button key={level} onClick={() => setSelectedWordLevel(level)}
@@ -605,7 +606,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
             <div style={{ background: "#ffffff", border: "1px solid #fde68a", borderRadius: 20, padding: "32px 24px", textAlign: "center" }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🚀</div>
               <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 8px" }}>{selectedWordLevel} Kelime Arenası Yakında</h2>
-              <p style={{ color: "#64748b", fontSize: 14 }}>Bu seviye için kelime oyunu hazırlanıyor. Gelişim ve Zirve öğrencileri ilk erişenler olacak.</p>
+              <p style={{ color: "#64748b", fontSize: 14 }}>Bu seviye için kelime oyunu hazırlanıyor.</p>
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
@@ -616,20 +617,30 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                 const isPreviousCompleted = temaNo === 1 || completedWordThemes.includes(temaNo - 1);
                 const isLocked = !hasPackageAccess || !isPreviousCompleted;
                 const isCompleted = completedWordThemes.includes(temaNo);
+                const temaDogru = temaDogruSayilari[key] || 0;
+                const temaYuzde = Math.min(100, Math.round((temaDogru / val.kelimeler.length) * 100));
                 return (
                   <button key={key} onClick={() => {
                     if (!hasPackageAccess) { alert("Bu tema Gelişim Paketi ile açılır."); return; }
                     if (!isPreviousCompleted) { alert(`Önce Tema ${temaNo - 1} kelime oyununu tamamlamalısınız.`); return; }
                     setTema(key);
                   }}
-                    style={{ background: isCompleted ? "#f0fdf4" : "#ffffff", border: isCompleted ? "1px solid #86efac" : "1px solid #dbeafe", borderRadius: 18, padding: "18px 16px", color: "#0f172a", cursor: "pointer", textAlign: "left", opacity: isLocked ? 0.55 : 1, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
+                    style={{ background: isCompleted ? "#f0fdf4" : "#ffffff", border: isCompleted ? "1px solid #86efac" : "1px solid #dbeafe", borderRadius: 18, padding: "18px 16px", color: "#0f172a", cursor: isLocked ? "not-allowed" : "pointer", textAlign: "left", opacity: isLocked ? 0.55 : 1, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
                     <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginBottom: 6, fontWeight: 900, letterSpacing: 1 }}>
                       {isCompleted ? "✅ " : isLocked ? "🔒 " : "🔥 "}TEMA {temaNo}
                     </div>
                     <div style={{ fontSize: 15, fontWeight: 900 }}>{val.ad}</div>
                     <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>{val.kelimeler.length} kelime</div>
-                    <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginTop: 8, fontWeight: 800 }}>
-                      {isCompleted ? "Tamamlandı" : isLocked ? "Kilitli" : "Başlamaya hazır"}
+                    {!isLocked && temaDogru > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <div style={{ height: 4, background: "#dbeafe", borderRadius: 99, overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${temaYuzde}%`, background: isCompleted ? "#16a34a" : "#2563eb", borderRadius: 99 }} />
+                        </div>
+                        <div style={{ fontSize: 10, color: "#64748b", marginTop: 3, fontWeight: 700 }}>%{temaYuzde} tamamlandı</div>
+                      </div>
+                    )}
+                    <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginTop: 6, fontWeight: 800 }}>
+                      {isCompleted ? "Tamamlandı" : isLocked ? "Kilitli" : temaDogru > 0 ? "Devam et" : "Başlamaya hazır"}
                     </div>
                   </button>
                 );
@@ -644,7 +655,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   // MOD SEÇİM EKRANI
   if (!mod) {
     return (
-      <div style={{ background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, borderRadius: 24, border: "1px solid #dbeafe" }}>
+      <div style={{ ...S, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ maxWidth: 460, width: "100%", textAlign: "center" }}>
           <div style={{ fontSize: 42, marginBottom: 12 }}>⚙️</div>
           <p style={{ color: "#059669", fontWeight: 900, letterSpacing: 2, fontSize: 12, margin: 0, textTransform: "uppercase" }}>Çalışma Modu</p>
@@ -670,28 +681,36 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   // OYUN BİTTİ EKRANI
   if (oyunBitti) {
     const basari = Math.round((dogru / sorular.length) * 100);
-    const tamamlandi = basari >= 80;
-    const yeniToplam = toplamDogru + dogru;
-    const yeniRozet = getRozet(yeniToplam);
-    const eskiRozet = getRozet(toplamDogru);
-    const rozetAtladi = yeniRozet.ad !== eskiRozet.ad;
-    const mesaj = basari >= 80 ? "Harika! 🏆" : basari >= 60 ? "İyi iş! 👍" : "Tekrar dene! 💪";
+    const temaNo = Number(String(tema).replace("tema", ""));
+    const toplamKelimeSayisi = KELIMELER[tema].kelimeler.length;
+    const mevcutTemaDogru = temaDogruSayilari[tema] || 0;
+    const yeniTemaToplamDogru = mevcutTemaDogru + dogru;
+    const temaYuzde = Math.min(100, Math.round((yeniTemaToplamDogru / toplamKelimeSayisi) * 100));
+    const tamamlandi = yeniTemaToplamDogru >= Math.ceil(toplamKelimeSayisi * 0.8);
+    const sonrakiTemaVar = temaNo < 12;
+
+    let tesvikMesaj = "";
+    if (tamamlandi) {
+      tesvikMesaj = "🎉 Bu temayı tamamladın! Sonraki temaya geçebilirsin.";
+    } else if (temaYuzde >= 60) {
+      tesvikMesaj = `💪 Bu temanın %${temaYuzde}'ini tamamladın. Biraz daha çalış!`;
+    } else if (temaYuzde >= 30) {
+      tesvikMesaj = `🔥 Bu temanın %${temaYuzde}'ini tamamladın. Devam et!`;
+    } else {
+      tesvikMesaj = `🌱 Bu temanın %${temaYuzde}'ini tamamladın. Düzenli çalış!`;
+    }
+
     return (
-      <div style={{ background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, borderRadius: 24, border: "1px solid #dbeafe" }}>
-        <div style={{ maxWidth: 440, width: "100%", textAlign: "center" }}>
-          <div style={{ fontSize: 64, marginBottom: 16 }}>{basari >= 80 ? "🏆" : basari >= 60 ? "⭐" : "🔄"}</div>
-          <h2 style={{ fontSize: 28, fontWeight: 900, margin: "0 0 8px" }}>{mesaj}</h2>
+      <div style={{ ...S, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
+          <div style={{ fontSize: 56, marginBottom: 12 }}>{basari >= 80 ? "🏆" : basari >= 60 ? "⭐" : "🔄"}</div>
+          <h2 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 16px" }}>
+            {basari >= 80 ? "Harika!" : basari >= 60 ? "İyi iş!" : "Tekrar dene!"}
+          </h2>
 
-          {rozetAtladi && (
-            <div style={{ background: "linear-gradient(135deg, #fef3c7, #fff)", border: "2px solid #f59e0b", borderRadius: 16, padding: "16px", marginBottom: 20 }}>
-              <div style={{ fontSize: 32 }}>{yeniRozet.icon}</div>
-              <div style={{ fontWeight: 900, fontSize: 16, color: yeniRozet.renk, marginTop: 6 }}>Yeni Rozet Kazandın!</div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "#64748b" }}>{yeniRozet.ad}</div>
-            </div>
-          )}
-
-          <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px", margin: "16px 0" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 16 }}>
+          {/* Skor kutusu */}
+          <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px", marginBottom: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 14 }}>
               {[{ label: "Skor", val: skor, color: "#2563eb" }, { label: "Doğru", val: dogru, color: "#059669" }, { label: "Yanlış", val: yanlis, color: "#dc2626" }].map((s) => (
                 <div key={s.label}>
                   <div style={{ fontSize: 26, fontWeight: 900, color: s.color }}>{s.val}</div>
@@ -699,46 +718,61 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                 </div>
               ))}
             </div>
-            <div style={{ background: "linear-gradient(135deg, #ecfdf5, #eff6ff)", borderRadius: 12, padding: "10px", fontSize: 16, fontWeight: 900, color: "#059669" }}>Başarı: %{basari}</div>
+            <div style={{ background: "linear-gradient(135deg, #ecfdf5, #eff6ff)", borderRadius: 12, padding: "10px", fontSize: 15, fontWeight: 900, color: "#059669" }}>Başarı: %{basari}</div>
           </div>
 
-          {/* Rozet bilgisi */}
-        <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 16, padding: "16px", marginBottom: 16 }}>
-          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Mevcut Rozet</div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: getRozet(yeniToplam).renk }}>
-            {getRozet(yeniToplam).icon} {getRozet(yeniToplam).ad}
+          {/* Tema ilerleme */}
+          <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 16, padding: "16px", marginBottom: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#64748b", marginBottom: 8 }}>{KELIMELER[tema].ad} — Tema İlerlemesi</div>
+            <div style={{ height: 10, background: "#f1f5f9", borderRadius: 99, overflow: "hidden", marginBottom: 6 }}>
+              <div style={{ height: "100%", width: `${temaYuzde}%`, background: tamamlandi ? "#16a34a" : "linear-gradient(90deg, #10b981, #2563eb)", borderRadius: 99, transition: "width 0.5s" }} />
+            </div>
+            <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>%{temaYuzde} / %80 hedef</div>
+            <div style={{ fontSize: 13, color: tamamlandi ? "#16a34a" : "#f59e0b", fontWeight: 900, marginTop: 8 }}>{tesvikMesaj}</div>
           </div>
-          <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>{yeniToplam} toplam doğru kelime</div>
-          {getSonrakiRozet(yeniToplam) && (
-            <div style={{ fontSize: 12, color: "#059669", marginTop: 4, fontWeight: 700 }}>
-              Sonraki rozete {getSonrakiRozet(yeniToplam)!.min - yeniToplam} kelime kaldı
+
+          {/* Yanlış kelimeler */}
+          {yanlisKelimeler.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <button onClick={() => setYanlisGoster(!yanlisGoster)}
+                style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 12, padding: "10px 20px", color: "#dc2626", cursor: "pointer", fontSize: 13, fontWeight: 900, width: "100%" }}>
+                {yanlisGoster ? "▲ Yanlış Kelimeleri Gizle" : `▼ Yanlış Yaptığım ${yanlisKelimeler.length} Kelimeyi Gör`}
+              </button>
+              {yanlisGoster && (
+                <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 12, padding: "14px", marginTop: 8, textAlign: "left" }}>
+                  {yanlisKelimeler.map((k, i) => (
+                    <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: i < yanlisKelimeler.length - 1 ? "1px solid #fecaca" : "none" }}>
+                      <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>❓ {k.soru}</div>
+                      <div style={{ fontSize: 13, color: "#059669", fontWeight: 700, marginTop: 2 }}>✅ Doğru: {k.dogru}</div>
+                      <div style={{ fontSize: 13, color: "#dc2626", fontWeight: 700 }}>❌ Senin cevabın: {k.verilen}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-        </div>
 
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          {/* Sonraki tema butonu */}
-          {tamamlandi && tema && Number(String(tema).replace("tema", "")) < 12 && (
-            <button onClick={() => {
-              const sonrakiTemaNo = Number(String(tema).replace("tema", "")) + 1;
-              const sonrakiTema = `tema${sonrakiTemaNo}` as TemaKey;
-              setTema(sonrakiTema);
-              setMod(null);
-              setOyunBitti(false);
-            }}
-              style={{ background: "linear-gradient(135deg, #10b981, #059669)", border: "none", borderRadius: 14, padding: "14px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-              ➡️ Sonraki Temaya Geç
+          {/* Butonlar — sadece 2 buton */}
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            {tamamlandi && sonrakiTemaVar ? (
+              <button onClick={() => {
+                const sonrakiTema = `tema${temaNo + 1}` as TemaKey;
+                setTema(sonrakiTema); setMod(null); setOyunBitti(false);
+              }}
+                style={{ background: "linear-gradient(135deg, #10b981, #059669)", border: "none", borderRadius: 14, padding: "14px 28px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+                ➡️ Sonraki Temaya Geç
+              </button>
+            ) : (
+              <button onClick={() => oyunuBaslat(tema, mod!)}
+                style={{ background: "linear-gradient(135deg, #10b981, #2563eb)", border: "none", borderRadius: 14, padding: "14px 28px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+                🔄 Temayı Bitir
+              </button>
+            )}
+            <button onClick={() => { setTema(null); setMod(null); }}
+              style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 14, padding: "14px 28px", color: "#0f172a", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+              🏠 Ana Menü
             </button>
-          )}
-          <button onClick={() => oyunuBaslat(tema, mod!)}
-            style={{ background: "linear-gradient(135deg, #10b981, #2563eb)", border: "none", borderRadius: 14, padding: "14px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-            🔄 Tekrar Oyna
-          </button>
-          <button onClick={() => { setTema(null); setMod(null); }}
-            style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 14, padding: "14px 24px", color: "#0f172a", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-            🏠 Ana Menü
-          </button>
-        </div>
+          </div>
         </div>
       </div>
     );
@@ -748,7 +782,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const suankiSoru = sorular[suankiIndex];
   const ilerleme = (suankiIndex / sorular.length) * 100;
   return (
-    <div style={{ background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", padding: "20px 16px", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" }}>
+    <div style={{ ...S, padding: "20px 16px" }}>
       <div style={{ maxWidth: 560, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div style={{ fontSize: 13, color: "#059669", fontWeight: 900 }}>{KELIMELER[tema].ad}</div>
