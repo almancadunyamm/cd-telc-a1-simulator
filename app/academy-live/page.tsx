@@ -255,13 +255,18 @@ export default function LiveAcademyPage() {
 
           <div className="mt-10 grid gap-4">
             {[
+              ["Kaç yaşından itibaren eğitimlere katılım sağlayabilirim?", "Eğitimlerimiz +11 yaş ve üzeri için uygulanmaktadır."],
+              ["Bir kur kaç ay sürüyor?", "Her seviye yaklaşık 2 aylık bir eğitimi kapsıyor. A1'den B1'e kadar tam hazırlık programı yaklaşık 6 aydır."],
               ["Dersler hangi gün ve saatlerde oluyor?", "Akşam grupları Pazartesi, Çarşamba ve Cuma günleri 20:00 - 22:00 arasında yapılır. Sabah grupları hafta içi her gün 14:00 - 16:00 arasında yapılır."],
               ["Dersler canlı mı?", "Evet. Dersler Zoom üzerinden canlı yapılır ve kayıtları daha sonra öğrenci paneline yüklenir."],
               ["Ders kaydını izleyebilir miyim?", "Evet. Canlı kurs öğrencileri ders kayıtlarına panelden erişebilir."],
-              ["Dijital öğrenci paneli ne içeriyor?", "Panel üzerinden ders kayıtlarına, PDF materyallerine, ustalık testlerine, kelime oyununa ve speaking görevlerine erişebilirsin."],
+              ["Konuşma kulübü var mı?", "Evet. Eğitim başladıktan 10 gün sonra sistem size konuşma partneri tanımlıyor. Öğretmen eşliğinde konuşma kulüplerine katılıyorsunuz."],
+              ["Dijital öğrenci paneli ne içeriyor?", "Panel üzerinden ders kayıtlarına, PDF materyallerine, ustalık testlerine, kelime oyununa ve konuşma kulübü görevlerine erişebilirsin."],
+              ["Sınav hazırlık dersleri nedir?", "Öğretmen rehberliğinde yapılan GOETHE ve TELC sınavlarını geçmeye yönelik sınav çalışma dersleridir. İlgili kur bittiğinde öğretmen rehberliğinde +20 ders sınav hazırlık dersi tanımlanır."],
               ["Başlangıç dijital paket dahil mi?", "Evet. Canlı kurs öğrencilerine Başlangıç dijital paket hediye edilir."],
-              ["Kontenjan var mı?", "Evet. Canlı sınıflarda kaliteyi korumak için kontenjan sınırlıdır."],
-              ["Sınav hazırlık dersleri nedir?", "Öğretmen rehberliğinde yapılan TELC sınav odaklı derslerdir. Tekli pakette 20, ikili pakette 40, üçlü pakette 60 ders bulunur."],
+              ["Sertifika veriyor musunuz?", "Evet. Kursu başarıyla bitiren her öğrencimize QR kodlu doğrulanabilir sertifika veriyoruz."],
+              ["Kredi kartı ile ödeme yapabiliyor muyuz?", "Evet. Kredi kartı veya banka havalesi seçeneklerinden biriyle kaydınızı gerçekleştirebilirsiniz."],
+              ["Kontenjan var mı?", "Canlı sınıflarda kaliteyi korumak için kontenjanlarımız sınırlıdır. Mevcut kontenjan durumu için bizimle iletişime geçebilirsiniz."],
             ].map(([q, a]) => (
               <details key={q} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <summary className="cursor-pointer text-lg font-black">{q}</summary>
