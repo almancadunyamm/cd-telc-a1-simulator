@@ -343,6 +343,49 @@ function getRozet(toplam: number) {
 function getSonrakiRozet(toplam: number) {
   return ROZETLER.find(r => r.min > toplam) || null;
 }
+function playResultSound(basari: number) {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+
+    if (basari >= 80) {
+      // Zafer fanfarı - 3 yükselen nota
+      [[523, 0], [659, 0.15], [784, 0.3], [1047, 0.5]].forEach(([freq, time]) => {
+        const osc = ctx.createOscillator();
+        osc.connect(gain);
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime + time);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.4);
+        osc.start(ctx.currentTime + time);
+        osc.stop(ctx.currentTime + time + 0.4);
+      });
+    } else if (basari >= 60) {
+      // Orta ses - 2 nota
+      [[440, 0], [523, 0.2]].forEach(([freq, time]) => {
+        const osc = ctx.createOscillator();
+        osc.connect(gain);
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime + time);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.35);
+        osc.start(ctx.currentTime + time);
+        osc.stop(ctx.currentTime + time + 0.35);
+      });
+    } else {
+      // Hayal kırıklığı - alçalan 2 nota
+      const osc = ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.connect(gain);
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.5);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    }
+  } catch {}
+}
 function playSound(dogru: boolean) {
   try {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -722,6 +765,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     const temaYuzde = Math.min(100, Math.round((yeniTemaToplamDogru / toplamKelimeSayisi) * 100));
     const tamamlandi = yeniTemaToplamDogru >= Math.ceil(toplamKelimeSayisi * 0.8);
     const sonrakiTemaVar = temaNo < 12;
+    playResultSound(basari);
 
     const tesvikMesaj = tamamlandi
       ? "🎉 Bu temayı tamamladın! Sonraki temaya geçebilirsin."
