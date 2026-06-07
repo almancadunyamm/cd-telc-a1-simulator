@@ -162,13 +162,13 @@ export const theme3Questions = [
   themeTitle: "Meslek",
   lessonNumber: 7,
   lessonTitle: "Meslekler + arbeiten",
-  tr: "Ben Zürih'te çalışıyorum.",
-  de: "Ich arbeite in Zürich.",
+  tr: "O (erkek) bir okulda çalışıyor.",
+  de: "Er arbeitet in einer Schule.",
   options: [
-    "Ich arbeite in Zürich.",
-    "Ich Zürich arbeite.",
-    "Ich bin in Zürich.",
-    "Ich arbeite Zürich."
+    "Er arbeitet in einer Schule.",
+    "Er arbeite in einer Schule.",
+    "Er arbeiten in einer Schule.",
+    "Er in einer Schule."
   ],
   difficulty: "medium",
 },
@@ -178,14 +178,9 @@ export const theme3Questions = [
   themeTitle: "Meslek",
   lessonNumber: 7,
   lessonTitle: "Meslekler + arbeiten",
-  tr: "Kadın doktor",
-  de: "Ärztin",
-  options: [
-    "Ärztin",
-    "Arzt",
-    "Lehrer",
-    "Student"
-  ],
+  tr: "Er çekimi hangisidir?",
+  de: "arbeitet",
+  options: ["arbeitet", "arbeite", "arbeitest", "arbeiten"],
   difficulty: "medium",
 },
   {
