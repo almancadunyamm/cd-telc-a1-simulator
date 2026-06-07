@@ -15,7 +15,6 @@ export const theme2Questions = [
     ],
     difficulty: "easy",
   },
-
   {
     id: 47,
     themeId: 2,
@@ -32,7 +31,6 @@ export const theme2Questions = [
     ],
     difficulty: "easy",
   },
-
   {
     id: 48,
     themeId: 2,
@@ -44,7 +42,6 @@ export const theme2Questions = [
     options: ["habe", "hast", "hat", "bin"],
     difficulty: "easy",
   },
-
   {
     id: 49,
     themeId: 2,
@@ -56,7 +53,6 @@ export const theme2Questions = [
     options: ["hat", "hast", "habe", "ist"],
     difficulty: "medium",
   },
-
   {
     id: 50,
     themeId: 2,
@@ -68,7 +64,6 @@ export const theme2Questions = [
     options: ["habe", "hast", "hat", "haben"],
     difficulty: "easy",
   },
-
   {
     id: 51,
     themeId: 2,
@@ -85,7 +80,6 @@ export const theme2Questions = [
     ],
     difficulty: "easy",
   },
-
   {
     id: 52,
     themeId: 2,
@@ -102,7 +96,6 @@ export const theme2Questions = [
     ],
     difficulty: "easy",
   },
-
   {
     id: 53,
     themeId: 2,
@@ -119,7 +112,6 @@ export const theme2Questions = [
     ],
     difficulty: "medium",
   },
-
   {
     id: 54,
     themeId: 2,
@@ -131,7 +123,6 @@ export const theme2Questions = [
     options: ["er", "sie", "wir", "du"],
     difficulty: "easy",
   },
-
   {
     id: 55,
     themeId: 2,
@@ -143,7 +134,6 @@ export const theme2Questions = [
     options: ["sie", "er", "wir", "ich"],
     difficulty: "easy",
   },
-
   {
     id: 56,
     themeId: 2,
@@ -160,7 +150,6 @@ export const theme2Questions = [
     ],
     difficulty: "medium",
   },
-
   {
     id: 57,
     themeId: 2,
@@ -177,14 +166,13 @@ export const theme2Questions = [
     ],
     difficulty: "medium",
   },
-
   {
     id: 58,
     themeId: 2,
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 4,
     lessonTitle: "Aile bireyleri + haben",
-    tr: "Metne göre Ahmet'in bir ailesi var.",
+    tr: "Ahmet'in bir ailesi var. Bunu Almancaya çevir.",
     de: "Ahmet hat eine Familie.",
     options: [
       "Ahmet hat eine Familie.",
@@ -194,36 +182,34 @@ export const theme2Questions = [
     ],
     difficulty: "medium",
   },
-
   {
     id: 59,
     themeId: 2,
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 4,
     lessonTitle: "Aile bireyleri + haben",
-    tr: "Metne göre Ahmet'in babasının adı nedir?",
-    de: "Ali",
-    options: ["Ali", "Mehmet", "Ahmet", "Hasan"],
+    tr: "Aşağıdakilerden hangisi 'benim babam' anlamına gelir?",
+    de: "mein Vater",
+    options: ["mein Vater", "meine Mutter", "dein Bruder", "meine Schwester"],
     difficulty: "medium",
   },
-
   {
     id: 60,
     themeId: 2,
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 4,
     lessonTitle: "Aile bireyleri + haben",
-    tr: "Metne göre Ahmet'in neyi vardır?",
+    tr: "'Ich habe eine Schwester.' cümlesinin Türkçe anlamı nedir?",
     de: "eine Schwester",
     options: [
-      "eine Schwester",
-      "einen Bruder",
-      "zwei Brüder",
-      "keine Familie"
+      "Benim bir kız kardeşim var.",
+      "Benim bir erkek kardeşim var.",
+      "İki erkek kardeşim var.",
+      "Hiç ailem yok."
     ],
     difficulty: "hard",
   },
-    {
+  {
     id: 61,
     themeId: 2,
     themeTitle: "Aile ve Arkadaşlar",
@@ -317,7 +303,7 @@ export const theme2Questions = [
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 5,
     lessonTitle: "İyelik (mein/dein)",
-    tr: "Kadın kelimelerde hangisi kullanılır?",
+    tr: "Dişil (feminin) kelimelerde iyelik eki hangisidir?",
     de: "meine / deine",
     options: ["meine / deine", "mein / dein", "meinen / deinen", "ich / du"],
     difficulty: "medium",
@@ -328,7 +314,7 @@ export const theme2Questions = [
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 5,
     lessonTitle: "İyelik (mein/dein)",
-    tr: "Erkek kelimelerde hangisi kullanılır?",
+    tr: "Eril (maskulin) kelimelerde iyelik eki hangisidir?",
     de: "mein / dein",
     options: ["mein / dein", "meine / deine", "meinen / deinen", "sie / er"],
     difficulty: "medium",
@@ -339,7 +325,7 @@ export const theme2Questions = [
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 5,
     lessonTitle: "İyelik (mein/dein)",
-    tr: "“Wie geht’s?” ne demektir?",
+    tr: '"Wie geht\'s?" ne demektir?',
     de: "Nasılsın?",
     options: ["Nasılsın?", "Adın ne?", "Nerede yaşıyorsun?", "Kaç yaşındasın?"],
     difficulty: "easy",
@@ -350,7 +336,7 @@ export const theme2Questions = [
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 5,
     lessonTitle: "İyelik (mein/dein)",
-    tr: "“Nicht schlecht.” ne demektir?",
+    tr: '"Nicht schlecht." ne demektir?',
     de: "Kötü değil.",
     options: ["Kötü değil.", "Çok iyi.", "Süper.", "Ben iyiyim."],
     difficulty: "easy",
@@ -361,9 +347,9 @@ export const theme2Questions = [
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 5,
     lessonTitle: "İyelik (mein/dein)",
-    tr: "Metne göre Ayşe'nin ailesi nasıldır?",
+    tr: "Küçük aile Almancada nasıl söylenir?",
     de: "klein",
-    options: ["klein", "groß", "schlecht", "alt"],
+    options: ["eine kleine Familie", "eine große Familie", "eine alte Familie", "eine schlechte Familie"],
     difficulty: "medium",
   },
   {
@@ -372,9 +358,14 @@ export const theme2Questions = [
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 5,
     lessonTitle: "İyelik (mein/dein)",
-    tr: "Metne göre Emre kaç yaşındadır?",
-    de: "10 Jahre alt",
-    options: ["10 Jahre alt", "20 Jahre alt", "Studentin", "Hasan"],
+    tr: "'O 25 yaşındadır.' cümlesini Almancaya çevir.",
+    de: "Er ist 25 Jahre alt.",
+    options: [
+      "Er ist 25 Jahre alt.",
+      "Er hat 25 Jahre.",
+      "Er sind 25 Jahre alt.",
+      "Er bin 25 Jahre alt."
+    ],
     difficulty: "medium",
   },
   {
@@ -393,7 +384,7 @@ export const theme2Questions = [
     ],
     difficulty: "hard",
   },
-    {
+  {
     id: 76,
     themeId: 2,
     themeTitle: "Aile ve Arkadaşlar",
@@ -551,9 +542,9 @@ export const theme2Questions = [
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 6,
     lessonTitle: "Basit sıfatlar",
-    tr: "Metne göre Yusuf'un ailesi nasıldır?",
+    tr: "Büyük aile Almancada nasıl söylenir?",
     de: "groß",
-    options: ["groß", "klein", "ruhig", "lustig"],
+    options: ["eine große Familie", "eine kleine Familie", "eine ruhige Familie", "eine lustige Familie"],
     difficulty: "medium",
   },
   {
@@ -562,7 +553,7 @@ export const theme2Questions = [
     themeTitle: "Aile ve Arkadaşlar",
     lessonNumber: 6,
     lessonTitle: "Basit sıfatlar",
-    tr: "Metne göre kardeşi nasıldır?",
+    tr: "Komik anlamına gelen Almanca sıfat hangisidir?",
     de: "lustig",
     options: ["lustig", "nett", "groß", "ruhig"],
     difficulty: "medium",
