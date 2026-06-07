@@ -343,6 +343,31 @@ function getRozet(toplam: number) {
 function getSonrakiRozet(toplam: number) {
   return ROZETLER.find(r => r.min > toplam) || null;
 }
+function playSound(dogru: boolean) {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (dogru) {
+      osc.frequency.setValueAtTime(520, ctx.currentTime);
+      osc.frequency.setValueAtTime(780, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+    } else {
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.35);
+    }
+  } catch {}
+}
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
@@ -441,9 +466,11 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     setSecilenCevap(cevap);
     const mevcutSoru = sorular[suankiIndex];
     if (cevap === mevcutSoru.dogru) {
+      playSound(true);
       setSkor((s) => s + 10); setStreak((s) => s + 1); setDogru((d) => d + 1);
       setTimeout(() => sonrakiSoru(), 900);
     } else {
+      playSound(false);
       setCanlar((c) => c - 1); setStreak(0); setYanlis((y) => y + 1);
       setYanlisKelimeler(prev => [...prev, { soru: mevcutSoru.soru, dogru: mevcutSoru.dogru, verilen: cevap }]);
       if (canlar - 1 <= 0) setTimeout(() => setOyunBitti(true), 900);
