@@ -6,6 +6,7 @@ import {
   getMockUserStorageKey,
 } from "../../../lib/access/mock-session";
 import type { LevelCode } from "../../../types/product";
+import GoetheA1Simulator from "../../../components/exam/GoetheA1Simulator";
 
 type PageProps = {
   params: Promise<{
@@ -50,16 +51,7 @@ export default async function LevelExamPage({ params }: PageProps) {
   });
 
   if (normalizedLevel === "A1") {
-  return (
-    <main className="min-h-screen bg-slate-200 p-6">
-      <div className="mx-auto max-w-6xl">
-        <AdminExamSimulatorWrapper
-  examId="a1-set-1"
-  forcedExamId="a1-set-1"
-/>
-      </div>
-    </main>
-  );
+  return <GoetheA1Simulator />;
 }
 
   return (
