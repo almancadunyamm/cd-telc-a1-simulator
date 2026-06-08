@@ -2838,10 +2838,10 @@ if (!currentUser) {
   {[
   { key: "home", label: "Ana Sayfa", icon: "🏠" },
   { key: "lessons", label: "Dersler", icon: "🎬" },
+  { key: "materials", label: "Çalışma Sayfaları", icon: "📄" },
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
-  { key: "materials", label: "PDF", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
   { key: "badges", label: "Rozetler", icon: "🏆" },
@@ -2896,10 +2896,10 @@ if (!currentUser) {
       {[
   { key: "home", label: "Ana Sayfa", icon: "🏠" },
   { key: "lessons", label: "Dersler", icon: "🎬" },
+   { key: "materials", label: "Çalışma Sayfaları", icon: "📄" },
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
-  { key: "materials", label: "PDF Merkezi", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
   { key: "badges", label: "Rozetler", icon: "🏆" },
