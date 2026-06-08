@@ -2173,6 +2173,22 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
   function getSpeakingUnlockedThemeCount(masteryCompletedCount: number): number {
   return Math.max(0, masteryCompletedCount - 2);
 }
+function getSpeakingRozet(temaNo: number, sinavaGecildi: boolean): string {
+  if (temaNo >= 12 && sinavaGecildi) return "🏆 Konuşma Şampiyonu";
+  if (temaNo >= 9 && sinavaGecildi) return "🥇 Altın Konuşmacı";
+  if (temaNo >= 6 && sinavaGecildi) return "🥈 Gümüş Konuşmacı";
+  if (temaNo >= 3 && sinavaGecildi) return "🥉 Bronz Konuşmacı";
+  return "🎤 Aday";
+}
+
+function getSinavSuresi(temaNo: number): number {
+  return (temaNo / 3) * 180; // Her 3 temada 180 saniye (3 dk)
+}
+
+function getSinavSuresiLabel(temaNo: number): string {
+  const dakika = (temaNo / 3) * 3;
+  return dakika + " dakika";
+}
 
 async function handleSpeakingBildirim() {
   if (!currentUser || !speakingProgress) return;
@@ -2203,15 +2219,26 @@ async function handleSpeakingBildirim() {
     }
     await supabase.from("speaking_sessions").update(updateData).eq("id", session.id);
     if (digerBildirdi) {
-      let newTema = speakingProgress.current_tema;
-      let newGorev = speakingProgress.current_gorev + 1;
-      if (newGorev > 3) { newTema += 1; newGorev = 1; }
-      await supabase.from("speaking_progress").update({
-        current_tema: newTema,
-        current_gorev: newGorev,
-        son_bildirim_tarihi: now.slice(0, 10),
-        gorev_tarihleri: [...(speakingProgress.gorev_tarihleri || []), now.slice(0, 10)],
-      }).eq("id", speakingProgress.id);
+  let newTema = speakingProgress.current_tema;
+  let newGorev = speakingProgress.current_gorev + 1;
+  let sinav_bekleniyor = false;
+
+  if (newGorev > 3) {
+    newTema += 1;
+    newGorev = 1;
+    // Her 3 temada bir sınav
+    if ((newTema - 1) % 3 === 0) {
+      sinav_bekleniyor = true;
+    }
+  }
+
+  await supabase.from("speaking_progress").update({
+    current_tema: sinav_bekleniyor ? newTema - 1 : newTema,
+    current_gorev: sinav_bekleniyor ? 3 : newGorev,
+    son_bildirim_tarihi: now.slice(0, 10),
+    gorev_tarihleri: [...(speakingProgress.gorev_tarihleri || []), now.slice(0, 10)],
+    sinav_bekleniyor: sinav_bekleniyor,
+  }).eq("id", speakingProgress.id);
     } else {
       await supabase.from("speaking_progress").update({
         son_bildirim_tarihi: now.slice(0, 10),
@@ -2236,7 +2263,62 @@ async function handleSpeakingBildirim() {
   setSpeakingBildirimGonderildi(true);
   setTimeout(() => setSpeakingBildirimGonderildi(false), 3000);
 }
-  if (!currentUser) {
+  function SpeakingLeaderboard({ currentUsername }: { currentUsername: string }) {
+  const [liderler, setLiderler] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from("speaking_progress")
+        .select("username, current_tema, rozet, son_sinav_tema")
+        .eq("level", "A1")
+        .order("current_tema", { ascending: false })
+        .limit(10);
+      setLiderler(data || []);
+    }
+    load();
+  }, []);
+
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs font-black text-slate-500 uppercase tracking-wider">Liderlik Tablosu</p>
+        <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-700">Canlı</span>
+      </div>
+      <div className="space-y-2">
+        {liderler.map((l, i) => (
+          <div
+            key={i}
+            className={
+              "flex items-center justify-between rounded-2xl px-3 py-2 " +
+              (l.username === currentUsername
+                ? "bg-emerald-50 border border-emerald-200"
+                : "bg-slate-50")
+            }
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-black text-slate-600 shadow-sm">
+                {i + 1}
+              </span>
+              <div>
+                <p className="text-xs font-black text-slate-900 max-w-[120px] truncate">
+                  {l.username === currentUsername ? "Sen" : l.username.split("@")[0]}
+                </p>
+                <p className="text-xs text-slate-500">{l.rozet || "🎤 Aday"}</p>
+              </div>
+            </div>
+            <span className="text-xs font-black text-emerald-700">{"T" + l.current_tema}</span>
+          </div>
+        ))}
+        {liderler.length === 0 && (
+          <p className="text-xs text-slate-400 text-center py-4">Henüz kayıt yok.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+if (!currentUser) {
     return (
       <main className="min-h-screen bg-slate-950 p-6 text-white">
         Yükleniyor...
@@ -3906,6 +3988,7 @@ createPendingOrder({
             ["durum", "📊 Durumum"],
             ["gorev", "🎯 Görev"],
             ["partner", "🤝 Partner"],
+            ["sinav", "🎓 Sınav" + (speakingProgress?.sinav_bekleniyor ? " 🔴" : "")],
           ] as const).map(([key, label]) => (
             <button
               key={key}
@@ -4033,6 +4116,24 @@ createPendingOrder({
                       </p>
                     </div>
 
+                    {/* Sınav uyarısı */}
+{speakingProgress.sinav_bekleniyor && (
+  <div className="rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 p-4 mb-4">
+    <p className="text-sm font-black text-slate-900">
+      {"🎓 SINAV ZAMANI! Tema " + speakingProgress.current_tema + " tamamlandı!"}
+    </p>
+    <p className="text-xs text-slate-800 mt-1">
+      {"Toplam " + (speakingProgress.current_tema * 15) + " soru · " + getSinavSuresiLabel(speakingProgress.current_tema) + " · Görüntülü arama ile sınav yap"}
+    </p>
+    <button
+      type="button"
+      onClick={() => setSpeakingTab("sinav" as any)}
+      className="mt-3 w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-black text-white hover:bg-slate-800"
+    >
+      {"📋 Sınav Detaylarına Git"}
+    </button>
+  </div>
+)}
                     {/* Küme düşme uyarısı */}
                     {speakingProgress.son_bildirim_tarihi && (() => {
                       const son = new Date(speakingProgress.son_bildirim_tarihi);
@@ -4460,6 +4561,252 @@ createPendingOrder({
               </div>
             </div>
           )}
+                    {/* ── SINAV TABI ──────────────────────────────────────── */}
+          {(speakingTab as string) === "sinav" && (
+            <div className="grid gap-4 lg:grid-cols-2">
+
+              {/* Sol: Sınav bilgisi */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                {!speakingProgress ? (
+                  <p className="text-sm text-slate-500">Önce Konuşma Kulübünü başlat.</p>
+                ) : !speakingProgress.sinav_bekleniyor ? (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-3">{"📚"}</div>
+                    <h3 className="font-black text-slate-900">Sınav henüz yok</h3>
+                    <p className="text-sm text-slate-500 mt-2 leading-6">
+                      {"Her 3 temayı tamamladığında sınav açılır. Şu an Tema " + speakingProgress.current_tema + " üzerindesin."}
+                    </p>
+                    <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-left space-y-2 text-sm text-slate-600">
+                      <p>{"🥉 Tema 3 → Bronz Konuşmacı"}</p>
+                      <p>{"🥈 Tema 6 → Gümüş Konuşmacı"}</p>
+                      <p>{"🥇 Tema 9 → Altın Konuşmacı"}</p>
+                      <p>{"🏆 Tema 12 → Konuşma Şampiyonu"}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 p-5 mb-5 text-center">
+                      <p className="text-2xl font-black text-slate-900">{"🎓 SINAV ZAMANI!"}</p>
+                      <p className="text-sm font-bold text-slate-800 mt-1">
+                        {"Tema " + speakingProgress.current_tema + " Genel Sınavı"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 mb-5">
+                      <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                        <span className="text-sm font-bold text-slate-600">Toplam Soru</span>
+                        <span className="text-sm font-black text-slate-900">{speakingProgress.current_tema * 15 + " soru"}</span>
+                      </div>
+                      <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                        <span className="text-sm font-bold text-slate-600">Süre</span>
+                        <span className="text-sm font-black text-slate-900">{getSinavSuresiLabel(speakingProgress.current_tema)}</span>
+                      </div>
+                      <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                        <span className="text-sm font-bold text-slate-600">Kazanılacak Rozet</span>
+                        <span className="text-sm font-black text-slate-900">
+                          {speakingProgress.current_tema >= 12
+                            ? "🏆 Konuşma Şampiyonu"
+                            : speakingProgress.current_tema >= 9
+                            ? "🥇 Altın Konuşmacı"
+                            : speakingProgress.current_tema >= 6
+                            ? "🥈 Gümüş Konuşmacı"
+                            : "🥉 Bronz Konuşmacı"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                        <span className="text-sm font-bold text-slate-600">Format</span>
+                        <span className="text-sm font-black text-slate-900">Görüntülü arama</span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 mb-5">
+                      <p className="text-xs font-black text-blue-700 uppercase tracking-wider mb-2">Sınav Kuralları</p>
+                      <div className="space-y-1 text-sm text-slate-700">
+                        <p>{"1. Partnerinle görüntülü arama başlat"}</p>
+                        <p>{"2. Dinleyici Türkçe soruları sırayla sorar"}</p>
+                        <p>{"3. Sen kameraya bakarak Almancasını söylersin"}</p>
+                        <p>{"4. Süre dolmadan " + (speakingProgress.current_tema * 15) + " soruyu bitirirsen geçersin"}</p>
+                        <p>{"5. Sınav sonrası dinleyici buradan sonucu bildirir"}</p>
+                      </div>
+                    </div>
+
+                    {partnerTelefon ? (
+                      <a
+                        href={
+                          "https://wa.me/" +
+                          partnerTelefon +
+                          "?text=" +
+                          encodeURIComponent(
+                            "Merhaba! Konuşma Kulübü Tema " +
+                            speakingProgress.current_tema +
+                            " sınavına hazırım 🎓\n\nToplam " +
+                            speakingProgress.current_tema * 15 +
+                            " soru var, sürem " +
+                            getSinavSuresiLabel(speakingProgress.current_tema) +
+                            ".\n\nGörüntülü arama açar mısın? Sen Türkçe soruları sorarsın, ben Almancasını söylerim.\n\nHazır olunca bildir! 💪"
+                          )
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full rounded-2xl bg-green-600 px-4 py-4 text-center text-sm font-black text-white hover:bg-green-700"
+                      >
+                        {"📱 Partnerimi Ara — Sınavı Başlat"}
+                      </a>
+                    ) : (
+                      <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-center text-sm text-amber-800">
+                        Partner telefon bilgisi bulunamadı.
+                      </div>
+                    )}
+
+                    <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3">
+                        Dinleyici misin? Sınav Sonucunu Bildir
+                      </p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!currentUser || !speakingProgress) return;
+                            const rozet =
+                              speakingProgress.current_tema >= 12
+                                ? "🏆 Konuşma Şampiyonu"
+                                : speakingProgress.current_tema >= 9
+                                ? "🥇 Altın Konuşmacı"
+                                : speakingProgress.current_tema >= 6
+                                ? "🥈 Gümüş Konuşmacı"
+                                : "🥉 Bronz Konuşmacı";
+
+                            await supabase.from("speaking_exams").insert({
+                              username: speakingProgress.partner_email,
+                              level: "A1",
+                              sinav_tema_no: speakingProgress.current_tema,
+                              toplam_soru: speakingProgress.current_tema * 15,
+                              sure_saniye: getSinavSuresi(speakingProgress.current_tema),
+                              gecti: true,
+                            });
+
+                            const { data: partnerProg } = await supabase
+                              .from("speaking_progress")
+                              .select("*")
+                              .eq("username", speakingProgress.partner_email)
+                              .eq("level", "A1")
+                              .maybeSingle();
+
+                            if (partnerProg) {
+                              await supabase
+                                .from("speaking_progress")
+                                .update({
+                                  current_tema: speakingProgress.current_tema + 1,
+                                  current_gorev: 1,
+                                  sinav_bekleniyor: false,
+                                  son_sinav_tema: speakingProgress.current_tema,
+                                  rozet: rozet,
+                                })
+                                .eq("id", partnerProg.id);
+                            }
+
+                            alert("Sınav geçti olarak kaydedildi! Rozet: " + rozet);
+                            setSpeakingBildirimGonderildi(true);
+                            setTimeout(() => setSpeakingBildirimGonderildi(false), 1000);
+                          }}
+                          className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700"
+                        >
+                          {"✅ Geçti"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!currentUser || !speakingProgress) return;
+                            await supabase.from("speaking_exams").insert({
+                              username: speakingProgress.partner_email,
+                              level: "A1",
+                              sinav_tema_no: speakingProgress.current_tema,
+                              toplam_soru: speakingProgress.current_tema * 15,
+                              sure_saniye: getSinavSuresi(speakingProgress.current_tema),
+                              gecti: false,
+                            });
+                            alert("Sınav kalmadı olarak kaydedildi. Tekrar çalışıp yeniden denesin.");
+                          }}
+                          className="rounded-2xl bg-red-500 px-4 py-3 text-sm font-black text-white hover:bg-red-600"
+                        >
+                          {"❌ Kalmadı"}
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-2 text-center">
+                        Sadece dinleyici bu butonu kullanır.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Sağ: Rozet ve Liderlik */}
+              <div className="space-y-4">
+
+                <div className="rounded-2xl bg-white p-6 shadow-sm text-center">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Mevcut Rozetim</p>
+                  <div className="text-5xl mb-3">
+                    {speakingProgress?.rozet?.startsWith("🏆")
+                      ? "🏆"
+                      : speakingProgress?.rozet?.startsWith("🥇")
+                      ? "🥇"
+                      : speakingProgress?.rozet?.startsWith("🥈")
+                      ? "🥈"
+                      : speakingProgress?.rozet?.startsWith("🥉")
+                      ? "🥉"
+                      : "🎤"}
+                  </div>
+                  <p className="text-lg font-black text-slate-900">
+                    {speakingProgress?.rozet || "🎤 Aday"}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {"Tema " + (speakingProgress?.current_tema || 1) + " üzerinde"}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-white p-5 shadow-sm">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Rozet Yolu</p>
+                  <div className="space-y-3">
+                    {[
+                      { tema: 3, rozet: "🥉 Bronz Konuşmacı" },
+                      { tema: 6, rozet: "🥈 Gümüş Konuşmacı" },
+                      { tema: 9, rozet: "🥇 Altın Konuşmacı" },
+                      { tema: 12, rozet: "🏆 Konuşma Şampiyonu" },
+                    ].map((item) => {
+                      const kazanildi = (speakingProgress?.son_sinav_tema || 0) >= item.tema;
+                      const aktif = speakingProgress?.current_tema === item.tema && speakingProgress?.sinav_bekleniyor;
+                      return (
+                        <div
+                          key={item.tema}
+                          className={
+                            "flex items-center justify-between rounded-2xl px-4 py-3 " +
+                            (kazanildi
+                              ? "bg-emerald-50 border border-emerald-200"
+                              : aktif
+                              ? "bg-yellow-50 border border-yellow-300"
+                              : "bg-slate-50 border border-slate-100 opacity-50")
+                          }
+                        >
+                          <div>
+                            <p className="text-sm font-black text-slate-900">{item.rozet}</p>
+                            <p className="text-xs text-slate-500">{"Tema " + item.tema + " sınavını geç"}</p>
+                          </div>
+                          <span className={"text-lg " + (kazanildi || aktif ? "" : "grayscale")}>
+                            {kazanildi ? "✅" : aktif ? "🎯" : "🔒"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <SpeakingLeaderboard currentUsername={currentUser?.username || ""} />
+
+              </div>
+            </div>
+          )}
+
+          
 
 
         </div>
