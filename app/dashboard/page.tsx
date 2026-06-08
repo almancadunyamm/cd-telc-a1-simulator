@@ -2841,7 +2841,6 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
-  { key: "community", label: "Topluluk", icon: "👥" },
   { key: "practice", label: "Pratik", icon: "🎤" },
   { key: "materials", label: "PDF", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
@@ -2905,7 +2904,6 @@ if (!currentUser) {
   { key: "materials", label: "PDF Merkezi", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
-  { key: "community", label: "Topluluk", icon: "👥" },
   { key: "badges", label: "Rozetler", icon: "🏆" },
   { key: "settings", label: "Ayarlar", icon: "⚙️" },
 ].map((item) => (
