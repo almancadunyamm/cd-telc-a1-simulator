@@ -229,7 +229,7 @@ export const theme3Questions = [
     lessonTitle: "Artikel + ein/eine",
     tr: "Bir öğrenci",
     de: "ein Student",
-    options: ["ein Student", "eine Student", "ein Studentin", "eine Studentin"],
+    options: ["ein Student", "eine Student", "ein Studentin", "ein Studentinnen"],
     difficulty: "easy",
   },
   {
