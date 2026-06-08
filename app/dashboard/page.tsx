@@ -3891,7 +3891,6 @@ createPendingOrder({
             ["durum", "📊 Durumum"],
             ["gorev", "🎯 Görev"],
             ["partner", "🤝 Partner"],
-            ["talep", "📋 Eski Sistem"],
           ] as const).map(([key, label]) => (
             <button
               key={key}
@@ -4322,106 +4321,6 @@ createPendingOrder({
                       Henüz tamamlanmış görev yok.
                     </p>
                   )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── TALEP TABI (eski sistem — korunuyor) ────────────── */}
-          {(speakingTab as string) === "talep" && (
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-4">Partner Talep Formu</h3>
-
-                <div className="mb-4">
-                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Rolün</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {([["konusan", "🎤 Konuşan", "Almancasını söylersin"], ["dinleyen", "👂 Dinleyici", "Türkçe söyler, not verirsin"]] as const).map(([rol, label, desc]) => (
-                      <button key={rol} onClick={() => setSpeakingRol(rol)}
-                        className={`rounded-2xl border p-4 text-left transition ${speakingRol === rol ? "border-emerald-400 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}>
-                        <div className="font-black text-slate-900 text-sm">{label}</div>
-                        <div className="text-xs text-slate-500 mt-1">{desc}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Tema</p>
-                  <select value={speakingTemaId} onChange={e => setSpeakingTemaId(Number(e.target.value))}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none">
-                    {speakingPatterns.map(t => (
-                      <option key={t.temaId} value={t.temaId}>Tema {t.temaId} — {t.temaAd}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="mb-4">
-                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Partner Tercihi</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[["fark_etmez", "Fark Etmez"], ["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
-                      <button key={val} onClick={() => setSpeakingCinsiyet(val)}
-                        className={`rounded-2xl border py-3 text-sm font-black transition ${speakingCinsiyet === val ? "border-emerald-400 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-600"}`}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Müsait Saat</p>
-                  <input value={speakingMusait} onChange={e => setSpeakingMusait(e.target.value)}
-                    placeholder="Örn: 20:00-22:00 arası"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
-                </div>
-
-                <div className="mb-6">
-                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">WhatsApp Numaranız</p>
-                  <input value={speakingTelefon} onChange={e => setSpeakingTelefon(e.target.value)}
-                    placeholder="905xxxxxxxxx"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
-                  <p className="text-xs text-slate-400 mt-1">Sadece eşleştiğin kişiyle paylaşılır.</p>
-                </div>
-
-                <button
-                  disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon}
-                  onClick={async () => {
-                    if (!currentUser || !speakingMusait || !speakingTelefon) return;
-                    setSpeakingYukleniyor(true);
-                    await supabase.from("speaking_requests").insert({
-                      user_email: currentUser.username,
-                      user_name: currentUser.name || currentUser.username,
-                      tema_id: speakingTemaId,
-                      rol: speakingRol,
-                      cinsiyet_tercihi: speakingCinsiyet,
-                      musait_saat: speakingMusait,
-                      telefon: speakingTelefon,
-                      durum: "bekliyor",
-                    });
-                    setSpeakingYukleniyor(false);
-                    setSpeakingGonderildi(true);
-                  }}
-                  className="w-full rounded-2xl bg-emerald-600 px-4 py-4 text-sm font-black text-white shadow-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {speakingYukleniyor ? "Gönderiliyor..." : "🎙️ Talep Oluştur"}
-                </button>
-
-                {speakingGonderildi && (
-                  <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-sm font-bold text-emerald-700">
-                    ✅ Talebiniz alındı!
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-1">Tema {speakingTemaId} Konuşma Kalıpları</h3>
-                <p className="text-xs text-slate-500 mb-4">Dinleyici Türkçe söyler → Sen Almancasını söylersin</p>
-                <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-                  {speakingPatterns.find(t => t.temaId === speakingTemaId)?.cumleler.map((c, i) => (
-                    <div key={i} className="rounded-2xl bg-slate-50 p-3">
-                      <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
-                      <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
