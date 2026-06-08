@@ -2,6 +2,19 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
+// ─── Audio Timestamps (saniye cinsinden) ─────────────────────────────────────
+const AUDIO_SRC = "/audio/goethe-a1-hoeren.mp4";
+
+const TIMESTAMPS = {
+  teil1: 30,
+  q1: 120, q2: 185, q3: 240, q4: 322, q5: 374, q6: 429,
+  teil2: 497,
+  q7: 546, q8: 592, q9: 632, q10: 674,
+  teil3: 712,
+  q11: 733, q12: 799, q13: 845, q14: 904, q15: 954,
+  end: 1011,
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Phase =
@@ -269,7 +282,24 @@ export default function GoetheA1Simulator() {
   const [answers, setAnswers] = useState<Answers>({});
   const [schreibenText, setSchreibenText] = useState("");
   const [wordCount, setWordCount] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRunning = PHASES_ORDER.includes(phase);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    const tsMap: Partial<Record<Phase, number>> = {
+      "hoeren-teil1": TIMESTAMPS.teil1,
+      "hoeren-teil2": TIMESTAMPS.teil2,
+      "hoeren-teil3": TIMESTAMPS.teil3,
+    };
+    if (tsMap[phase] !== undefined) {
+      audio.currentTime = tsMap[phase]!;
+      audio.play().catch(() => {});
+    } else if (!phase.startsWith("hoeren")) {
+      audio.pause();
+    }
+  }, [phase]);
 
   const setAnswer = useCallback((id: string, val: string) => {
     setAnswers((prev) => ({ ...prev, [id]: val }));
@@ -375,16 +405,41 @@ export default function GoetheA1Simulator() {
           <p className="mb-6 text-slate-700">
             Kreuzen Sie die richtige Lösung an.
           </p>
-          <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-700 mb-6">
-            <strong>Simülatör notu:</strong> Ses dosyası yerine transkript metni gösterilmektedir. Metni okuyarak cevabı seçin.
+          <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700 mb-6">
+            <strong>🎧 Gerçek ses dosyası mevcut.</strong> Sınav başladığında ses otomatik oynatılır. Ses açık olduğundan emin olun.
           </div>
         </div>
-        <button onClick={goNext} className="mt-6 w-full rounded-xl bg-blue-600 py-4 text-lg font-black text-white hover:bg-blue-700 transition-colors">
-          Hören beginnen →
+        <button
+          onClick={() => {
+            if (audioRef.current) {
+              audioRef.current.currentTime = TIMESTAMPS.teil1;
+              audioRef.current.play().catch(() => {});
+            }
+            goNext();
+          }}
+          className="mt-6 w-full rounded-xl bg-blue-600 py-4 text-lg font-black text-white hover:bg-blue-700 transition-colors"
+        >
+          🎧 Hören beginnen →
         </button>
       </div>
     </div>
   );
+
+  const QUESTION_TIMESTAMPS: Record<string, number> = {
+    "h1-1": TIMESTAMPS.q1, "h1-2": TIMESTAMPS.q2, "h1-3": TIMESTAMPS.q3,
+    "h1-4": TIMESTAMPS.q4, "h1-5": TIMESTAMPS.q5, "h1-6": TIMESTAMPS.q6,
+    "h2-7": TIMESTAMPS.q7, "h2-8": TIMESTAMPS.q8, "h2-9": TIMESTAMPS.q9, "h2-10": TIMESTAMPS.q10,
+    "h3-11": TIMESTAMPS.q11, "h3-12": TIMESTAMPS.q12, "h3-13": TIMESTAMPS.q13,
+    "h3-14": TIMESTAMPS.q14, "h3-15": TIMESTAMPS.q15,
+  };
+
+  const jumpToQuestion = (questionId: string) => {
+    const ts = QUESTION_TIMESTAMPS[questionId];
+    if (ts !== undefined && audioRef.current) {
+      audioRef.current.currentTime = ts;
+      audioRef.current.play().catch(() => {});
+    }
+  };
 
   const renderHoerenTeil = (
     tName: string,
@@ -406,18 +461,30 @@ export default function GoetheA1Simulator() {
         <div className="space-y-6">
           {items.map((item) => (
             <div key={item.id} className="rounded-xl border-2 border-slate-200 bg-white p-5">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-black text-white">
-                  {item.number}
-                </span>
-                <span className="font-bold text-slate-900">{item.question || item.statement}</span>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-black text-white">
+                    {item.number}
+                  </span>
+                  <span className="font-bold text-slate-900">{item.question || item.statement}</span>
+                </div>
+                <button
+                  onClick={() => jumpToQuestion(item.id)}
+                  className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors shrink-0"
+                >
+                  ▶ Sesi Oynat
+                </button>
               </div>
 
-              {/* Transkript */}
-              <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 p-3">
-                <p className="mb-1 text-xs font-bold text-blue-600 uppercase tracking-wider">📄 Transkript (Simülatör)</p>
-                <p className="text-sm text-slate-700 italic leading-relaxed">{item.audioTranscript}</p>
-              </div>
+              {/* Yardımcı metin (gizlenebilir) */}
+              <details className="mb-4">
+                <summary className="cursor-pointer rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200">
+                  📄 Yardımcı metin göster
+                </summary>
+                <div className="mt-2 rounded-lg bg-blue-50 border border-blue-200 p-3">
+                  <p className="text-sm text-slate-700 italic leading-relaxed">{item.audioTranscript}</p>
+                </div>
+              </details>
 
               {type === "abc" && item.options && (
                 <div className="space-y-2">
@@ -923,21 +990,29 @@ export default function GoetheA1Simulator() {
     { id: "h3-15", number: 15, question: "Was ist kaputt?", options: [{ id: "a", label: "Der Fernseher." }, { id: "b", label: "Der Computer." }, { id: "c", label: "Das Handy." }], audioTranscript: "Hallo Alex. Kannst du kurz rüber kommen? Mein Computer hat einen Fehler. Ich kann nichts drucken." },
   ];
 
-  switch (phase) {
-    case "intro": return renderIntro();
-    case "hoeren-intro": return renderHoerenIntro();
-    case "hoeren-teil1": return renderHoerenTeil("Teil 1", 1, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL1_QUESTIONS, "abc");
-    case "hoeren-teil2": return renderHoerenTeil("Teil 2", 2, "Kreuzen Sie an: Richtig oder Falsch. Sie hören jeden Text einmal.", HOEREN_TEIL2_QUESTIONS, "rf");
-    case "hoeren-teil3": return renderHoerenTeil("Teil 3", 3, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL3_QUESTIONS, "abc");
-    case "hoeren-end": return renderHoerenEnd();
-    case "lesen-intro": return renderLesenIntro();
-    case "lesen-teil1": return renderLesenTeil1();
-    case "lesen-teil2": return renderLesenTeil2();
-    case "lesen-teil3": return renderLesenTeil3();
-    case "schreiben-intro": return renderSchreibenIntro();
-    case "schreiben-teil1": return renderSchreibenTeil1();
-    case "schreiben-teil2": return renderSchreibenTeil2();
-    case "result": return renderResult();
-    default: return null;
-  }
+  return (
+    <>
+      {/* Global audio element — tüm Hören boyunca aktif */}
+      <audio ref={audioRef} src={AUDIO_SRC} preload="auto" className="hidden" />
+      {(() => {
+        switch (phase) {
+          case "intro": return renderIntro();
+          case "hoeren-intro": return renderHoerenIntro();
+          case "hoeren-teil1": return renderHoerenTeil("Teil 1", 1, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL1_QUESTIONS, "abc");
+          case "hoeren-teil2": return renderHoerenTeil("Teil 2", 2, "Kreuzen Sie an: Richtig oder Falsch. Sie hören jeden Text einmal.", HOEREN_TEIL2_QUESTIONS, "rf");
+          case "hoeren-teil3": return renderHoerenTeil("Teil 3", 3, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL3_QUESTIONS, "abc");
+          case "hoeren-end": return renderHoerenEnd();
+          case "lesen-intro": return renderLesenIntro();
+          case "lesen-teil1": return renderLesenTeil1();
+          case "lesen-teil2": return renderLesenTeil2();
+          case "lesen-teil3": return renderLesenTeil3();
+          case "schreiben-intro": return renderSchreibenIntro();
+          case "schreiben-teil1": return renderSchreibenTeil1();
+          case "schreiben-teil2": return renderSchreibenTeil2();
+          case "result": return renderResult();
+          default: return null;
+        }
+      })()}
+    </>
+  );
 }
