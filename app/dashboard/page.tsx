@@ -332,6 +332,7 @@ const [speakingTelefon, setSpeakingTelefon] = useState("");
 const [speakingGonderildi, setSpeakingGonderildi] = useState(false);
 const [speakingEslesmeler, setSpeakingEslesmeler] = useState<any[]>([]);
 const [speakingYukleniyor, setSpeakingYukleniyor] = useState(false);
+const [partnerTelefon, setPartnerTelefon] = useState<string>("");
 const [pwaGoster, setPwaGoster] = useState(false);
 
 useEffect(() => {
@@ -1871,10 +1872,20 @@ useEffect(() => {
       .maybeSingle();
     setSpeakingProgress(data || null);
     setSpeakingProgressLoading(false);
+
+    // Partner telefon numarasını çek
+    if (data?.partner_email) {
+      const { data: partnerReq } = await supabase
+        .from("speaking_requests")
+        .select("telefon, user_name")
+        .eq("user_email", data.partner_email)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setPartnerTelefon(partnerReq?.telefon || "");
+    }
   }
   loadSpeakingProgress();
-
-  // Her 10 saniyede bir otomatik yenile (admin eşleştirince görünsün)
   const interval = setInterval(loadSpeakingProgress, 10000);
   return () => clearInterval(interval);
 }, [currentUser, speakingBildirimGonderildi]);
@@ -4269,12 +4280,24 @@ createPendingOrder({
                       <div>
                         <p className="font-black text-slate-900">{speakingProgress.partner_email}</p>
                         <p className="text-xs text-slate-500 mt-1">Sabit partnerim</p>
+                        {partnerTelefon ? (
+                          <a
+                            href={"https://wa.me/" + partnerTelefon}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-green-50 border border-green-200 px-4 py-3 text-sm font-black text-green-700 hover:bg-green-100"
+                          >
+                            {"📞 WhatsApp: " + partnerTelefon}
+                          </a>
+                        ) : (
+                          <p className="text-xs text-slate-400 mt-2">Telefon bilgisi yükleniyor...</p>
+                        )}
                       </div>
                     </div>
                     <div className="rounded-2xl bg-slate-50 p-4 mb-4 text-sm text-slate-700 space-y-2">
-                      <p>✅ Partnerinle her gün arayıp görevi tamamla</p>
-                      <p>✅ Görev sonrası ikisi de buradan bildirim gönder</p>
-                      <p>✅ Bildirimler eşleşince seviye ilerler</p>
+                      <p>{"✅ Partnerinle her gün arayıp görevi tamamla"}</p>
+                      <p>{"✅ Görev sonrası ikisi de buradan bildirim gönder"}</p>
+                      <p>{"✅ Bildirimler eşleşince seviye ilerler"}</p>
                     </div>
                     <div className="rounded-2xl bg-amber-50 border border-amber-100 p-4">
                       <p className="text-xs font-black text-amber-700 mb-2">Partner Değişikliği</p>
@@ -4297,7 +4320,7 @@ createPendingOrder({
                         }}
                         className="w-full rounded-2xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
                       >
-                        🔄 Yeni Partner Talep Et
+                        {"🔄 Yeni Partner Talep Et"}
                       </button>
                     </div>
                   </div>
@@ -4315,69 +4338,73 @@ createPendingOrder({
                       </p>
                     )}
                     {speakingProgress && !speakingProgress.partner_email && (
-  <div className="mt-5 rounded-2xl bg-emerald-50 border border-emerald-200 p-5">
-    <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-3">Partner Talep Et</p>
-    <div className="space-y-3">
-      <div>
-        <p className="text-xs font-bold text-slate-500 mb-1">Müsait Olduğun Saat</p>
-        <input
-          value={speakingMusait}
-          onChange={e => setSpeakingMusait(e.target.value)}
-          placeholder="Örn: 20:00-22:00 arası"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
-        />
-      </div>
-      <div>
-        <p className="text-xs font-bold text-slate-500 mb-1">WhatsApp Numaranız</p>
-        <input
-          value={speakingTelefon}
-          onChange={e => setSpeakingTelefon(e.target.value)}
-          placeholder="905xxxxxxxxx"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
-        />
-      </div>
-      <div>
-        <p className="text-xs font-bold text-slate-500 mb-1">Partner Tercihi</p>
-        <div className="grid grid-cols-3 gap-2">
-          {[["fark_etmez", "Fark Etmez"], ["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
-            <button key={val} type="button" onClick={() => setSpeakingCinsiyet(val)}
-              className={`rounded-2xl border py-2 text-xs font-black transition ${speakingCinsiyet === val ? "border-emerald-400 bg-emerald-100 text-emerald-700" : "border-slate-200 bg-white text-slate-600"}`}>
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <button
-        type="button"
-        disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon}
-        onClick={async () => {
-          if (!currentUser || !speakingMusait || !speakingTelefon) return;
-          setSpeakingYukleniyor(true);
-          await supabase.from("speaking_requests").insert({
-            user_email: currentUser.username,
-            user_name: currentUser.name || currentUser.username,
-            tema_id: speakingProgress.current_tema,
-            rol: "konusan",
-            cinsiyet_tercihi: speakingCinsiyet,
-            musait_saat: speakingMusait,
-            telefon: speakingTelefon,
-            durum: "bekliyor",
-          });
-          setSpeakingYukleniyor(false);
-          setSpeakingGonderildi(true);
-        }}
-        className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
-      >
-        {speakingYukleniyor ? "Gönderiliyor..." : "🎙️ Partner Talep Et"}
-      </button>
-      {speakingGonderildi && (
-        <div className="rounded-2xl bg-white border border-emerald-200 p-3 text-sm font-bold text-emerald-700 text-center">
-          ✅ Talebiniz alındı! Admin en kısa sürede eşleştirecek.
-        </div>
-      )}
-    </div>
-  </div>
-)}
+                      <div className="mt-5 rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-left">
+                        <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-3">Partner Talep Et</p>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-xs font-bold text-slate-500 mb-1">Müsait Olduğun Saat</p>
+                            <input
+                              value={speakingMusait}
+                              onChange={e => setSpeakingMusait(e.target.value)}
+                              placeholder="Örn: 20:00-22:00 arası"
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-500 mb-1">WhatsApp Numaranız</p>
+                            <input
+                              value={speakingTelefon}
+                              onChange={e => setSpeakingTelefon(e.target.value)}
+                              placeholder="905xxxxxxxxx"
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-500 mb-1">Partner Tercihi</p>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[["fark_etmez", "Fark Etmez"], ["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
+                                <button
+                                  key={val}
+                                  type="button"
+                                  onClick={() => setSpeakingCinsiyet(val)}
+                                  className={"rounded-2xl border py-2 text-xs font-black transition " + (speakingCinsiyet === val ? "border-emerald-400 bg-emerald-100 text-emerald-700" : "border-slate-200 bg-white text-slate-600")}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon}
+                            onClick={async () => {
+                              if (!currentUser || !speakingMusait || !speakingTelefon) return;
+                              setSpeakingYukleniyor(true);
+                              await supabase.from("speaking_requests").insert({
+                                user_email: currentUser.username,
+                                user_name: currentUser.name || currentUser.username,
+                                tema_id: speakingProgress.current_tema,
+                                rol: "konusan",
+                                cinsiyet_tercihi: speakingCinsiyet,
+                                musait_saat: speakingMusait,
+                                telefon: speakingTelefon,
+                                durum: "bekliyor",
+                              });
+                              setSpeakingYukleniyor(false);
+                              setSpeakingGonderildi(true);
+                            }}
+                            className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            {speakingYukleniyor ? "Gönderiliyor..." : "🎙️ Partner Talep Et"}
+                          </button>
+                          {speakingGonderildi && (
+                            <div className="rounded-2xl bg-white border border-emerald-200 p-3 text-sm font-bold text-emerald-700 text-center">
+                              {"✅ Talebiniz alındı! Admin en kısa sürede eşleştirecek."}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -4392,12 +4419,8 @@ createPendingOrder({
                   {speakingEslesmeler.slice(0, 3).map((eslesme, i) => (
                     <div key={i} className="rounded-2xl bg-slate-50 p-4">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-black text-slate-900">Tema {eslesme.tema_id}</p>
-                        <span className={`rounded-full px-3 py-1 text-xs font-black ${
-                          eslesme.durum === "tamamlandi"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}>
+                        <p className="text-sm font-black text-slate-900">{"Tema " + eslesme.tema_id}</p>
+                        <span className={"rounded-full px-3 py-1 text-xs font-black " + (eslesme.durum === "tamamlandi" ? "bg-emerald-100 text-emerald-700" : "bg-yellow-100 text-yellow-700")}>
                           {eslesme.durum === "tamamlandi" ? "Tamamlandı" : "Devam ediyor"}
                         </span>
                       </div>
@@ -4412,6 +4435,7 @@ createPendingOrder({
               </div>
             </div>
           )}
+
 
         </div>
       </div>
