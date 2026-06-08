@@ -318,6 +318,25 @@ const speakingTasksB1 = [
   },
 ];
 export default function DashboardPage() {
+  const [pwaPrompt, setPwaPrompt] = useState<any>(null);
+const [pwaGoster, setPwaGoster] = useState(false);
+
+useEffect(() => {
+  const handler = (e: any) => {
+    e.preventDefault();
+    setPwaPrompt(e);
+    setPwaGoster(true);
+  };
+  window.addEventListener("beforeinstallprompt", handler);
+  return () => window.removeEventListener("beforeinstallprompt", handler);
+}, []);
+
+const pwaYukle = async () => {
+  if (!pwaPrompt) return;
+  pwaPrompt.prompt();
+  const result = await pwaPrompt.userChoice;
+  if (result.outcome === "accepted") setPwaGoster(false);
+};
   const [streak, setStreak] = useState(0);
   const [inactiveDays, setInactiveDays] = useState(0);
 const [lastActiveDate, setLastActiveDate] = useState<string | null>(null);
@@ -2262,6 +2281,27 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-slate-100 text-slate-900">
+      {pwaGoster && (
+  <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, background: "#0f172a", color: "#fff", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, boxShadow: "0 -4px 24px rgba(0,0,0,0.3)" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <img src="/images/icon-192.png" style={{ width: 44, height: 44, borderRadius: 10 }} alt="ikon" />
+      <div>
+        <div style={{ fontWeight: 900, fontSize: 14 }}>Almanca Okulum</div>
+        <div style={{ fontSize: 12, color: "#94a3b8" }}>Ana ekrana ekle, uygulama gibi kullan</div>
+      </div>
+    </div>
+    <div style={{ display: "flex", gap: 8 }}>
+      <button onClick={pwaYukle}
+        style={{ background: "#059669", border: "none", borderRadius: 10, padding: "10px 18px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 13 }}>
+        Yükle
+      </button>
+      <button onClick={() => setPwaGoster(false)}
+        style={{ background: "transparent", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", color: "#94a3b8", cursor: "pointer", fontSize: 13 }}>
+        ✕
+      </button>
+    </div>
+  </div>
+)}
       {showUpsell && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm">
     <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
