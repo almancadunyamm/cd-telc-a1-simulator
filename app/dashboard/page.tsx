@@ -2841,7 +2841,6 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
-  { key: "practice", label: "Pratik", icon: "🎤" },
   { key: "materials", label: "PDF", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
@@ -2900,7 +2899,6 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
-  { key: "practice", label: "Pratik", icon: "🎤" },
   { key: "materials", label: "PDF Merkezi", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
@@ -5066,58 +5064,6 @@ createPendingOrder({
     )}
   </section>
 )}
-{activeDashboardTab === "community" && (
-  <section className="mb-8 grid gap-6 lg:grid-cols-3">
-    <div className="rounded-3xl bg-white p-6 shadow-lg lg:col-span-2">
-      <p className="text-sm font-semibold text-blue-600">
-        Topluluk
-      </p>
-
-      <h2 className="mt-2 text-2xl font-bold text-slate-900">
-        Birlikte öğrenmek daha kolay
-      </h2>
-
-      <div className="mt-6 space-y-4">
-        {[
-          "Bugün 1 ders izleyen öğrenciler sınava bir adım daha yaklaştı.",
-          "Konuşma görevini gönderen öğrenciler özgüvenini artırıyor.",
-          "Düzenli çalışan öğrenciler TELC formatına daha hızlı alışıyor.",
-        ].map((text, index) => (
-          <div
-            key={index}
-            className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700 shadow-sm"
-          >
-            {text}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-emerald-50 p-6 shadow-lg">
-      <p className="text-sm font-semibold text-emerald-600">
-        Destek
-      </p>
-
-      <h2 className="mt-2 text-2xl font-bold text-slate-900">
-        Takıldığın yerde sor
-      </h2>
-
-      <p className="mt-3 text-sm leading-6 text-slate-600">
-        Öğretmenine veya Almanca Okulum ekibine WhatsApp üzerinden ulaşabilirsin.
-      </p>
-
-      <a
-        href={`https://wa.me/905013434419?text=${encodeURIComponent(
-          "Merhaba, öğrenci panelinden destek almak istiyorum."
-        )}`}
-        target="_blank"
-        className="mt-5 inline-flex w-full justify-center rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-3 text-sm font-bold text-white shadow-lg hover:from-green-600 hover:to-emerald-600"
-      >
-        WhatsApp Destek
-      </a>
-    </div>
-  </section>
-)}
 {activeDashboardTab === "wordgame" && (
   <section className="mb-8">
     <KelimeOyunu
@@ -6094,91 +6040,6 @@ if (!isPreviousThemeCompleted) {
       })}
   </div>
 )}
-  </section>
-)}
-{activeDashboardTab === "practice" && (
-  <section className="mb-8 grid gap-6 lg:grid-cols-2">
-    <div className="rounded-3xl bg-white p-6 shadow-lg">
-      <p className="text-sm font-semibold text-green-600">
-        Konuşma Pratiği
-      </p>
-
-      <h2 className="mt-2 text-2xl font-bold text-slate-900">
-        {selectedLevel === "B1" && currentB1Task
-  ? currentB1Task.title
-  : "Bu Haftanın Görevi"}
-  {selectedLevel === "B1" && currentB1Task && (
-  <div className="mt-3 rounded-2xl bg-blue-50 p-3 text-xs font-semibold text-slate-600">
-    <p>Tema: {currentB1Task.theme}</p>
-    <p className="mt-1">Hedef: {currentB1Task.grammar}</p>
-  </div>
-)}
-      </h2>
-
-      <p className="mt-3 text-sm leading-6 text-slate-600">
-  {selectedLevelIsUnlocked
-    ? speakingTask
-    : "Bu seviye hesabınızda açık değil. Devam etmek için paket yükseltmeniz gerekir."}
-</p>
-
-      {selectedLevelIsUnlocked && (
-      <button
-        type="button"
-        onClick={() => {
-          const message = `Konuşma görevimi göndermek istiyorum. Kullanıcı: ${
-            JSON.parse(localStorage.getItem("mock_logged_user") || "{}")?.username ||
-            "Öğrenci"
-          }`;
-
-          completeSpeakingTask();
-
-window.open(
-  `https://wa.me/${
-  isInDefaultClassForSelectedLevel ? "905013434419" : activeTeacherWhatsapp
-}?text=${encodeURIComponent(message)}`,
-  "_blank"
-);
-        }}
-        className="mt-5 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-3 text-sm font-bold text-white shadow-lg hover:from-green-600 hover:to-emerald-600"
-      >
-        <div className="mt-5 rounded-2xl border border-blue-100 bg-white p-4">
-  <p className="text-xs font-bold uppercase tracking-wide text-blue-600">
-    Konuşma İpucu
-  </p>
-
-  <p className="mt-2 text-sm leading-6 text-slate-600">
-    Önce 30 saniye düşün, sonra yavaş ve net konuş. Hata yapman sorun değil;
-    önemli olan konuşmaya devam etmek.
-  </p>
-</div>
-        🎤 WhatsApp’tan Ses/Video Gönder
-      </button>
-      )}
-    </div>
-
-    <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-lg">
-      <p className="text-sm font-semibold text-blue-600">
-        Mini Pratik Planı
-      </p>
-
-      <h2 className="mt-2 text-2xl font-bold text-slate-900">
-        Bugün 10 dakika yeter
-      </h2>
-
-      <div className="mt-5 space-y-3">
-        <div className="rounded-2xl bg-white p-4 text-sm text-slate-700 shadow-sm">
-          1. Görevi sesli oku
-        </div>
-
-        <div className="rounded-2xl bg-white p-4 text-sm text-slate-700 shadow-sm">
-          2. Telefonuna 1 dakikalık kayıt al
-        </div>
-
-        <div className="rounded-2xl bg-white p-4 text-sm text-slate-700 shadow-sm">
-          3. WhatsApp’tan öğretmene gönder
-        </div>
-      </div>
-    </div>
   </section>
 )}
 {activeDashboardTab === "exams" && (
