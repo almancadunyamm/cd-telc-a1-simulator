@@ -21,12 +21,28 @@ const adminCards = [
     color: "bg-blue-500",
   },
   {
+  title: "Konuşma Kulübü Eşleştirme",
+  description:
+    "Partner talep eden öğrencileri görüntüle, uygun kişileri tek tıkla eşleştir.",
+  href: "/admin/speaking-matches",
+  icon: "🎙️",
+  color: "bg-teal-500",
+},
+  {
   title: "SSS Yönetimi",
   description:
     "Ana sayfadaki sık sorulan soruları ekle, düzenle veya sil.",
   href: "/admin/faqs",
   icon: "❓",
   color: "bg-pink-500",
+},
+{
+  title: "Öğrenci Yönetimi",
+  description:
+    "Tüm dijital ve canlı öğrencileri görüntüle, durumlarını takip et ve sahte test hesaplarını temizle.",
+  href: "/admin/student-management",
+  icon: "🎓",
+  color: "bg-purple-500",
 },
   {
     title: "Öğrenci Sınıf Atama",
