@@ -4282,7 +4282,13 @@ createPendingOrder({
                         <p className="text-xs text-slate-500 mt-1">Sabit partnerim</p>
                         {partnerTelefon ? (
                           <a
-                            href={"https://wa.me/" + partnerTelefon}
+                            href={"https://wa.me/" + partnerTelefon + "?text=" + encodeURIComponent(
+  "Merhaba! Ben " + (currentUser?.name || currentUser?.username) + ". Almanca Okulum Konuşma Kulübü'nde eşleştik 🎙️\n\n" +
+  "Tema " + (speakingProgress?.current_tema || 1) + ", Görev " + (speakingProgress?.current_gorev || 1) + " üzerinde çalışıyoruz.\n\n" +
+  "Bu görevde toplam " + ((speakingProgress?.current_tema || 1) * 15) + " soru var. " +
+  "Sen Türkçe söylersin, ben Almancasını söylerim (ya da tam tersi).\n\n" +
+  "Uygun bir zaman ayarlayalım mı? 😊"
+)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-green-50 border border-green-200 px-4 py-3 text-sm font-black text-green-700 hover:bg-green-100"
