@@ -2287,7 +2287,7 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
       <img src="/images/icon-192.png" style={{ width: 44, height: 44, borderRadius: 10 }} alt="ikon" />
       <div>
         <div style={{ fontWeight: 900, fontSize: 14 }}>Almanca Okulum</div>
-        <div style={{ fontSize: 12, color: "#94a3b8" }}>Ana ekrana ekle, uygulama gibi kullan</div>
+        <div style={{ fontSize: 12, color: "#94a3b8" }}>Ana ekrana ekle, uygulamayı kullan</div>
       </div>
     </div>
     <div style={{ display: "flex", gap: 8 }}>
