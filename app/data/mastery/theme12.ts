@@ -40,12 +40,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "telefon numarası",
   de: "Telefonnummer",
-  options: [
-    "Telefonnummer",
-    "Postleitzahl",
-    "Hausnummer",
-    "Stadt"
-  ],
+  options: ["Telefonnummer", "Postleitzahl", "Hausnummer", "Stadt"],
   difficulty: "easy",
 },
 {
@@ -56,12 +51,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "posta kodu",
   de: "Postleitzahl",
-  options: [
-    "Postleitzahl",
-    "Telefonnummer",
-    "Hausnummer",
-    "Straße"
-  ],
+  options: ["Postleitzahl", "Telefonnummer", "Hausnummer", "Straße"],
   difficulty: "easy",
 },
 {
@@ -83,12 +73,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "sokak / cadde",
   de: "Straße",
-  options: [
-    "Straße",
-    "Hausnummer",
-    "Stadt",
-    "Postleitzahl"
-  ],
+  options: ["Straße", "Hausnummer", "Stadt", "Postleitzahl"],
   difficulty: "easy",
 },
 {
@@ -99,12 +84,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "kapı numarası",
   de: "Hausnummer",
-  options: [
-    "Hausnummer",
-    "Straße",
-    "Telefonnummer",
-    "Stadt"
-  ],
+  options: ["Hausnummer", "Straße", "Telefonnummer", "Stadt"],
   difficulty: "easy",
 },
 {
@@ -115,12 +95,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "bekâr",
   de: "ledig",
-  options: [
-    "ledig",
-    "verheiratet",
-    "geschieden",
-    "verwitwet"
-  ],
+  options: ["ledig", "verheiratet", "geschieden", "verwitwet"],
   difficulty: "medium",
 },
 {
@@ -131,12 +106,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "evli",
   de: "verheiratet",
-  options: [
-    "verheiratet",
-    "ledig",
-    "geschieden",
-    "verwitwet"
-  ],
+  options: ["verheiratet", "ledig", "geschieden", "verwitwet"],
   difficulty: "medium",
 },
 {
@@ -147,12 +117,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "medeni hal",
   de: "Familienstand",
-  options: [
-    "Familienstand",
-    "Beruf",
-    "Vorname",
-    "Nachname"
-  ],
+  options: ["Familienstand", "Beruf", "Vorname", "Nachname"],
   difficulty: "medium",
 },
 {
@@ -163,12 +128,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "Almanca kursu",
   de: "Deutschkurs",
-  options: [
-    "Deutschkurs",
-    "Englischkurs",
-    "Hotel",
-    "Urlaub"
-  ],
+  options: ["Deutschkurs", "Englischkurs", "Hotel", "Urlaub"],
   difficulty: "medium",
 },
 {
@@ -179,12 +139,7 @@ export const theme12Questions = [
   lessonTitle: "Form Doldurma",
   tr: "Bir formda 'Beruf' yazıyorsa ne istenir?",
   de: "Meslek",
-  options: [
-    "Meslek",
-    "Adres",
-    "Telefon",
-    "Doğum tarihi"
-  ],
+  options: ["Meslek", "Adres", "Telefon", "Doğum tarihi"],
   difficulty: "hard",
 },
 {
@@ -199,7 +154,7 @@ export const theme12Questions = [
     "Sehr geehrte Damen und Herren,",
     "Liebe Monika,",
     "Lieber Martin,",
-    "Hallo Thomas,"
+    "Hallo Thomas,",
   ],
   difficulty: "medium",
 },
@@ -215,7 +170,7 @@ export const theme12Questions = [
     "Liebe Monika,",
     "Sehr geehrte Frau Müller,",
     "Sehr geehrte Damen und Herren,",
-    "Mit freundlichen Grüßen"
+    "Mit freundlichen Grüßen",
   ],
   difficulty: "easy",
 },
@@ -227,12 +182,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup",
   tr: "Resmi mektubun doğru kapanışı hangisidir?",
   de: "Mit freundlichen Grüßen",
-  options: [
-    "Mit freundlichen Grüßen",
-    "Liebe Grüße",
-    "Viele Grüße",
-    "Bis bald"
-  ],
+  options: ["Mit freundlichen Grüßen", "Liebe Grüße", "Viele Grüße", "Bis bald"],
   difficulty: "medium",
 },
 {
@@ -247,7 +197,7 @@ export const theme12Questions = [
     "Viele Grüße",
     "Mit freundlichen Grüßen",
     "Hochachtungsvoll",
-    "Sehr geehrte Damen und Herren"
+    "Sehr geehrte Damen und Herren",
   ],
   difficulty: "medium",
 },
@@ -285,7 +235,7 @@ export const theme12Questions = [
     "Ich warte auf Ihre Antwort.",
     "Guten Morgen.",
     "Auf Wiedersehen.",
-    "Wie geht's?"
+    "Wie geht's?",
   ],
   difficulty: "medium",
 },
@@ -297,12 +247,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup",
   tr: "Birisini davet etmek",
   de: "einladen",
-  options: [
-    "einladen",
-    "besuchen",
-    "reisen",
-    "lernen"
-  ],
+  options: ["einladen", "besuchen", "reisen", "lernen"],
   difficulty: "medium",
 },
 {
@@ -313,12 +258,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup",
   tr: "doğum günü partisi",
   de: "Geburtstagsparty",
-  options: [
-    "Geburtstagsparty",
-    "Geburtstag",
-    "Urlaub",
-    "Einladung"
-  ],
+  options: ["Geburtstagsparty", "Geburtstag", "Urlaub", "Einladung"],
   difficulty: "easy",
 },
 {
@@ -329,12 +269,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup",
   tr: "yanında getirmek",
   de: "mitbringen",
-  options: [
-    "mitbringen",
-    "bringen",
-    "holen",
-    "nehmen"
-  ],
+  options: ["mitbringen", "bringen", "holen", "nehmen"],
   difficulty: "medium",
 },
 {
@@ -349,7 +284,7 @@ export const theme12Questions = [
     "Soll ich dir etwas mitbringen?",
     "Kannst du kommen?",
     "Ich möchte etwas.",
-    "Bringst du mich?"
+    "Bringst du mich?",
   ],
   difficulty: "hard",
 },
@@ -376,7 +311,7 @@ export const theme12Questions = [
     "Einladung akzeptieren",
     "Einladung ablehnen",
     "Deutschkurs besuchen",
-    "Wohnung suchen"
+    "Wohnung suchen",
   ],
   difficulty: "medium",
 },
@@ -392,7 +327,7 @@ export const theme12Questions = [
     "Einladung ablehnen",
     "Einladung akzeptieren",
     "Kurs besuchen",
-    "Information suchen"
+    "Information suchen",
   ],
   difficulty: "medium",
 },
@@ -408,7 +343,7 @@ export const theme12Questions = [
     "Vielen Dank für die Einladung.",
     "Guten Tag.",
     "Bis morgen.",
-    "Ich komme nicht."
+    "Ich komme nicht.",
   ],
   difficulty: "easy",
 },
@@ -424,7 +359,7 @@ export const theme12Questions = [
     "Ich komme sicher.",
     "Ich komme nicht.",
     "Ich suche ein Hotel.",
-    "Ich brauche Hilfe."
+    "Ich brauche Hilfe.",
   ],
   difficulty: "medium",
 },
@@ -436,12 +371,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup Kalıpları",
   tr: "yanında getirmek",
   de: "mitbringen",
-  options: [
-    "mitbringen",
-    "bringen",
-    "nehmen",
-    "holen"
-  ],
+  options: ["mitbringen", "bringen", "nehmen", "holen"],
   difficulty: "medium",
 },
 {
@@ -456,7 +386,7 @@ export const theme12Questions = [
     "Kann ich meinen Freund mitbringen?",
     "Wo ist mein Freund?",
     "Mein Freund ist krank.",
-    "Ich suche meinen Freund."
+    "Ich suche meinen Freund.",
   ],
   difficulty: "hard",
 },
@@ -472,7 +402,7 @@ export const theme12Questions = [
     "Es tut mir leid, ich kann nicht kommen.",
     "Ich komme sicher.",
     "Vielen Dank.",
-    "Bis bald."
+    "Bis bald.",
   ],
   difficulty: "hard",
 },
@@ -484,12 +414,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup Kalıpları",
   tr: "önemli randevu",
   de: "wichtiger Termin",
-  options: [
-    "wichtiger Termin",
-    "großes Hotel",
-    "kleines Zimmer",
-    "schöner Urlaub"
-  ],
+  options: ["wichtiger Termin", "großes Hotel", "kleines Zimmer", "schöner Urlaub"],
   difficulty: "medium",
 },
 {
@@ -504,7 +429,7 @@ export const theme12Questions = [
     "Können wir am nächsten Wochenende treffen?",
     "Ich komme heute.",
     "Wo wohnst du?",
-    "Ich fahre nach Berlin."
+    "Ich fahre nach Berlin.",
   ],
   difficulty: "hard",
 },
@@ -520,7 +445,7 @@ export const theme12Questions = [
     "ein Apartment suchen",
     "ein Apartment kaufen",
     "ein Apartment verkaufen",
-    "ein Apartment mieten"
+    "ein Apartment mieten",
   ],
   difficulty: "medium",
 },
@@ -536,7 +461,7 @@ export const theme12Questions = [
     "Ich suche ein Apartment für sechs Monate.",
     "Ich suche ein Hotel.",
     "Ich habe sechs Apartments.",
-    "Ich wohne sechs Monate."
+    "Ich wohne sechs Monate.",
   ],
   difficulty: "hard",
 },
@@ -552,7 +477,7 @@ export const theme12Questions = [
     "einen Deutschkurs besuchen",
     "Deutsch sprechen",
     "Deutsch kaufen",
-    "Deutsch schreiben"
+    "Deutsch schreiben",
   ],
   difficulty: "medium",
 },
@@ -568,7 +493,7 @@ export const theme12Questions = [
     "Ich fahre in die Schweiz.",
     "Ich fahre nach Schweiz.",
     "Ich gehe Schweiz.",
-    "Ich komme aus Schweiz."
+    "Ich komme aus Schweiz.",
   ],
   difficulty: "hard",
 },
@@ -580,12 +505,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup Kalıpları",
   tr: "Ne zaman başlıyor?",
   de: "Wann beginnt der Kurs?",
-  options: [
-    "Wann beginnt der Kurs?",
-    "Wo ist der Kurs?",
-    "Wer ist der Kurs?",
-    "Warum Kurs?"
-  ],
+  options: ["Wann beginnt der Kurs?", "Wo ist der Kurs?", "Wer ist der Kurs?", "Warum Kurs?"],
   difficulty: "medium",
 },
 {
@@ -600,7 +520,7 @@ export const theme12Questions = [
     "Wie viel kostet der Kurs?",
     "Wie heißt der Kurs?",
     "Wann ist der Kurs?",
-    "Wo ist der Kurs?"
+    "Wo ist der Kurs?",
   ],
   difficulty: "medium",
 },
@@ -616,7 +536,7 @@ export const theme12Questions = [
     "Ich brauche Informationen.",
     "Ich brauche Urlaub.",
     "Ich brauche Deutsch.",
-    "Ich brauche Bahnhof."
+    "Ich brauche Bahnhof.",
   ],
   difficulty: "medium",
 },
@@ -632,7 +552,7 @@ export const theme12Questions = [
     "Senden Sie mir bitte die Hoteladresse.",
     "Kaufen Sie die Hoteladresse.",
     "Ich habe die Hoteladresse.",
-    "Die Hoteladresse ist groß."
+    "Die Hoteladresse ist groß.",
   ],
   difficulty: "hard",
 },
@@ -644,12 +564,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup Kalıpları",
   tr: "Cevabınızı bekliyorum.",
   de: "Ich warte auf Ihre Antwort.",
-  options: [
-    "Ich warte auf Ihre Antwort.",
-    "Ich komme morgen.",
-    "Vielen Dank.",
-    "Bis bald."
-  ],
+  options: ["Ich warte auf Ihre Antwort.", "Ich komme morgen.", "Vielen Dank.", "Bis bald."],
   difficulty: "medium",
 },
 {
@@ -664,7 +579,7 @@ export const theme12Questions = [
     "Danke im Voraus.",
     "Vielen Dank für die Einladung.",
     "Guten Morgen.",
-    "Auf Wiedersehen."
+    "Auf Wiedersehen.",
   ],
   difficulty: "medium",
 },
@@ -680,327 +595,7 @@ export const theme12Questions = [
     "Verilen tüm maddelere değinmek",
     "Uzun yazmak",
     "Zor kelimeler kullanmak",
-    "50 satır yazmak"
-  ],
-  difficulty: "hard",
-},
-{
-  id: 755,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Daveti kabul etmek",
-  de: "Einladung akzeptieren",
-  options: [
-    "Einladung akzeptieren",
-    "Einladung ablehnen",
-    "Deutschkurs besuchen",
-    "Wohnung suchen"
-  ],
-  difficulty: "medium",
-},
-{
-  id: 756,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Daveti reddetmek",
-  de: "Einladung ablehnen",
-  options: [
-    "Einladung ablehnen",
-    "Einladung akzeptieren",
-    "Kurs besuchen",
-    "Information suchen"
-  ],
-  difficulty: "medium",
-},
-{
-  id: 757,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Davet için teşekkür ederim.",
-  de: "Vielen Dank für die Einladung.",
-  options: [
-    "Vielen Dank für die Einladung.",
-    "Guten Tag.",
-    "Bis morgen.",
-    "Ich komme nicht."
-  ],
-  difficulty: "easy",
-},
-{
-  id: 758,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Kesinlikle geleceğim.",
-  de: "Ich komme sicher.",
-  options: [
-    "Ich komme sicher.",
-    "Ich komme nicht.",
-    "Ich suche ein Hotel.",
-    "Ich brauche Hilfe."
-  ],
-  difficulty: "medium",
-},
-{
-  id: 759,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "yanında getirmek",
-  de: "mitbringen",
-  options: [
-    "mitbringen",
-    "bringen",
-    "nehmen",
-    "holen"
-  ],
-  difficulty: "medium",
-},
-{
-  id: 760,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Arkadaşımı getirebilir miyim?",
-  de: "Kann ich meinen Freund mitbringen?",
-  options: [
-    "Kann ich meinen Freund mitbringen?",
-    "Wo ist mein Freund?",
-    "Mein Freund ist krank.",
-    "Ich suche meinen Freund."
-  ],
-  difficulty: "hard",
-},
-{
-  id: 761,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Üzgünüm, gelemiyorum.",
-  de: "Es tut mir leid, ich kann nicht kommen.",
-  options: [
-    "Es tut mir leid, ich kann nicht kommen.",
-    "Ich komme sicher.",
-    "Vielen Dank.",
-    "Bis bald."
-  ],
-  difficulty: "hard",
-},
-{
-  id: 762,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "önemli randevu",
-  de: "wichtiger Termin",
-  options: [
-    "wichtiger Termin",
-    "großes Hotel",
-    "kleines Zimmer",
-    "schöner Urlaub"
-  ],
-  difficulty: "medium",
-},
-{
-  id: 763,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Bir sonraki hafta sonu buluşabilir miyiz?",
-  de: "Können wir am nächsten Wochenende treffen?",
-  options: [
-    "Können wir am nächsten Wochenende treffen?",
-    "Ich komme heute.",
-    "Wo wohnst du?",
-    "Ich fahre nach Berlin."
-  ],
-  difficulty: "hard",
-},
-{
-  id: 764,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "apartman aramak",
-  de: "ein Apartment suchen",
-  options: [
-    "ein Apartment suchen",
-    "ein Apartment kaufen",
-    "ein Apartment verkaufen",
-    "ein Apartment mieten"
-  ],
-  difficulty: "medium",
-},
-{
-  id: 765,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "6 aylık bir daire arıyorum.",
-  de: "Ich suche ein Apartment für sechs Monate.",
-  options: [
-    "Ich suche ein Apartment für sechs Monate.",
-    "Ich suche ein Hotel.",
-    "Ich habe sechs Apartments.",
-    "Ich wohne sechs Monate."
-  ],
-  difficulty: "hard",
-},
-{
-  id: 766,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Almanca kursuna katılmak",
-  de: "einen Deutschkurs besuchen",
-  options: [
-    "einen Deutschkurs besuchen",
-    "Deutsch sprechen",
-    "Deutsch kaufen",
-    "Deutsch schreiben"
-  ],
-  difficulty: "medium",
-},
-{
-  id: 767,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "İsviçre'ye gideceğim.",
-  de: "Ich fahre in die Schweiz.",
-  options: [
-    "Ich fahre in die Schweiz.",
-    "Ich fahre nach Schweiz.",
-    "Ich gehe Schweiz.",
-    "Ich komme aus Schweiz."
-  ],
-  difficulty: "hard",
-},
-{
-  id: 768,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Ne zaman başlıyor?",
-  de: "Wann beginnt der Kurs?",
-  options: [
-    "Wann beginnt der Kurs?",
-    "Wo ist der Kurs?",
-    "Wer ist der Kurs?",
-    "Warum Kurs?"
-  ],
-  difficulty: "medium",
-},
-{
-  id: 769,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Fiyatı ne kadar?",
-  de: "Wie viel kostet der Kurs?",
-  options: [
-    "Wie viel kostet der Kurs?",
-    "Wie heißt der Kurs?",
-    "Wann ist der Kurs?",
-    "Wo ist der Kurs?"
-  ],
-  difficulty: "medium",
-},
-{
-  id: 770,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Bilgiye ihtiyacım var.",
-  de: "Ich brauche Informationen.",
-  options: [
-    "Ich brauche Informationen.",
-    "Ich brauche Urlaub.",
-    "Ich brauche Deutsch.",
-    "Ich brauche Bahnhof."
-  ],
-  difficulty: "medium",
-},
-{
-  id: 771,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Lütfen bana otel adresini gönderin.",
-  de: "Senden Sie mir bitte die Hoteladresse.",
-  options: [
-    "Senden Sie mir bitte die Hoteladresse.",
-    "Kaufen Sie die Hoteladresse.",
-    "Ich habe die Hoteladresse.",
-    "Die Hoteladresse ist groß."
-  ],
-  difficulty: "hard",
-},
-{
-  id: 772,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Cevabınızı bekliyorum.",
-  de: "Ich warte auf Ihre Antwort.",
-  options: [
-    "Ich warte auf Ihre Antwort.",
-    "Ich komme morgen.",
-    "Vielen Dank.",
-    "Bis bald."
-  ],
-  difficulty: "medium",
-},
-{
-  id: 773,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "Şimdiden teşekkür ederim.",
-  de: "Danke im Voraus.",
-  options: [
-    "Danke im Voraus.",
-    "Vielen Dank für die Einladung.",
-    "Guten Morgen.",
-    "Auf Wiedersehen."
-  ],
-  difficulty: "medium",
-},
-{
-  id: 774,
-  themeId: 12,
-  themeTitle: "Schreiben",
-  lessonNumber: 35,
-  lessonTitle: "Mektup Kalıpları",
-  tr: "TELC mektubunda en önemli şey nedir?",
-  de: "Verilen tüm maddelere değinmek",
-  options: [
-    "Verilen tüm maddelere değinmek",
-    "Uzun yazmak",
-    "Zor kelimeler kullanmak",
-    "50 satır yazmak"
+    "50 satır yazmak",
   ],
   difficulty: "hard",
 },
@@ -1016,7 +611,7 @@ export const theme12Questions = [
     "Vielen Dank für die Einladung.",
     "Ich habe eine Einladung.",
     "Bitte kommen Sie.",
-    "Ich lade Sie ein."
+    "Ich lade Sie ein.",
   ],
   difficulty: "easy",
 },
@@ -1028,12 +623,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup Kalıpları",
   tr: "Kesinlikle geleceğim.",
   de: "Ich komme sicher.",
-  options: [
-    "Ich komme sicher.",
-    "Ich warte sicher.",
-    "Ich schlafe sicher.",
-    "Ich lerne sicher."
-  ],
+  options: ["Ich komme sicher.", "Ich warte sicher.", "Ich schlafe sicher.", "Ich lerne sicher."],
   difficulty: "easy",
 },
 {
@@ -1048,7 +638,7 @@ export const theme12Questions = [
     "Leider kann ich nicht kommen.",
     "Ich komme morgen.",
     "Ich möchte kommen.",
-    "Ich warte dort."
+    "Ich warte dort.",
   ],
   difficulty: "easy",
 },
@@ -1064,7 +654,7 @@ export const theme12Questions = [
     "Denn ich habe einen wichtigen Termin.",
     "Denn ich habe einen Kaffee.",
     "Denn ich habe Urlaub.",
-    "Denn ich habe Hunger."
+    "Denn ich habe Hunger.",
   ],
   difficulty: "medium",
 },
@@ -1080,7 +670,7 @@ export const theme12Questions = [
     "Kann ich meinen Freund mitbringen?",
     "Kann ich meinen Freund sehen?",
     "Kann ich meinen Freund lernen?",
-    "Kann ich meinen Freund kaufen?"
+    "Kann ich meinen Freund kaufen?",
   ],
   difficulty: "medium",
 },
@@ -1092,12 +682,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup Kalıpları",
   tr: "Sizi arayacağım.",
   de: "Ich rufe Sie an.",
-  options: [
-    "Ich rufe Sie an.",
-    "Ich besuche Sie.",
-    "Ich sehe Sie.",
-    "Ich frage Sie."
-  ],
+  options: ["Ich rufe Sie an.", "Ich besuche Sie.", "Ich sehe Sie.", "Ich frage Sie."],
   difficulty: "medium",
 },
 {
@@ -1112,7 +697,7 @@ export const theme12Questions = [
     "Rufen Sie mich bitte an.",
     "Besuchen Sie mich bitte.",
     "Fragen Sie mich bitte.",
-    "Lernen Sie bitte."
+    "Lernen Sie bitte.",
   ],
   difficulty: "medium",
 },
@@ -1128,7 +713,7 @@ export const theme12Questions = [
     "Ich warte auf Ihre schnelle Rückmeldung.",
     "Ich komme auf Ihre Rückmeldung.",
     "Ich lerne Ihre Rückmeldung.",
-    "Ich kaufe Ihre Rückmeldung."
+    "Ich kaufe Ihre Rückmeldung.",
   ],
   difficulty: "hard",
 },
@@ -1140,12 +725,7 @@ export const theme12Questions = [
   lessonTitle: "Mektup Kalıpları",
   tr: "Şimdiden teşekkür ederim.",
   de: "Danke im Voraus.",
-  options: [
-    "Danke im Voraus.",
-    "Vielen Dank heute.",
-    "Danke morgen.",
-    "Danke später."
-  ],
+  options: ["Danke im Voraus.", "Vielen Dank heute.", "Danke morgen.", "Danke später."],
   difficulty: "easy",
 },
 {
@@ -1160,7 +740,7 @@ export const theme12Questions = [
     "Ich möchte einen Deutschkurs besuchen.",
     "Ich möchte Urlaub machen.",
     "Ich möchte Pizza essen.",
-    "Ich möchte schlafen."
+    "Ich möchte schlafen.",
   ],
   difficulty: "medium",
 },
@@ -1176,7 +756,7 @@ export const theme12Questions = [
     "Ich suche ein Apartment für sechs Monate.",
     "Ich suche einen Kaffee.",
     "Ich suche einen Arzt.",
-    "Ich suche Urlaub."
+    "Ich suche Urlaub.",
   ],
   difficulty: "medium",
 },
@@ -1192,7 +772,7 @@ export const theme12Questions = [
     "Wann beginnen Ihre Deutschkurse?",
     "Wo wohnen Ihre Deutschkurse?",
     "Wie heißen Ihre Deutschkurse?",
-    "Warum lernen Ihre Deutschkurse?"
+    "Warum lernen Ihre Deutschkurse?",
   ],
   difficulty: "medium",
 },
@@ -1208,7 +788,7 @@ export const theme12Questions = [
     "Wie viel kosten die Kurse?",
     "Wie alt sind die Kurse?",
     "Wo wohnen die Kurse?",
-    "Wann kommen die Kurse?"
+    "Wann kommen die Kurse?",
   ],
   difficulty: "medium",
 },
@@ -1224,7 +804,7 @@ export const theme12Questions = [
     "Sehr geehrte Damen und Herren",
     "Liebe Anna",
     "Hallo Anna",
-    "Tschüss"
+    "Tschüss",
   ],
   difficulty: "hard",
 },
@@ -1240,7 +820,7 @@ export const theme12Questions = [
     "Liebe Monika",
     "Sehr geehrte Damen und Herren",
     "Mit freundlichen Grüßen",
-    "Vielen Dank"
+    "Vielen Dank",
   ],
   difficulty: "hard",
 },
@@ -1267,7 +847,7 @@ export const theme12Questions = [
     "Ich komme aus der Türkei.",
     "Ich wohne in der Türkei.",
     "Ich fahre in die Türkei.",
-    "Ich bin Türkei."
+    "Ich bin Türkei.",
   ],
   difficulty: "medium",
 },
@@ -1283,7 +863,7 @@ export const theme12Questions = [
     "Ich bin 25 Jahre alt.",
     "Ich habe 25 Jahre.",
     "Ich wohne 25 Jahre.",
-    "Ich heiße 25 Jahre."
+    "Ich heiße 25 Jahre.",
   ],
   difficulty: "easy",
 },
@@ -1299,7 +879,7 @@ export const theme12Questions = [
     "Ich habe einen Bruder.",
     "Ich habe ein Bruder.",
     "Ich bin einen Bruder.",
-    "Ich habe eine Bruder."
+    "Ich habe eine Bruder.",
   ],
   difficulty: "medium",
 },
@@ -1315,7 +895,7 @@ export const theme12Questions = [
     "Mein Vater ist groß.",
     "Mein Vater groß ist.",
     "Mein Vater hat groß.",
-    "Meine Vater ist groß."
+    "Meine Vater ist groß.",
   ],
   difficulty: "medium",
 },
@@ -1327,12 +907,7 @@ export const theme12Questions = [
   lessonTitle: "TELC A1 Final",
   tr: "Ben öğretmenim.",
   de: "Ich bin Lehrer.",
-  options: [
-    "Ich bin Lehrer.",
-    "Ich habe Lehrer.",
-    "Ich arbeite Lehrer.",
-    "Ich ist Lehrer."
-  ],
+  options: ["Ich bin Lehrer.", "Ich habe Lehrer.", "Ich arbeite Lehrer.", "Ich ist Lehrer."],
   difficulty: "easy",
 },
 {
@@ -1347,7 +922,7 @@ export const theme12Questions = [
     "Ich arbeite in einer Schule.",
     "Ich arbeite in einem Schule.",
     "Ich arbeitet in einer Schule.",
-    "Ich bin in einer Schule arbeiten."
+    "Ich bin in einer Schule arbeiten.",
   ],
   difficulty: "hard",
 },
@@ -1363,7 +938,7 @@ export const theme12Questions = [
     "Ich stehe jeden Morgen um 7 Uhr auf.",
     "Ich aufstehe jeden Morgen um 7 Uhr.",
     "Ich stehe auf jeden Morgen.",
-    "Ich bin jeden Morgen um 7 Uhr auf."
+    "Ich bin jeden Morgen um 7 Uhr auf.",
   ],
   difficulty: "hard",
 },
@@ -1375,12 +950,7 @@ export const theme12Questions = [
   lessonTitle: "TELC A1 Final",
   tr: "Saat kaç?",
   de: "Wie spät ist es?",
-  options: [
-    "Wie spät ist es?",
-    "Wie heißt du?",
-    "Wann kommst du?",
-    "Was machst du?"
-  ],
+  options: ["Wie spät ist es?", "Wie heißt du?", "Wann kommst du?", "Was machst du?"],
   difficulty: "easy",
 },
 {
@@ -1391,12 +961,7 @@ export const theme12Questions = [
   lessonTitle: "TELC A1 Final",
   tr: "Saat dört buçuk.",
   de: "Es ist halb fünf.",
-  options: [
-    "Es ist halb fünf.",
-    "Es ist halb vier.",
-    "Es ist vier Uhr.",
-    "Es ist fünf Uhr."
-  ],
+  options: ["Es ist halb fünf.", "Es ist halb vier.", "Es ist vier Uhr.", "Es ist fünf Uhr."],
   difficulty: "hard",
 },
 {
@@ -1407,12 +972,7 @@ export const theme12Questions = [
   lessonTitle: "TELC A1 Final",
   tr: "Ben pizza severim.",
   de: "Ich mag Pizza.",
-  options: [
-    "Ich mag Pizza.",
-    "Ich möchte Pizza.",
-    "Ich esse Pizza.",
-    "Ich habe Pizza."
-  ],
+  options: ["Ich mag Pizza.", "Ich möchte Pizza.", "Ich esse Pizza.", "Ich habe Pizza."],
   difficulty: "easy",
 },
 {
@@ -1427,7 +987,7 @@ export const theme12Questions = [
     "Ich trinke gern Tee.",
     "Ich gern trinke Tee.",
     "Ich mag gern Tee.",
-    "Ich trinke Tee gern mag."
+    "Ich trinke Tee gern mag.",
   ],
   difficulty: "medium",
 },
@@ -1443,7 +1003,7 @@ export const theme12Questions = [
     "Ich esse einen Apfel.",
     "Ich esse ein Apfel.",
     "Ich esse eine Apfel.",
-    "Ich trinke einen Apfel."
+    "Ich trinke einen Apfel.",
   ],
   difficulty: "medium",
 },
@@ -1459,7 +1019,7 @@ export const theme12Questions = [
     "Ich möchte einen Kaffee.",
     "Ich möchte ein Kaffee.",
     "Ich mag einen Kaffee.",
-    "Ich habe Kaffee."
+    "Ich habe Kaffee.",
   ],
   difficulty: "hard",
 },
@@ -1475,7 +1035,7 @@ export const theme12Questions = [
     "Was kostet der Käse?",
     "Wie kostet der Käse?",
     "Was der Käse kostet?",
-    "Wo kostet der Käse?"
+    "Wo kostet der Käse?",
   ],
   difficulty: "medium",
 },
@@ -1491,7 +1051,7 @@ export const theme12Questions = [
     "Ich habe kein Buch.",
     "Ich habe keine Buch.",
     "Ich bin kein Buch.",
-    "Ich habe nicht Buch."
+    "Ich habe nicht Buch.",
   ],
   difficulty: "medium",
 },
@@ -1501,14 +1061,9 @@ export const theme12Questions = [
   themeTitle: "Schreiben",
   lessonNumber: 36,
   lessonTitle: "TELC A1 Final",
-  tr: "Arabam var mı?",
+  tr: "Araban var mı?",
   de: "Hast du ein Auto?",
-  options: [
-    "Hast du ein Auto?",
-    "Hat du ein Auto?",
-    "Haben du Auto?",
-    "Du hast Auto?"
-  ],
+  options: ["Hast du ein Auto?", "Hat du ein Auto?", "Haben du Auto?", "Du hast Auto?"],
   difficulty: "medium",
 },
 {
@@ -1523,7 +1078,7 @@ export const theme12Questions = [
     "Es gibt einen Balkon.",
     "Es gibt ein Balkon.",
     "Es hat einen Balkon.",
-    "Der Balkon gibt."
+    "Der Balkon gibt.",
   ],
   difficulty: "medium",
 },
@@ -1539,7 +1094,7 @@ export const theme12Questions = [
     "Das Buch ist auf dem Tisch.",
     "Das Buch ist im Tisch.",
     "Das Buch steht dem Tisch.",
-    "Das Buch ist in der Tisch."
+    "Das Buch ist in der Tisch.",
   ],
   difficulty: "medium",
 },
@@ -1555,7 +1110,7 @@ export const theme12Questions = [
     "In meiner Freizeit spiele ich Fußball.",
     "In meiner Freizeit Fußball spiele ich.",
     "Ich Freizeit spiele Fußball.",
-    "Fußball spiele Freizeit ich."
+    "Fußball spiele Freizeit ich.",
   ],
   difficulty: "medium",
 },
@@ -1571,7 +1126,7 @@ export const theme12Questions = [
     "Ich kann Deutsch sprechen.",
     "Ich kann Deutsch spreche.",
     "Ich Deutsch kann sprechen.",
-    "Ich spreche kann Deutsch."
+    "Ich spreche kann Deutsch.",
   ],
   difficulty: "medium",
 },
@@ -1587,7 +1142,7 @@ export const theme12Questions = [
     "Ich muss heute arbeiten.",
     "Ich muss heute arbeitet.",
     "Ich arbeiten muss heute.",
-    "Ich heute muss arbeitet."
+    "Ich heute muss arbeitet.",
   ],
   difficulty: "medium",
 },
@@ -1603,7 +1158,7 @@ export const theme12Questions = [
     "Können Sie mir bitte helfen?",
     "Müssen Sie mir bitte helfen?",
     "Helfen Sie mir können?",
-    "Kannst du mir helfen Sie?"
+    "Kannst du mir helfen Sie?",
   ],
   difficulty: "hard",
 },
@@ -1619,7 +1174,7 @@ export const theme12Questions = [
     "Ich fahre mit dem Bus zur Arbeit.",
     "Ich fahre den Bus zur Arbeit.",
     "Ich gehe mit Bus Arbeit.",
-    "Ich nehme Arbeit."
+    "Ich nehme Arbeit.",
   ],
   difficulty: "medium",
 },
@@ -1631,12 +1186,7 @@ export const theme12Questions = [
   lessonTitle: "TELC A1 Final",
   tr: "Yürüyerek gidiyorum.",
   de: "Ich gehe zu Fuß.",
-  options: [
-    "Ich gehe zu Fuß.",
-    "Ich gehe mit Fuß.",
-    "Ich fahre zu Fuß.",
-    "Ich nehme Fuß."
-  ],
+  options: ["Ich gehe zu Fuß.", "Ich gehe mit Fuß.", "Ich fahre zu Fuß.", "Ich nehme Fuß."],
   difficulty: "easy",
 },
 {
@@ -1651,7 +1201,7 @@ export const theme12Questions = [
     "Gehen Sie geradeaus.",
     "Gehen Sie links.",
     "Nehmen Sie Bahnhof.",
-    "Steigen Sie Bus."
+    "Steigen Sie Bus.",
   ],
   difficulty: "medium",
 },
@@ -1667,7 +1217,7 @@ export const theme12Questions = [
     "Gehen Sie nach links.",
     "Gehen Sie nach rechts.",
     "Gehen Sie geradeaus.",
-    "Steigen Sie aus."
+    "Steigen Sie aus.",
   ],
   difficulty: "easy",
 },
@@ -1683,7 +1233,7 @@ export const theme12Questions = [
     "Die Post ist neben der Bank.",
     "Die Post ist gegenüber der Bank.",
     "Die Post ist in der Bank.",
-    "Die Post ist auf der Bank."
+    "Die Post ist auf der Bank.",
   ],
   difficulty: "medium",
 },
@@ -1699,7 +1249,7 @@ export const theme12Questions = [
     "Mein Kopf tut weh.",
     "Mein Kopf ist krank.",
     "Mein Kopf hat Wasser.",
-    "Mein Kopf macht Sport."
+    "Mein Kopf macht Sport.",
   ],
   difficulty: "easy",
 },
@@ -1715,7 +1265,7 @@ export const theme12Questions = [
     "Ich gehe zum Arzt.",
     "Ich gehe zur Schule.",
     "Ich gehe zum Hotel.",
-    "Ich gehe zum Bahnhof."
+    "Ich gehe zum Bahnhof.",
   ],
   difficulty: "easy",
 },
@@ -1731,7 +1281,7 @@ export const theme12Questions = [
     "Du musst viel Wasser trinken.",
     "Du musst viel Wasser trinkst.",
     "Du viel Wasser musst trinken.",
-    "Du musst trinken Wasser viel."
+    "Du musst trinken Wasser viel.",
   ],
   difficulty: "medium",
 },
@@ -1743,12 +1293,7 @@ export const theme12Questions = [
   lessonTitle: "TELC A1 Final",
   tr: "Su iç!",
   de: "Trink Wasser!",
-  options: [
-    "Trink Wasser!",
-    "Trinken Wasser!",
-    "Trinkt Wasser!",
-    "Wasser trinken!"
-  ],
+  options: ["Trink Wasser!", "Trinken Wasser!", "Trinkt Wasser!", "Wasser trinken!"],
   difficulty: "medium",
 },
 {
@@ -1759,12 +1304,7 @@ export const theme12Questions = [
   lessonTitle: "TELC A1 Final",
   tr: "Spor yap!",
   de: "Mach Sport!",
-  options: [
-    "Mach Sport!",
-    "Macht Sport!",
-    "Sport machen!",
-    "Machst Sport!"
-  ],
+  options: ["Mach Sport!", "Macht Sport!", "Sport machen!", "Machst Sport!"],
   difficulty: "easy",
 },
 {
@@ -1779,7 +1319,7 @@ export const theme12Questions = [
     "Im Sommer mache ich Urlaub.",
     "Im Sommer habe ich Urlaub machen.",
     "Ich Urlaub Sommer mache.",
-    "Sommer ich mache Urlaub."
+    "Sommer ich mache Urlaub.",
   ],
   difficulty: "medium",
 },
@@ -1795,7 +1335,7 @@ export const theme12Questions = [
     "Ich fahre nach Istanbul.",
     "Ich fahre in Istanbul.",
     "Ich fahre zu Istanbul.",
-    "Ich fahre mit Istanbul."
+    "Ich fahre mit Istanbul.",
   ],
   difficulty: "medium",
 },
@@ -1811,7 +1351,7 @@ export const theme12Questions = [
     "Das Wetter ist schön und warm.",
     "Das Wetter hat schön.",
     "Das Wetter schön ist.",
-    "Das Wetter warm und."
+    "Das Wetter warm und.",
   ],
   difficulty: "easy",
 },
@@ -1827,7 +1367,7 @@ export const theme12Questions = [
     "Gestern habe ich Deutsch gelernt.",
     "Gestern ich habe Deutsch gelernt.",
     "Gestern habe gelernt ich Deutsch.",
-    "Gestern Deutsch gelernt habe."
+    "Gestern Deutsch gelernt habe.",
   ],
   difficulty: "hard",
 },
@@ -1843,7 +1383,7 @@ export const theme12Questions = [
     "Ich habe Pizza gegessen.",
     "Ich bin Pizza gegessen.",
     "Ich habe gegessen Pizza.",
-    "Ich gegessen habe Pizza."
+    "Ich gegessen habe Pizza.",
   ],
   difficulty: "medium",
 },
@@ -1859,7 +1399,7 @@ export const theme12Questions = [
     "Ich habe eine Reservierung.",
     "Ich bin eine Reservierung.",
     "Ich möchte eine Reservierung.",
-    "Ich mache eine Reservierung."
+    "Ich mache eine Reservierung.",
   ],
   difficulty: "easy",
 },
@@ -1875,7 +1415,7 @@ export const theme12Questions = [
     "Ich möchte ein Zimmer für zwei Nächte.",
     "Ich möchte zwei Zimmer Nacht.",
     "Ich habe zwei Nächte Zimmer.",
-    "Zimmer zwei Nächte bitte."
+    "Zimmer zwei Nächte bitte.",
   ],
   difficulty: "hard",
 },
@@ -1891,7 +1431,7 @@ export const theme12Questions = [
     "Ich habe eine Reservierung.",
     "Ich habe ein Hotel.",
     "Ich habe ein Frühstück.",
-    "Ich habe ein Zimmer."
+    "Ich habe ein Zimmer.",
   ],
   difficulty: "easy",
 },
@@ -1907,7 +1447,7 @@ export const theme12Questions = [
     "Vielen Dank für die Einladung.",
     "Danke für das Hotel.",
     "Danke für das Zimmer.",
-    "Danke für den Arzt."
+    "Danke für den Arzt.",
   ],
   difficulty: "medium",
 },
@@ -1923,7 +1463,7 @@ export const theme12Questions = [
     "Bitte antworten Sie mir.",
     "Bitte helfen Sie mir.",
     "Bitte sehen Sie mich.",
-    "Bitte besuchen Sie mich."
+    "Bitte besuchen Sie mich.",
   ],
   difficulty: "medium",
 },
@@ -1935,12 +1475,7 @@ export const theme12Questions = [
   lessonTitle: "TELC A1 Final",
   tr: "Saygılarımla",
   de: "Mit freundlichen Grüßen",
-  options: [
-    "Mit freundlichen Grüßen",
-    "Liebe Grüße",
-    "Bis bald",
-    "Tschüss"
-  ],
+  options: ["Mit freundlichen Grüßen", "Liebe Grüße", "Bis bald", "Tschüss"],
   difficulty: "easy",
 },
 {
@@ -1955,8 +1490,8 @@ export const theme12Questions = [
     "Sehr geehrte Damen und Herren",
     "Liebe Anna",
     "Hallo Thomas",
-    "Tschüss"
+    "Tschüss",
   ],
   difficulty: "hard",
-},  
+},
 ];
