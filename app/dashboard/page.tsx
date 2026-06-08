@@ -3947,19 +3947,38 @@ createPendingOrder({
                       <button
                         type="button"
                         onClick={async () => {
-                          if (!currentUser) return;
-                          const { data, error } = await supabase
-                            .from("speaking_progress")
-                            .insert({
-                              username: currentUser.username,
-                              level: "A1",
-                              current_tema: 1,
-                              current_gorev: 1,
-                            })
-                            .select()
-                            .single();
-                          if (data) setSpeakingProgress(data);
-                        }}
+  if (!currentUser) return;
+  // Önce var mı kontrol et
+  const { data: existing } = await supabase
+    .from("speaking_progress")
+    .select("*")
+    .eq("username", currentUser.username)
+    .eq("level", "A1")
+    .maybeSingle();
+
+  if (existing) {
+    setSpeakingProgress(existing);
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("speaking_progress")
+    .insert({
+      username: currentUser.username,
+      level: "A1",
+      current_tema: 1,
+      current_gorev: 1,
+      gorev_tarihleri: [],
+    })
+    .select()
+    .single();
+
+  if (data) {
+    setSpeakingProgress(data);
+  } else {
+    alert("Hata: " + error?.message);
+  }
+}}
                         className="mt-4 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700"
                       >
                         🎙️ Konuşma Kulübünü Başlat
@@ -4291,6 +4310,70 @@ createPendingOrder({
                         Önce Konuşma Kulübünü başlatman gerekiyor.
                       </p>
                     )}
+                    {speakingProgress && !speakingProgress.partner_email && (
+  <div className="mt-5 rounded-2xl bg-emerald-50 border border-emerald-200 p-5">
+    <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-3">Partner Talep Et</p>
+    <div className="space-y-3">
+      <div>
+        <p className="text-xs font-bold text-slate-500 mb-1">Müsait Olduğun Saat</p>
+        <input
+          value={speakingMusait}
+          onChange={e => setSpeakingMusait(e.target.value)}
+          placeholder="Örn: 20:00-22:00 arası"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
+        />
+      </div>
+      <div>
+        <p className="text-xs font-bold text-slate-500 mb-1">WhatsApp Numaranız</p>
+        <input
+          value={speakingTelefon}
+          onChange={e => setSpeakingTelefon(e.target.value)}
+          placeholder="905xxxxxxxxx"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
+        />
+      </div>
+      <div>
+        <p className="text-xs font-bold text-slate-500 mb-1">Partner Tercihi</p>
+        <div className="grid grid-cols-3 gap-2">
+          {[["fark_etmez", "Fark Etmez"], ["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
+            <button key={val} type="button" onClick={() => setSpeakingCinsiyet(val)}
+              className={`rounded-2xl border py-2 text-xs font-black transition ${speakingCinsiyet === val ? "border-emerald-400 bg-emerald-100 text-emerald-700" : "border-slate-200 bg-white text-slate-600"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <button
+        type="button"
+        disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon}
+        onClick={async () => {
+          if (!currentUser || !speakingMusait || !speakingTelefon) return;
+          setSpeakingYukleniyor(true);
+          await supabase.from("speaking_requests").insert({
+            user_email: currentUser.username,
+            user_name: currentUser.name || currentUser.username,
+            tema_id: speakingProgress.current_tema,
+            rol: "konusan",
+            cinsiyet_tercihi: speakingCinsiyet,
+            musait_saat: speakingMusait,
+            telefon: speakingTelefon,
+            durum: "bekliyor",
+          });
+          setSpeakingYukleniyor(false);
+          setSpeakingGonderildi(true);
+        }}
+        className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+      >
+        {speakingYukleniyor ? "Gönderiliyor..." : "🎙️ Partner Talep Et"}
+      </button>
+      {speakingGonderildi && (
+        <div className="rounded-2xl bg-white border border-emerald-200 p-3 text-sm font-bold text-emerald-700 text-center">
+          ✅ Talebiniz alındı! Admin en kısa sürede eşleştirecek.
+        </div>
+      )}
+    </div>
+  </div>
+)}
                   </div>
                 )}
               </div>
