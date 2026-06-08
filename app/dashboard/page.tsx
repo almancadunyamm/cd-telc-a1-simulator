@@ -1868,11 +1868,15 @@ useEffect(() => {
       .select("*")
       .eq("username", currentUser!.username)
       .eq("level", "A1")
-      .single();
+      .maybeSingle();
     setSpeakingProgress(data || null);
     setSpeakingProgressLoading(false);
   }
   loadSpeakingProgress();
+
+  // Her 10 saniyede bir otomatik yenile (admin eşleştirince görünsün)
+  const interval = setInterval(loadSpeakingProgress, 10000);
+  return () => clearInterval(interval);
 }, [currentUser, speakingBildirimGonderildi]);
 
   const activePackageCount = userClasses.length;
