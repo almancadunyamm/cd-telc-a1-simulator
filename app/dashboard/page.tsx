@@ -4195,16 +4195,33 @@ createPendingOrder({
                       </div>
                     </div>
 
-                    {/* Nasıl yapılır */}
-                    <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 mb-5">
-                      <p className="text-xs font-black text-blue-700 uppercase tracking-wider mb-2">Nasıl Yapılır?</p>
-                      <div className="space-y-2 text-sm text-slate-700">
-                        <p>1. Partnerini ara (WhatsApp/telefon)</p>
-                        <p>2. Dinleyici Türkçeyi söyler</p>
-                        <p>3. Konuşan Almancasını söyler</p>
-                        <p>4. Tamamlayınca <strong>ikisi de</strong> buradan bildirim gönderir</p>
-                      </div>
-                    </div>
+                    {/* Rol gösterimi */}
+{(() => {
+  const gorevNo = speakingProgress.current_gorev;
+  const benKonusucuyum = gorevNo % 2 === 1;
+  return (
+    <div className={"rounded-2xl border p-4 mb-5 " + (benKonusucuyum ? "bg-emerald-50 border-emerald-200" : "bg-blue-50 border-blue-200")}>
+      <p className={"text-xs font-black uppercase tracking-wider mb-2 " + (benKonusucuyum ? "text-emerald-700" : "text-blue-700")}>
+        {benKonusucuyum ? "🎤 Bu Görevde Rolün: KONUŞUCU" : "👂 Bu Görevde Rolün: DİNLEYİCİ"}
+      </p>
+      <p className="text-sm font-bold text-slate-800 mb-3">
+        {benKonusucuyum
+          ? "Partnerim Türkçe söyler → Ben Almancasını söylerim"
+          : "Ben Türkçe söylerim → Partnerim Almancasını söyler"}
+      </p>
+      <div className="space-y-2 text-sm text-slate-600">
+        <p>{"1. Partnerini ara (WhatsApp/telefon)"}</p>
+        <p>{benKonusucuyum
+          ? "2. Partnerinle kalıpları çalış, Almancasını söyle"
+          : "2. Sen Türkçe söyle, partnerinin Almancasını dinle"}</p>
+        <p>{"3. Tamamlayınca ikisi de buradan bildirim gönderir"}</p>
+        <p className="text-xs text-slate-500 mt-2">
+          {"Bir sonraki görevde roller değişir — ikisi de her iki rolü oynar."}
+        </p>
+      </div>
+    </div>
+  );
+})()}
 
                     {/* Bildirim butonu */}
                     {speakingProgress.partner_email ? (
@@ -4284,10 +4301,12 @@ createPendingOrder({
                           <a
                             href={"https://wa.me/" + partnerTelefon + "?text=" + encodeURIComponent(
   "Merhaba! Ben " + (currentUser?.name || currentUser?.username) + ". Almanca Okulum Konuşma Kulübü'nde eşleştik 🎙️\n\n" +
-  "Tema " + (speakingProgress?.current_tema || 1) + ", Görev " + (speakingProgress?.current_gorev || 1) + " üzerinde çalışıyoruz.\n\n" +
-  "Bu görevde toplam " + ((speakingProgress?.current_tema || 1) * 15) + " soru var. " +
-  "Sen Türkçe söylersin, ben Almancasını söylerim (ya da tam tersi).\n\n" +
-  "Uygun bir zaman ayarlayalım mı? 😊"
+  "Tema " + (speakingProgress?.current_tema || 1) + ", Görev " + (speakingProgress?.current_gorev || 1) + " üzerindeyiz.\n\n" +
+  "Bu görevde toplam " + ((speakingProgress?.current_tema || 1) * 15) + " soru var.\n\n" +
+  ((speakingProgress?.current_gorev || 1) % 2 === 1
+    ? "Bu görevde ben KONUŞUCU rolündeyim. Sen Türkçe söylersin, ben Almancasını söylerim."
+    : "Bu görevde ben DİNLEYİCİ rolündeyim. Ben Türkçe söylerim, sen Almancasını söylersin.") +
+  "\n\nUygun bir zaman ayarlayalım mı? 😊"
 )}
                             target="_blank"
                             rel="noopener noreferrer"
