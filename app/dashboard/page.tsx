@@ -36,7 +36,7 @@ import { theme9Questions } from "@/app/data/mastery/theme9";
 import { theme10Questions } from "@/app/data/mastery/theme10";
 import { theme11Questions } from "@/app/data/mastery/theme11";
 import { theme12Questions } from "@/app/data/mastery/theme12";
-
+import { speakingPatterns } from "@/app/data/speaking_patterns";
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
@@ -319,6 +319,15 @@ const speakingTasksB1 = [
 ];
 export default function DashboardPage() {
   const [pwaPrompt, setPwaPrompt] = useState<any>(null);
+  const [speakingTab, setSpeakingTab] = useState<"talep" | "eslesmeler">("talep");
+const [speakingRol, setSpeakingRol] = useState<"konusan" | "dinleyen">("konusan");
+const [speakingTemaId, setSpeakingTemaId] = useState(1);
+const [speakingCinsiyet, setSpeakingCinsiyet] = useState("fark_etmez");
+const [speakingMusait, setSpeakingMusait] = useState("");
+const [speakingTelefon, setSpeakingTelefon] = useState("");
+const [speakingGonderildi, setSpeakingGonderildi] = useState(false);
+const [speakingEslesmeler, setSpeakingEslesmeler] = useState<any[]>([]);
+const [speakingYukleniyor, setSpeakingYukleniyor] = useState(false);
 const [pwaGoster, setPwaGoster] = useState(false);
 
 useEffect(() => {
@@ -1834,6 +1843,18 @@ if (!firstLesson?.id) {
 setTodayLesson(firstLesson);
 localStorage.setItem(todayLessonKey, firstLesson.id);
 }, [visibleLessons, currentUsername, todayKey]);
+useEffect(() => {
+  if (!currentUser) return;
+  async function loadEslesmeler() {
+    const { data } = await supabase
+      .from("speaking_matches")
+      .select("*")
+      .or(`konusan_email.eq.${currentUser?.username},dinleyen_email.eq.${currentUser?.username}`)
+      .order("created_at", { ascending: false });
+    if (data) setSpeakingEslesmeler(data);
+  }
+  loadEslesmeler();
+}, [currentUser]);
 
   const activePackageCount = userClasses.length;
   const upgradeOffers = getUpgradeOffers(effectivePackageType);
@@ -2475,6 +2496,7 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
   { key: "materials", label: "PDF", icon: "📄" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
+  { key: "speaking", label: "Speaking", icon: "🎙️" },
   { key: "community", label: "Topluluk", icon: "👥" },
   { key: "badges", label: "Rozetler", icon: "🏆" },
   { key: "settings", label: "Ayarlar", icon: "⚙️" },
@@ -3724,6 +3746,161 @@ createPendingOrder({
     </div>
   </div>
 )}
+  </section>
+)}
+{activeDashboardTab === "speaking" && (
+  <section className="mb-8">
+    <div className="rounded-[2rem] bg-gradient-to-br from-green-50 via-emerald-50 to-white p-6">
+      <p className="text-xs font-black uppercase tracking-widest text-emerald-700">Speaking Klübü</p>
+      <h2 className="mt-2 text-2xl font-black text-slate-900">Konuşma Partneri Bul</h2>
+      <p className="mt-2 text-sm text-slate-600">Eşleştiğin öğrenciyle Almanca konuşma pratiği yap. Dinleyici Türkçe söyler, konuşan Almancasını söyler.</p>
+
+      {/* Tab */}
+      <div className="mt-6 flex gap-3">
+        {([["talep", "Talep Oluştur"], ["eslesmeler", "Eşleşmelerim"]] as const).map(([key, label]) => (
+          <button key={key} onClick={() => setSpeakingTab(key)}
+            className={`rounded-full px-5 py-2 text-sm font-black transition ${speakingTab === key ? "bg-emerald-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {speakingTab === "talep" && (
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          {/* SOL: Form */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <h3 className="font-black text-slate-900 mb-4">Bilgilerini Gir</h3>
+
+            {/* Rol */}
+            <div className="mb-4">
+              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Rolün</p>
+              <div className="grid grid-cols-2 gap-3">
+                {([["konusan", "🎤 Konuşan", "Türkçe söyleneni Almancaya çevirirsin"], ["dinleyen", "👂 Dinleyici", "Türkçe söyler, not verirsin"]] as const).map(([rol, label, desc]) => (
+                  <button key={rol} onClick={() => setSpeakingRol(rol)}
+                    className={`rounded-2xl border p-4 text-left transition ${speakingRol === rol ? "border-emerald-400 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}>
+                    <div className="font-black text-slate-900 text-sm">{label}</div>
+                    <div className="text-xs text-slate-500 mt-1">{desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tema */}
+            <div className="mb-4">
+              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Tema</p>
+              <select value={speakingTemaId} onChange={e => setSpeakingTemaId(Number(e.target.value))}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none">
+                {speakingPatterns.map(t => (
+                  <option key={t.temaId} value={t.temaId}>Tema {t.temaId} — {t.temaAd}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Cinsiyet tercihi */}
+            <div className="mb-4">
+              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Partner Tercihi</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[["fark_etmez", "Fark Etmez"], ["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
+                  <button key={val} onClick={() => setSpeakingCinsiyet(val)}
+                    className={`rounded-2xl border py-3 text-sm font-black transition ${speakingCinsiyet === val ? "border-emerald-400 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-600"}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Müsait saat */}
+            <div className="mb-4">
+              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Müsait Olduğun Saat</p>
+              <input value={speakingMusait} onChange={e => setSpeakingMusait(e.target.value)}
+                placeholder="Örn: 20:00-22:00 arası"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
+            </div>
+
+            {/* Telefon */}
+            <div className="mb-6">
+              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">WhatsApp Numaranız</p>
+              <input value={speakingTelefon} onChange={e => setSpeakingTelefon(e.target.value)}
+                placeholder="905xxxxxxxxx"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
+              <p className="text-xs text-slate-400 mt-1">Sadece eşleştiğin kişiyle paylaşılır.</p>
+            </div>
+
+            <button
+              disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon}
+              onClick={async () => {
+                if (!currentUser || !speakingMusait || !speakingTelefon) return;
+                setSpeakingYukleniyor(true);
+                await supabase.from("speaking_requests").insert({
+                  user_email: currentUser.username,
+                  user_name: currentUser.name || currentUser.username,
+                  tema_id: speakingTemaId,
+                  rol: speakingRol,
+                  cinsiyet_tercihi: speakingCinsiyet,
+                  musait_saat: speakingMusait,
+                  telefon: speakingTelefon,
+                  durum: "bekliyor",
+                });
+                setSpeakingYukleniyor(false);
+                setSpeakingGonderildi(true);
+              }}
+              className="w-full rounded-2xl bg-emerald-600 px-4 py-4 text-sm font-black text-white shadow-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed">
+              {speakingYukleniyor ? "Gönderiliyor..." : "🎙️ Talep Oluştur"}
+            </button>
+
+            {speakingGonderildi && (
+              <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-sm font-bold text-emerald-700">
+                ✅ Talebiniz alındı! Uygun bir partner bulunduğunda size bildirim gönderilecek.
+              </div>
+            )}
+          </div>
+
+          {/* SAĞ: Konuşma kalıpları önizleme */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <h3 className="font-black text-slate-900 mb-1">Tema {speakingTemaId} Konuşma Kalıpları</h3>
+            <p className="text-xs text-slate-500 mb-4">Dinleyici Türkçe söyler → Sen Almancasını söylersin</p>
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+              {speakingPatterns.find(t => t.temaId === speakingTemaId)?.cumleler.map((c, i) => (
+                <div key={i} className="rounded-2xl bg-slate-50 p-3">
+                  <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
+                  <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {speakingTab === "eslesmeler" && (
+        <div className="mt-6">
+          {speakingEslesmeler.length === 0 ? (
+            <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+              <div className="text-4xl mb-4">🎙️</div>
+              <h3 className="font-black text-slate-900">Henüz eşleşmen yok</h3>
+              <p className="text-sm text-slate-500 mt-2">Talep oluşturduktan sonra eşleşmeler burada görünür.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {speakingEslesmeler.map((eslesme, i) => (
+                <div key={i} className="rounded-2xl bg-white p-5 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-black text-emerald-600 uppercase tracking-wider">Tema {eslesme.tema_id}</p>
+                      <p className="font-black text-slate-900 mt-1">
+                        {eslesme.konusan_email === currentUser?.username ? "Konuşan rolündesin" : "Dinleyici rolündesin"}
+                      </p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-black ${eslesme.durum === "tamamlandi" ? "bg-emerald-100 text-emerald-700" : "bg-yellow-100 text-yellow-700"}`}>
+                      {eslesme.durum === "tamamlandi" ? "Tamamlandı" : "Bekliyor"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   </section>
 )}
 {activeDashboardTab === "community" && (
