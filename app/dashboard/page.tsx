@@ -319,7 +319,11 @@ const speakingTasksB1 = [
 ];
 export default function DashboardPage() {
   const [pwaPrompt, setPwaPrompt] = useState<any>(null);
-  const [speakingTab, setSpeakingTab] = useState<"talep" | "eslesmeler">("talep");
+  const [speakingTab, setSpeakingTab] = useState<"durum" | "gorev" | "partner" | "talep">("durum");
+const [speakingProgress, setSpeakingProgress] = useState<any>(null);
+const [speakingProgressLoading, setSpeakingProgressLoading] = useState(true);
+const [speakingGorevBildiriliyor, setSpeakingGorevBildiriliyor] = useState(false);
+const [speakingBildirimGonderildi, setSpeakingBildirimGonderildi] = useState(false);
 const [speakingRol, setSpeakingRol] = useState<"konusan" | "dinleyen">("konusan");
 const [speakingTemaId, setSpeakingTemaId] = useState(1);
 const [speakingCinsiyet, setSpeakingCinsiyet] = useState("fark_etmez");
@@ -1855,6 +1859,21 @@ useEffect(() => {
   }
   loadEslesmeler();
 }, [currentUser]);
+useEffect(() => {
+  if (!currentUser) return;
+  async function loadSpeakingProgress() {
+    setSpeakingProgressLoading(true);
+    const { data } = await supabase
+      .from("speaking_progress")
+      .select("*")
+      .eq("username", currentUser!.username)
+      .eq("level", "A1")
+      .single();
+    setSpeakingProgress(data || null);
+    setSpeakingProgressLoading(false);
+  }
+  loadSpeakingProgress();
+}, [currentUser, speakingBildirimGonderildi]);
 
   const activePackageCount = userClasses.length;
   const upgradeOffers = getUpgradeOffers(effectivePackageType);
@@ -2136,6 +2155,72 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
     window.open(link, "_blank");
   }
 
+  function getSpeakingUnlockedThemeCount(masteryCompletedCount: number): number {
+  return Math.max(0, masteryCompletedCount - 2);
+}
+
+async function handleSpeakingBildirim() {
+  if (!currentUser || !speakingProgress) return;
+  setSpeakingGorevBildiriliyor(true);
+
+  const { data: sessions } = await supabase
+    .from("speaking_sessions")
+    .select("*")
+    .or(`konusan_email.eq.${currentUser.username},dinleyen_email.eq.${currentUser.username}`)
+    .eq("tema_no", speakingProgress.current_tema)
+    .eq("gorev_no", speakingProgress.current_gorev)
+    .eq("onaylandi", false)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  const session = sessions?.[0];
+  const now = new Date().toISOString();
+
+  if (session) {
+    const isKonusan = session.konusan_email === currentUser.username;
+    const updateData: any = isKonusan
+      ? { konusan_bildirdi: true, konusan_bildirim_at: now }
+      : { dinleyen_bildirdi: true, dinleyen_bildirim_at: now };
+    const digerBildirdi = isKonusan ? session.dinleyen_bildirdi : session.konusan_bildirdi;
+    if (digerBildirdi) {
+      updateData.onaylandi = true;
+      updateData.onay_tarihi = now;
+    }
+    await supabase.from("speaking_sessions").update(updateData).eq("id", session.id);
+    if (digerBildirdi) {
+      let newTema = speakingProgress.current_tema;
+      let newGorev = speakingProgress.current_gorev + 1;
+      if (newGorev > 3) { newTema += 1; newGorev = 1; }
+      await supabase.from("speaking_progress").update({
+        current_tema: newTema,
+        current_gorev: newGorev,
+        son_bildirim_tarihi: now.slice(0, 10),
+        gorev_tarihleri: [...(speakingProgress.gorev_tarihleri || []), now.slice(0, 10)],
+      }).eq("id", speakingProgress.id);
+    } else {
+      await supabase.from("speaking_progress").update({
+        son_bildirim_tarihi: now.slice(0, 10),
+      }).eq("id", speakingProgress.id);
+    }
+  } else {
+    await supabase.from("speaking_sessions").insert({
+      konusan_email: currentUser.username,
+      dinleyen_email: speakingProgress.partner_email || "",
+      level: "A1",
+      tema_no: speakingProgress.current_tema,
+      gorev_no: speakingProgress.current_gorev,
+      konusan_bildirdi: true,
+      konusan_bildirim_at: now,
+    });
+    await supabase.from("speaking_progress").update({
+      son_bildirim_tarihi: now.slice(0, 10),
+    }).eq("id", speakingProgress.id);
+  }
+
+  setSpeakingGorevBildiriliyor(false);
+  setSpeakingBildirimGonderildi(true);
+  setTimeout(() => setSpeakingBildirimGonderildi(false), 3000);
+}
   if (!currentUser) {
     return (
       <main className="min-h-screen bg-slate-950 p-6 text-white">
@@ -3751,157 +3836,600 @@ createPendingOrder({
 )}
 {activeDashboardTab === "speaking" && (
   <section className="mb-8">
-    <div className="rounded-[2rem] bg-gradient-to-br from-green-50 via-emerald-50 to-white p-6">
-      <p className="text-xs font-black uppercase tracking-widest text-emerald-700">Speaking Klübü</p>
-      <h2 className="mt-2 text-2xl font-black text-slate-900">Konuşma Partneri Bul</h2>
-      <p className="mt-2 text-sm text-slate-600">Eşleştiğin öğrenciyle Almanca konuşma pratiği yap. Dinleyici Türkçe söyler, konuşan Almancasını söyler.</p>
-
-      {/* Tab */}
-      <div className="mt-6 flex gap-3">
-        {([["talep", "Talep Oluştur"], ["eslesmeler", "Eşleşmelerim"]] as const).map(([key, label]) => (
-          <button key={key} onClick={() => setSpeakingTab(key)}
-            className={`rounded-full px-5 py-2 text-sm font-black transition ${speakingTab === key ? "bg-emerald-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
-            {label}
-          </button>
-        ))}
+    {/* A2 / B1 seviye kilidi */}
+    {selectedLevel !== "A1" ? (
+      <div className="rounded-[2rem] bg-gradient-to-br from-amber-50 to-orange-50 p-8 text-center shadow-sm border border-amber-200">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-4xl">🔒</div>
+        <h2 className="mt-5 text-2xl font-black text-slate-900">{selectedLevel} Konuşma Kulübü</h2>
+        <p className="mt-3 text-sm leading-7 text-slate-600 max-w-md mx-auto">
+          {selectedLevel} Konuşma Kulübü şu an sadece <strong>A1 öğrencilerine</strong> açıktır.
+          A2 ve B1 seviyeleri yakında eklenecektir.
+        </p>
+        <button
+          type="button"
+          onClick={() => setSelectedLevel("A1")}
+          className="mt-6 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white hover:bg-slate-800"
+        >
+          A1 Konuşma Kulübüne Geç
+        </button>
       </div>
+    ) : (
+      <div className="rounded-[2rem] bg-gradient-to-br from-emerald-50 via-teal-50 to-white">
 
-      {speakingTab === "talep" && (
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          {/* SOL: Form */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="font-black text-slate-900 mb-4">Bilgilerini Gir</h3>
+        {/* BAŞLIK */}
+        <div className="px-6 pt-6 pb-4">
+          <p className="text-xs font-black uppercase tracking-widest text-emerald-700">A1 Konuşma Kulübü</p>
+          <h2 className="mt-1 text-2xl font-black text-slate-900">Her Gün Konuş, Her Gün Geliş</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600 max-w-2xl">
+            Partner bulur, her gün arayıp kısa konuşma yaparsın. Dinleyici Türkçe söyler → Sen Almancasını söylersin.
+            Görev tamamlanınca <strong>ikisi de bildirim</strong> atar. Bildirimlere göre seviye açılır.
+          </p>
+        </div>
 
-            {/* Rol */}
-            <div className="mb-4">
-              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Rolün</p>
-              <div className="grid grid-cols-2 gap-3">
-                {([["konusan", "🎤 Konuşan", "Türkçe söyleneni Almancaya çevirirsin"], ["dinleyen", "👂 Dinleyici", "Türkçe söyler, not verirsin"]] as const).map(([rol, label, desc]) => (
-                  <button key={rol} onClick={() => setSpeakingRol(rol)}
-                    className={`rounded-2xl border p-4 text-left transition ${speakingRol === rol ? "border-emerald-400 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}>
-                    <div className="font-black text-slate-900 text-sm">{label}</div>
-                    <div className="text-xs text-slate-500 mt-1">{desc}</div>
-                  </button>
-                ))}
+        {/* NASIL ÇALIŞIR — kutu */}
+        <div className="mx-6 mb-4 rounded-2xl bg-white/80 border border-emerald-100 p-4 shadow-sm">
+          <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-3">Sistemin Mantığı</p>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 text-xs text-slate-700">
+            {[
+              ["🔓", "Ustalık Testi 3. temayı bitir", "Konuşma Kulübü Tema 1 açılır"],
+              ["📅", "Her gün ara, bildirim gönder", "2 gün boş kalırsan tema düşer"],
+              ["🔁", "Kümülatif tekrar sistemi", "Tema 2'de önceki temalar da sorulur"],
+              ["🤝", "Sabit partner", "Memnun olmazsan değiştirirsin"],
+            ].map(([icon, title, desc]) => (
+              <div key={title} className="rounded-xl bg-slate-50 p-3">
+                <div className="text-lg mb-1">{icon}</div>
+                <p className="font-black text-slate-800">{title}</p>
+                <p className="text-slate-500 mt-0.5">{desc}</p>
               </div>
-            </div>
-
-            {/* Tema */}
-            <div className="mb-4">
-              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Tema</p>
-              <select value={speakingTemaId} onChange={e => setSpeakingTemaId(Number(e.target.value))}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none">
-                {speakingPatterns.map(t => (
-                  <option key={t.temaId} value={t.temaId}>Tema {t.temaId} — {t.temaAd}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Cinsiyet tercihi */}
-            <div className="mb-4">
-              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Partner Tercihi</p>
-              <div className="grid grid-cols-3 gap-2">
-                {[["fark_etmez", "Fark Etmez"], ["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
-                  <button key={val} onClick={() => setSpeakingCinsiyet(val)}
-                    className={`rounded-2xl border py-3 text-sm font-black transition ${speakingCinsiyet === val ? "border-emerald-400 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-600"}`}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Müsait saat */}
-            <div className="mb-4">
-              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Müsait Olduğun Saat</p>
-              <input value={speakingMusait} onChange={e => setSpeakingMusait(e.target.value)}
-                placeholder="Örn: 20:00-22:00 arası"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
-            </div>
-
-            {/* Telefon */}
-            <div className="mb-6">
-              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">WhatsApp Numaranız</p>
-              <input value={speakingTelefon} onChange={e => setSpeakingTelefon(e.target.value)}
-                placeholder="905xxxxxxxxx"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
-              <p className="text-xs text-slate-400 mt-1">Sadece eşleştiğin kişiyle paylaşılır.</p>
-            </div>
-
-            <button
-              disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon}
-              onClick={async () => {
-                if (!currentUser || !speakingMusait || !speakingTelefon) return;
-                setSpeakingYukleniyor(true);
-                await supabase.from("speaking_requests").insert({
-                  user_email: currentUser.username,
-                  user_name: currentUser.name || currentUser.username,
-                  tema_id: speakingTemaId,
-                  rol: speakingRol,
-                  cinsiyet_tercihi: speakingCinsiyet,
-                  musait_saat: speakingMusait,
-                  telefon: speakingTelefon,
-                  durum: "bekliyor",
-                });
-                setSpeakingYukleniyor(false);
-                setSpeakingGonderildi(true);
-              }}
-              className="w-full rounded-2xl bg-emerald-600 px-4 py-4 text-sm font-black text-white shadow-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed">
-              {speakingYukleniyor ? "Gönderiliyor..." : "🎙️ Talep Oluştur"}
-            </button>
-
-            {speakingGonderildi && (
-              <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-sm font-bold text-emerald-700">
-                ✅ Talebiniz alındı! Uygun bir partner bulunduğunda size bildirim gönderilecek.
-              </div>
-            )}
-          </div>
-
-          {/* SAĞ: Konuşma kalıpları önizleme */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="font-black text-slate-900 mb-1">Tema {speakingTemaId} Konuşma Kalıpları</h3>
-            <p className="text-xs text-slate-500 mb-4">Dinleyici Türkçe söyler → Sen Almancasını söylersin</p>
-            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-              {speakingPatterns.find(t => t.temaId === speakingTemaId)?.cumleler.map((c, i) => (
-                <div key={i} className="rounded-2xl bg-slate-50 p-3">
-                  <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
-                  <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
-      )}
 
-      {speakingTab === "eslesmeler" && (
-        <div className="mt-6">
-          {speakingEslesmeler.length === 0 ? (
-            <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
-              <div className="text-4xl mb-4">🎙️</div>
-              <h3 className="font-black text-slate-900">Henüz eşleşmen yok</h3>
-              <p className="text-sm text-slate-500 mt-2">Talep oluşturduktan sonra eşleşmeler burada görünür.</p>
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              {speakingEslesmeler.map((eslesme, i) => (
-                <div key={i} className="rounded-2xl bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-black text-emerald-600 uppercase tracking-wider">Tema {eslesme.tema_id}</p>
-                      <p className="font-black text-slate-900 mt-1">
-                        {eslesme.konusan_email === currentUser?.username ? "Konuşan rolündesin" : "Dinleyici rolündesin"}
+        {/* TAB MENÜ */}
+        <div className="px-6 pb-4 flex flex-wrap gap-2">
+          {([
+            ["durum", "📊 Durumum"],
+            ["gorev", "🎯 Görev"],
+            ["partner", "🤝 Partner"],
+            ["talep", "📋 Eski Sistem"],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setSpeakingTab(key as any)}
+              className={`rounded-full px-4 py-2 text-sm font-black transition ${
+                (speakingTab as string) === key
+                  ? "bg-emerald-600 text-white shadow"
+                  : "bg-white text-slate-600 border border-slate-200 hover:border-emerald-300"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="px-6 pb-6">
+
+          {/* ── DURUM TABI ─────────────────────────────────────── */}
+          {(speakingTab as string) === "durum" && (
+            <div className="grid gap-4 lg:grid-cols-2">
+
+              {/* Sol: İlerleme durumu */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                {speakingProgressLoading ? (
+                  <p className="text-sm text-slate-500">Yükleniyor...</p>
+                ) : !speakingProgress ? (
+                  <div className="text-center py-4">
+                    <div className="text-4xl mb-3">🚀</div>
+                    <h3 className="font-black text-slate-900">Konuşma Kulübüne Başla</h3>
+                    <p className="text-sm text-slate-500 mt-2 leading-6">
+                      Ustalık Testi'nde <strong>3. temayı</strong> tamamladıktan sonra
+                      Konuşma Kulübü Tema 1 senin için açılır.
+                    </p>
+                    {/* Ustalık testi ilerleme göster */}
+                    <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-left">
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Ustalık Testi İlerlemen</p>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-2 rounded-full bg-slate-200">
+                          <div
+                            className="h-2 rounded-full bg-emerald-500 transition-all"
+                            style={{ width: `${Math.min(100, (completedMasteryThemes.length / 3) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-black text-slate-700">{completedMasteryThemes.length}/3</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-2">
+                        {completedMasteryThemes.length >= 3
+                          ? "✅ Konuşma Kulübü açılabilir! Partner talep et."
+                          : `${3 - completedMasteryThemes.length} tema daha tamamla`}
                       </p>
                     </div>
-                    <span className={`rounded-full px-3 py-1 text-xs font-black ${eslesme.durum === "tamamlandi" ? "bg-emerald-100 text-emerald-700" : "bg-yellow-100 text-yellow-700"}`}>
-                      {eslesme.durum === "tamamlandi" ? "Tamamlandı" : "Bekliyor"}
-                    </span>
+                    {completedMasteryThemes.length >= 3 && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!currentUser) return;
+                          const { data, error } = await supabase
+                            .from("speaking_progress")
+                            .insert({
+                              username: currentUser.username,
+                              level: "A1",
+                              current_tema: 1,
+                              current_gorev: 1,
+                            })
+                            .select()
+                            .single();
+                          if (data) setSpeakingProgress(data);
+                        }}
+                        className="mt-4 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700"
+                      >
+                        🎙️ Konuşma Kulübünü Başlat
+                      </button>
+                    )}
                   </div>
+                ) : (
+                  <div>
+                    <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-4">Mevcut Durumun</p>
+
+                    {/* Tema / Görev */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="rounded-2xl bg-emerald-50 p-4 text-center">
+                        <p className="text-3xl font-black text-emerald-700">{speakingProgress.current_tema}</p>
+                        <p className="text-xs font-bold text-slate-500 mt-1">Aktif Tema</p>
+                      </div>
+                      <div className="rounded-2xl bg-blue-50 p-4 text-center">
+                        <p className="text-3xl font-black text-blue-700">{speakingProgress.current_gorev}/3</p>
+                        <p className="text-xs font-bold text-slate-500 mt-1">Görev</p>
+                      </div>
+                    </div>
+
+                    {/* Bu görevdeki toplam soru sayısı */}
+                    <div className="rounded-2xl bg-slate-50 p-4 mb-4">
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Bu Görevde Sorulacak</p>
+                      <p className="text-2xl font-black text-slate-900">
+                        {speakingProgress.current_tema * 15} soru
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {speakingProgress.current_tema > 1 && (
+                          <span>
+                            {(speakingProgress.current_tema - 1) * 15} eski +{" "}
+                            15 yeni (Tema {speakingProgress.current_tema})
+                          </span>
+                        )}
+                        {speakingProgress.current_tema === 1 && "Tema 1 soruları"}
+                      </p>
+                    </div>
+
+                    {/* Küme düşme uyarısı */}
+                    {speakingProgress.son_bildirim_tarihi && (() => {
+                      const son = new Date(speakingProgress.son_bildirim_tarihi);
+                      const bugun = new Date();
+                      const fark = Math.floor((bugun.getTime() - son.getTime()) / (1000 * 60 * 60 * 24));
+                      return fark >= 1 ? (
+                        <div className={`rounded-2xl p-4 mb-4 border ${fark >= 2 ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+                          <p className={`text-sm font-black ${fark >= 2 ? "text-red-700" : "text-amber-700"}`}>
+                            {fark >= 2
+                              ? `⚠️ ${fark} gündür bildirim yok! Küme düşme riski!`
+                              : `⏰ ${fark} gün oldu. Bugün ara!`}
+                          </p>
+                          <p className="text-xs text-slate-600 mt-1">
+                            {fark >= 2
+                              ? "2 gün üst üste bildirim olmadığında bir tema geri düşersin."
+                              : "Her gün konuşman seviyeni korumanı sağlar."}
+                          </p>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* Tema ilerleme çubuğu */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
+                        <span>Tema {speakingProgress.current_tema} İlerlemesi</span>
+                        <span>{speakingProgress.current_gorev - 1}/3 görev</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-slate-200">
+                        <div
+                          className="h-2 rounded-full bg-emerald-500 transition-all"
+                          style={{ width: `${((speakingProgress.current_gorev - 1) / 3) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Partner */}
+                    <div className="rounded-2xl bg-slate-50 p-4">
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Partnerim</p>
+                      {speakingProgress.partner_email ? (
+                        <p className="text-sm font-bold text-slate-900">{speakingProgress.partner_email}</p>
+                      ) : (
+                        <p className="text-sm text-slate-500">Henüz eşleşme yok. Admin eşleştirecek.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Sağ: Tema haritası */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Tema Haritası</p>
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((temaNo) => {
+                    const speakingUnlocked = getSpeakingUnlockedThemeCount(completedMasteryThemes.length);
+                    const isStarterTheme = temaNo <= 6;
+                    const hasDevelopmentAccess =
+                      effectivePackageType === "practice" ||
+                      effectivePackageType === "master" ||
+                      hasAnyLiveCourseOrder;
+                    const hasPackageAccess = isStarterTheme || hasDevelopmentAccess;
+                    const isUnlocked = temaNo <= speakingUnlocked && hasPackageAccess;
+                    const isCurrent = speakingProgress?.current_tema === temaNo;
+                    const isCompleted = speakingProgress && speakingProgress.current_tema > temaNo;
+
+                    return (
+                      <div
+                        key={temaNo}
+                        className={`flex items-center justify-between rounded-2xl px-4 py-3 ${
+                          isCurrent
+                            ? "bg-emerald-100 border border-emerald-300"
+                            : isCompleted
+                            ? "bg-slate-50 border border-slate-200"
+                            : "bg-slate-50 border border-slate-100 opacity-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-black ${
+                            isCompleted ? "bg-emerald-500 text-white" :
+                            isCurrent ? "bg-emerald-200 text-emerald-800" :
+                            "bg-slate-200 text-slate-500"
+                          }`}>
+                            {isCompleted ? "✓" : temaNo}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-slate-900">
+                              {masteryThemes.find(t => t.id === temaNo)?.title || `Tema ${temaNo}`}
+                            </p>
+                            <p className="text-xs text-slate-500">{temaNo * 15} soru</p>
+                          </div>
+                        </div>
+                        <span className={`rounded-full px-2 py-1 text-xs font-black ${
+                          isCompleted ? "bg-emerald-100 text-emerald-700" :
+                          isCurrent ? "bg-blue-100 text-blue-700" :
+                          !hasPackageAccess ? "bg-amber-100 text-amber-700" :
+                          "bg-slate-200 text-slate-500"
+                        }`}>
+                          {isCompleted ? "Bitti" :
+                           isCurrent ? "Aktif" :
+                           !hasPackageAccess ? "Gelişim" :
+                           !isUnlocked ? "Kilitli" : "Açık"}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              </div>
             </div>
           )}
+
+          {/* ── GÖREV TABI ─────────────────────────────────────── */}
+          {(speakingTab as string) === "gorev" && (
+            <div className="grid gap-4 lg:grid-cols-2">
+
+              {/* Sol: Aktif görev */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                {!speakingProgress ? (
+                  <div className="text-center py-8">
+                    <p className="text-slate-500 text-sm">Önce Konuşma Kulübünü başlat.</p>
+                    <button type="button" onClick={() => setSpeakingTab("durum" as any)}
+                      className="mt-4 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">
+                      Duruma Git
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-start justify-between gap-3 mb-5">
+                      <div>
+                        <p className="text-xs font-black text-emerald-700 uppercase tracking-wider">Aktif Görev</p>
+                        <h3 className="mt-1 text-xl font-black text-slate-900">
+                          Tema {speakingProgress.current_tema} — Görev {speakingProgress.current_gorev}
+                        </h3>
+                        <p className="text-sm text-slate-500 mt-1">
+                          Toplam {speakingProgress.current_tema * 15} soru sorulacak
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-center">
+                        <p className="text-2xl font-black text-emerald-700">{speakingProgress.current_tema * 15}</p>
+                        <p className="text-xs font-bold text-slate-500">Soru</p>
+                      </div>
+                    </div>
+
+                    {/* Soru dağılımı */}
+                    <div className="rounded-2xl bg-slate-50 p-4 mb-5">
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Görev İçeriği</p>
+                      <div className="space-y-2">
+                        {Array.from({ length: speakingProgress.current_tema }, (_, i) => i + 1).map((t) => (
+                          <div key={t} className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-700">
+                              Tema {t} — {masteryThemes.find(m => m.id === t)?.title}
+                            </span>
+                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                              t < speakingProgress.current_tema
+                                ? "bg-slate-200 text-slate-600"
+                                : "bg-emerald-100 text-emerald-700"
+                            }`}>
+                              {t < speakingProgress.current_tema ? "15 hızlı" : "15 yeni"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Nasıl yapılır */}
+                    <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 mb-5">
+                      <p className="text-xs font-black text-blue-700 uppercase tracking-wider mb-2">Nasıl Yapılır?</p>
+                      <div className="space-y-2 text-sm text-slate-700">
+                        <p>1. Partnerini ara (WhatsApp/telefon)</p>
+                        <p>2. Dinleyici Türkçeyi söyler</p>
+                        <p>3. Konuşan Almancasını söyler</p>
+                        <p>4. Tamamlayınca <strong>ikisi de</strong> buradan bildirim gönderir</p>
+                      </div>
+                    </div>
+
+                    {/* Bildirim butonu */}
+                    {speakingProgress.partner_email ? (
+                      <div>
+                        <button
+                          type="button"
+                          disabled={speakingGorevBildiriliyor}
+                          onClick={handleSpeakingBildirim}
+                          className="w-full rounded-2xl bg-emerald-600 px-4 py-4 text-sm font-black text-white shadow-lg hover:bg-emerald-700 disabled:opacity-50"
+                        >
+                          {speakingGorevBildiriliyor ? "Kaydediliyor..." : "✅ Görevi Tamamladım — Bildirim Gönder"}
+                        </button>
+                        {speakingBildirimGonderildi && (
+                          <div className="mt-3 rounded-2xl bg-emerald-50 border border-emerald-200 p-3 text-sm font-bold text-emerald-700 text-center">
+                            ✅ Bildirimin alındı! Partner de gönderince görev onaylanır.
+                          </div>
+                        )}
+                        <p className="text-xs text-slate-500 mt-2 text-center">
+                          İkisi de bildirim atınca görev otomatik onaylanır.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 text-center">
+                        <p className="font-black">Partner bekleniyor</p>
+                        <p className="mt-1 text-xs">Admin seni eşleştirince bildirim gönderebilirsin.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Sağ: Konuşma kalıpları */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <h3 className="font-black text-slate-900 mb-1">
+                  Tema {speakingProgress?.current_tema || 1} Konuşma Kalıpları
+                </h3>
+                <p className="text-xs text-slate-500 mb-4">
+                  Dinleyici Türkçe söyler → Sen Almancasını söylersin
+                </p>
+                <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                  {speakingPatterns
+                    .find(t => t.temaId === (speakingProgress?.current_tema || 1))
+                    ?.cumleler.map((c, i) => (
+                    <div key={i} className="rounded-2xl bg-slate-50 p-3">
+                      <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
+                      <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
+                    </div>
+                  ))}
+                </div>
+                {speakingProgress?.current_tema > 1 && (
+                  <div className="mt-4 rounded-2xl bg-slate-100 p-3">
+                    <p className="text-xs font-black text-slate-600">
+                      📌 Önceki temalardaki sorular da hızlıca sorulacak.
+                      Tema {speakingProgress.current_tema - 1} ve öncesini de gözden geçir.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── PARTNER TABI ────────────────────────────────────── */}
+          {(speakingTab as string) === "partner" && (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-4">Partnerim</p>
+                {speakingProgress?.partner_email ? (
+                  <div>
+                    <div className="flex items-center gap-4 mb-5">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-black text-emerald-700">
+                        {speakingProgress.partner_email[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-black text-slate-900">{speakingProgress.partner_email}</p>
+                        <p className="text-xs text-slate-500 mt-1">Sabit partnerim</p>
+                      </div>
+                    </div>
+                    <div className="rounded-2xl bg-slate-50 p-4 mb-4 text-sm text-slate-700 space-y-2">
+                      <p>✅ Partnerinle her gün arayıp görevi tamamla</p>
+                      <p>✅ Görev sonrası ikisi de buradan bildirim gönder</p>
+                      <p>✅ Bildirimler eşleşince seviye ilerler</p>
+                    </div>
+                    <div className="rounded-2xl bg-amber-50 border border-amber-100 p-4">
+                      <p className="text-xs font-black text-amber-700 mb-2">Partner Değişikliği</p>
+                      <p className="text-sm text-slate-600 mb-3">
+                        Partnerinden memnun değilsen yeni partner talebinde bulunabilirsin.
+                        Admin onayıyla değiştirilebilir.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!currentUser) return;
+                          await supabase.from("speaking_partner_requests").insert({
+                            username: currentUser.username,
+                            level: "A1",
+                            mevcut_partner: speakingProgress.partner_email,
+                            sebep: "diger",
+                            durum: "bekliyor",
+                          });
+                          alert("Yeni partner talebiniz alındı. Admin en kısa sürede değerlendirecek.");
+                        }}
+                        className="w-full rounded-2xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
+                      >
+                        🔄 Yeni Partner Talep Et
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="text-4xl mb-3">🤝</div>
+                    <h3 className="font-black text-slate-900">Henüz eşleşme yok</h3>
+                    <p className="text-sm text-slate-500 mt-2 leading-6 max-w-xs mx-auto">
+                      Admin uygun bir partnerle seni eşleştirecek.
+                      Eşleşme sonrası burada görünecek.
+                    </p>
+                    {!speakingProgress && (
+                      <p className="text-xs text-slate-400 mt-3">
+                        Önce Konuşma Kulübünü başlatman gerekiyor.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Puanlama</p>
+                <p className="text-sm text-slate-600 leading-6 mb-4">
+                  Her görev sonrası partnerine 1-5 yıldız verebilirsin.
+                  Bu puan sistemin kalitesini artırır.
+                </p>
+                <div className="space-y-3">
+                  {speakingEslesmeler.slice(0, 3).map((eslesme, i) => (
+                    <div key={i} className="rounded-2xl bg-slate-50 p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-black text-slate-900">Tema {eslesme.tema_id}</p>
+                        <span className={`rounded-full px-3 py-1 text-xs font-black ${
+                          eslesme.durum === "tamamlandi"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}>
+                          {eslesme.durum === "tamamlandi" ? "Tamamlandı" : "Devam ediyor"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {speakingEslesmeler.length === 0 && (
+                    <p className="text-sm text-slate-400 text-center py-4">
+                      Henüz tamamlanmış görev yok.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── TALEP TABI (eski sistem — korunuyor) ────────────── */}
+          {(speakingTab as string) === "talep" && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <h3 className="font-black text-slate-900 mb-4">Partner Talep Formu</h3>
+
+                <div className="mb-4">
+                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Rolün</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {([["konusan", "🎤 Konuşan", "Almancasını söylersin"], ["dinleyen", "👂 Dinleyici", "Türkçe söyler, not verirsin"]] as const).map(([rol, label, desc]) => (
+                      <button key={rol} onClick={() => setSpeakingRol(rol)}
+                        className={`rounded-2xl border p-4 text-left transition ${speakingRol === rol ? "border-emerald-400 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}>
+                        <div className="font-black text-slate-900 text-sm">{label}</div>
+                        <div className="text-xs text-slate-500 mt-1">{desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Tema</p>
+                  <select value={speakingTemaId} onChange={e => setSpeakingTemaId(Number(e.target.value))}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none">
+                    {speakingPatterns.map(t => (
+                      <option key={t.temaId} value={t.temaId}>Tema {t.temaId} — {t.temaAd}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Partner Tercihi</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[["fark_etmez", "Fark Etmez"], ["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
+                      <button key={val} onClick={() => setSpeakingCinsiyet(val)}
+                        className={`rounded-2xl border py-3 text-sm font-black transition ${speakingCinsiyet === val ? "border-emerald-400 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-600"}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Müsait Saat</p>
+                  <input value={speakingMusait} onChange={e => setSpeakingMusait(e.target.value)}
+                    placeholder="Örn: 20:00-22:00 arası"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
+                </div>
+
+                <div className="mb-6">
+                  <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">WhatsApp Numaranız</p>
+                  <input value={speakingTelefon} onChange={e => setSpeakingTelefon(e.target.value)}
+                    placeholder="905xxxxxxxxx"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none" />
+                  <p className="text-xs text-slate-400 mt-1">Sadece eşleştiğin kişiyle paylaşılır.</p>
+                </div>
+
+                <button
+                  disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon}
+                  onClick={async () => {
+                    if (!currentUser || !speakingMusait || !speakingTelefon) return;
+                    setSpeakingYukleniyor(true);
+                    await supabase.from("speaking_requests").insert({
+                      user_email: currentUser.username,
+                      user_name: currentUser.name || currentUser.username,
+                      tema_id: speakingTemaId,
+                      rol: speakingRol,
+                      cinsiyet_tercihi: speakingCinsiyet,
+                      musait_saat: speakingMusait,
+                      telefon: speakingTelefon,
+                      durum: "bekliyor",
+                    });
+                    setSpeakingYukleniyor(false);
+                    setSpeakingGonderildi(true);
+                  }}
+                  className="w-full rounded-2xl bg-emerald-600 px-4 py-4 text-sm font-black text-white shadow-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {speakingYukleniyor ? "Gönderiliyor..." : "🎙️ Talep Oluştur"}
+                </button>
+
+                {speakingGonderildi && (
+                  <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-sm font-bold text-emerald-700">
+                    ✅ Talebiniz alındı!
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <h3 className="font-black text-slate-900 mb-1">Tema {speakingTemaId} Konuşma Kalıpları</h3>
+                <p className="text-xs text-slate-500 mb-4">Dinleyici Türkçe söyler → Sen Almancasını söylersin</p>
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                  {speakingPatterns.find(t => t.temaId === speakingTemaId)?.cumleler.map((c, i) => (
+                    <div key={i} className="rounded-2xl bg-slate-50 p-3">
+                      <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
+                      <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
-      )}
-    </div>
+      </div>
+    )}
   </section>
 )}
 {activeDashboardTab === "community" && (
