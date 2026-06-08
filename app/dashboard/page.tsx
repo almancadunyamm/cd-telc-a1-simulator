@@ -1870,8 +1870,171 @@ useEffect(() => {
       .eq("username", currentUser!.username)
       .eq("level", "A1")
       .maybeSingle();
-    setSpeakingProgress(data || null);
-    setSpeakingProgressLoading(false);
+
+    if (data) {
+      const bugun = new Date();
+      const bugunStr = bugun.toISOString().slice(0, 10);
+
+      // --- ASKIYA ALMA KONTROLÜ ---
+      const askiAktif = data.aski_bitis_tarihi && new Date(data.aski_bitis_tarihi) > bugun;
+
+      // --- KÜME DÜŞME OTOMASYONU ---
+      if (!askiAktif && data.son_bildirim_tarihi) {
+        const sonBildirim = new Date(data.son_bildirim_tarihi);
+        const farkGun = Math.floor((bugun.getTime() - sonBildirim.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (farkGun >= 2 && data.current_tema > 1) {
+          const yeniTema = data.current_tema - 1;
+          await supabase.from("speaking_progress").update({
+            current_tema: yeniTema,
+            current_gorev: 1,
+            sinav_bekleniyor: false,
+          }).eq("id", data.id);
+
+          await supabase.from("speaking_penalties").insert({
+            username: currentUser!.username,
+            level: "A1",
+            ceza_tipi: "kume_dusu",
+            eski_tema: data.current_tema,
+            yeni_tema: yeniTema,
+            aciklama: farkGun + " gün bildirim gelmedi",
+          });
+
+          data.current_tema = yeniTema;
+          data.current_gorev = 1;
+          data.sinav_bekleniyor = false;
+        }
+      }
+
+      // --- RANDEVUYA UYMAMA TESPİTİ ---
+      if (!askiAktif && data.son_bildirim_tarihi && data.partner_email) {
+        const sonBildirim = new Date(data.son_bildirim_tarihi);
+        const farkSaat = (bugun.getTime() - sonBildirim.getTime()) / (1000 * 60 * 60);
+
+        if (farkSaat >= 24) {
+          // Bugün için zaten ihlal kaydı var mı?
+          const { data: mevcutIhlal } = await supabase
+            .from("speaking_randevu_ihlal")
+            .select("id")
+            .eq("username", data.partner_email)
+            .eq("partner_email", currentUser!.username)
+            .gte("created_at", bugunStr + "T00:00:00")
+            .maybeSingle();
+
+          if (!mevcutIhlal) {
+            const yeniIhlaıSayisi = (data.randevuya_uymama_sayisi || 0) + 1;
+
+            await supabase.from("speaking_randevu_ihlal").insert({
+              username: data.partner_email,
+              partner_email: currentUser!.username,
+              level: "A1",
+              ihlal_tipi: "randevuya_uymama",
+              tema_no: data.current_tema,
+              gorev_no: data.current_gorev,
+            });
+
+            // Partner'in ihlal sayısını güncelle
+            const { data: partnerProg } = await supabase
+              .from("speaking_progress")
+              .select("*")
+              .eq("username", data.partner_email)
+              .eq("level", "A1")
+              .maybeSingle();
+
+            if (partnerProg) {
+              const partnerIhlaıSayisi = (partnerProg.randevuya_uymama_sayisi || 0) + 1;
+              const updateData: any = {
+                randevuya_uymama_sayisi: partnerIhlaıSayisi,
+              };
+
+              // 3 ihlal = 1 hafta askı + partner değişiklik hakkı
+              if (partnerIhlaıSayisi >= 3) {
+                const askiBitis = new Date();
+                askiBitis.setDate(askiBitis.getDate() + 7);
+                updateData.aski_bitis_tarihi = askiBitis.toISOString().slice(0, 10);
+                updateData.randevuya_uymama_sayisi = 0;
+
+                // Partner değişiklik hakkı ver
+                await supabase.from("speaking_progress").update({
+                  partner_degisiklik_hakki: true,
+                }).eq("id", data.id);
+
+                // Otomatik partner değişiklik talebi oluştur
+                await supabase.from("speaking_partner_requests").insert({
+                  username: currentUser!.username,
+                  level: "A1",
+                  mevcut_partner: data.partner_email,
+                  sebep: "randevuya_uymama",
+                  randevuya_uymama_sayisi: 3,
+                  durum: "bekliyor",
+                });
+              }
+
+              await supabase.from("speaking_progress")
+                .update(updateData)
+                .eq("id", partnerProg.id);
+            }
+          }
+        }
+      }
+
+      // --- İLETİŞİMSİZLİK TESPİTİ (3 gün) ---
+      if (!askiAktif && data.esleme_tarihi && data.partner_email && !data.son_bildirim_tarihi) {
+        const eslemeTarihi = new Date(data.esleme_tarihi);
+        const farkGun = Math.floor((bugun.getTime() - eslemeTarihi.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (farkGun >= 3) {
+          const { data: mevcutIhlal } = await supabase
+            .from("speaking_randevu_ihlal")
+            .select("id")
+            .eq("username", data.partner_email)
+            .eq("ihlal_tipi", "iletisim_yok")
+            .maybeSingle();
+
+          if (!mevcutIhlal) {
+            await supabase.from("speaking_randevu_ihlal").insert({
+              username: data.partner_email,
+              partner_email: currentUser!.username,
+              level: "A1",
+              ihlal_tipi: "iletisim_yok",
+            });
+
+            const { data: partnerProg } = await supabase
+              .from("speaking_progress")
+              .select("*")
+              .eq("username", data.partner_email)
+              .eq("level", "A1")
+              .maybeSingle();
+
+            if (partnerProg) {
+              const askiBitis = new Date();
+              askiBitis.setDate(askiBitis.getDate() + 7);
+              await supabase.from("speaking_progress").update({
+                aski_bitis_tarihi: askiBitis.toISOString().slice(0, 10),
+              }).eq("id", partnerProg.id);
+            }
+
+            // Mağdura partner değişiklik hakkı ver
+            await supabase.from("speaking_progress").update({
+              partner_degisiklik_hakki: true,
+            }).eq("id", data.id);
+
+            await supabase.from("speaking_partner_requests").insert({
+              username: currentUser!.username,
+              level: "A1",
+              mevcut_partner: data.partner_email,
+              sebep: "iletisim_yok",
+              iletisim_yok: true,
+              durum: "bekliyor",
+            });
+          }
+        }
+      }
+
+      setSpeakingProgress(data);
+    } else {
+      setSpeakingProgress(null);
+    }
 
     // Partner telefon numarasını çek
     if (data?.partner_email) {
@@ -1884,7 +2047,10 @@ useEffect(() => {
         .maybeSingle();
       setPartnerTelefon(partnerReq?.telefon || "");
     }
+
+    setSpeakingProgressLoading(false);
   }
+
   loadSpeakingProgress();
   const interval = setInterval(loadSpeakingProgress, 10000);
   return () => clearInterval(interval);
@@ -3931,6 +4097,94 @@ createPendingOrder({
 )}
   </section>
 )}
+{/* Speaking uyarı banner */}
+{speakingProgress && (() => {
+  const bugun = new Date();
+  const askiAktif = speakingProgress.aski_bitis_tarihi &&
+    new Date(speakingProgress.aski_bitis_tarihi) > bugun;
+  const sonBildirim = speakingProgress.son_bildirim_tarihi
+    ? new Date(speakingProgress.son_bildirim_tarihi)
+    : null;
+  const farkGun = sonBildirim
+    ? Math.floor((bugun.getTime() - sonBildirim.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  if (askiAktif) {
+    return (
+      <div className="mx-4 mb-4 rounded-2xl bg-red-50 border border-red-200 p-4">
+        <p className="text-sm font-black text-red-700">
+          {"🚫 Konuşma Kulübü Askıya Alındı"}
+        </p>
+        <p className="text-xs text-red-600 mt-1">
+          {"Askı bitiş tarihi: " + speakingProgress.aski_bitis_tarihi + ". Bu sürede görev ve bildirim gönderemezsin."}
+        </p>
+      </div>
+    );
+  }
+
+  if (farkGun !== null && farkGun >= 2) {
+    return (
+      <div className="mx-4 mb-4 rounded-2xl bg-red-50 border border-red-200 p-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-black text-red-700">
+            {"⚠️ " + farkGun + " gündür bildirim yok — Küme düşme riski!"}
+          </p>
+          <p className="text-xs text-red-600 mt-1">
+            Hemen partnerin ara, görevi tamamla ve bildirim gönder.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setActiveDashboardTab("speaking")}
+          className="shrink-0 rounded-xl bg-red-600 px-3 py-2 text-xs font-black text-white hover:bg-red-700"
+        >
+          Git
+        </button>
+      </div>
+    );
+  }
+
+  if (farkGun !== null && farkGun === 1) {
+    return (
+      <div className="mx-4 mb-4 rounded-2xl bg-amber-50 border border-amber-200 p-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-black text-amber-700">
+            {"⏰ Partnerinle bugün görüşmeyi unutma!"}
+          </p>
+          <p className="text-xs text-amber-600 mt-1">
+            Dün bildirim göndermedin. Bugün mutlaka ara.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setActiveDashboardTab("speaking")}
+          className="shrink-0 rounded-xl bg-amber-500 px-3 py-2 text-xs font-black text-white hover:bg-amber-600"
+        >
+          Git
+        </button>
+      </div>
+    );
+  }
+
+  if (!farkGun && speakingProgress.partner_email) {
+    return (
+      <div className="mx-4 mb-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-center justify-between gap-3">
+        <p className="text-sm font-black text-emerald-700">
+          {"🎙️ Partnerinle bugün görüştin mi? Her gün konuş, seviyeni koru!"}
+        </p>
+        <button
+          type="button"
+          onClick={() => setActiveDashboardTab("speaking")}
+          className="shrink-0 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"
+        >
+          Git
+        </button>
+      </div>
+    );
+  }
+
+  return null;
+})()}
 {activeDashboardTab === "speaking" && (
   <section className="mb-8">
     {/* A2 / B1 seviye kilidi */}
