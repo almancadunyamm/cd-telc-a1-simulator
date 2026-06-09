@@ -6058,90 +6058,69 @@ if (!isPreviousThemeCompleted) {
 
     <div className="mt-6 grid gap-4 md:grid-cols-3">
       {[
-        {
-          title: "Başlangıç Denemeleri",
-          count: "2 deneme hakkı",
-          packageType: "starter" as PackageType,
-          desc: "Temel TELC formatını tanıman için ilk denemeler.",
-        },
-        {
-          title: "Gelişim Denemeleri",
-          count: "5 deneme hakkı",
-          packageType: "practice" as PackageType,
-          desc: "Sınav pratiğini artıran ek deneme setleri.",
-        },
-        {
-          title: "Zirve Denemeleri",
-          count: "10 deneme hakkı",
-          packageType: "master" as PackageType,
-          desc: "Sınav öncesi tam hazırlık ve ileri seviye simülasyonlar.",
-        },
-      ].map((examGroup) => {
-        const isOpen =
-          selectedLevelHasAccess &&
-          canAccessLessonPackage(effectivePackageType, examGroup.packageType) &&
-          !accessExpired;
+  {
+    title: "Başlangıç Denemeleri",
+    count: "2 deneme",
+    tier: "starter" as PackageType,
+    desc: "Goethe ve TELC formatında örnek A1 sınavları.",
+    href: `/exams/${selectedLevel.toLowerCase()}/list?tier=starter`,
+  },
+  {
+    title: "Premium Denemeleri",
+    count: "7 deneme",
+    tier: "master" as PackageType,
+    desc: "Gerçek sınav formatıyla birebir aynı ileri seviye denemeler.",
+    href: `/exams/${selectedLevel.toLowerCase()}/list?tier=premium`,
+  },
+].map((examGroup) => {
+  const isOpen =
+    selectedLevelHasAccess &&
+    canAccessLessonPackage(effectivePackageType, examGroup.tier) &&
+    !accessExpired;
 
-        return (
-          <div
-            key={examGroup.title}
-            className={`rounded-3xl border p-5 shadow-sm ${
-              isOpen
-                ? "border-emerald-200 bg-emerald-50"
-                : "border-slate-200 bg-slate-50"
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-slate-500">
-                  {selectedLevel} TELC
-                </p>
-
-                <h3 className="mt-2 text-xl font-black text-slate-900">
-                  {examGroup.title}
-                </h3>
-              </div>
-
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-black ${
-                  isOpen
-                    ? "bg-emerald-600 text-white"
-                    : "bg-slate-900 text-white"
-                }`}
-              >
-                {isOpen ? "Açık" : "🔒 Kilitli"}
-              </span>
-            </div>
-
-            <p className="mt-3 text-sm font-bold text-slate-700">
-              {examGroup.count}
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              {examGroup.desc}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => {
-  if (isOpen) {
-    router.push(`/exams/${selectedLevel.toLowerCase()}`);
-  } else {
-    setShowExamNotice(true);
-  }
-}}
-              className={`mt-5 w-full rounded-2xl px-4 py-3 text-sm font-black ${
-                isOpen
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-950 hover:from-yellow-300 hover:to-orange-300"
-              }`}
-            >
-              {isOpen ? "Denemeleri Gör" : "Paketi İncele"}
-            </button>
-          </div>
-        );
-      })}
+  return (
+    <div
+      key={examGroup.title}
+      className={`rounded-3xl border p-5 shadow-sm ${
+        isOpen ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-widest text-slate-500">
+            {selectedLevel} TELC
+          </p>
+          <h3 className="mt-2 text-xl font-black text-slate-900">{examGroup.title}</h3>
+        </div>
+        <span className={`rounded-full px-3 py-1 text-xs font-black ${
+          isOpen ? "bg-emerald-600 text-white" : "bg-slate-900 text-white"
+        }`}>
+          {isOpen ? "Açık" : "🔒 Kilitli"}
+        </span>
+      </div>
+      <p className="mt-3 text-sm font-bold text-slate-700">{examGroup.count}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-500">{examGroup.desc}</p>
+      <button
+        type="button"
+        onClick={() => {
+          if (isOpen) {
+            router.push(examGroup.href);
+          } else {
+            setShowExamNotice(true);
+          }
+        }}
+        className={`mt-5 w-full rounded-2xl px-4 py-3 text-sm font-black ${
+          isOpen
+            ? "bg-blue-600 text-white hover:bg-blue-700"
+            : "bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-950"
+        }`}
+      >
+        {isOpen ? "Denemeleri Gör" : "Paketi İncele"}
+      </button>
     </div>
+  );
+})}
+  </div>
 
     <div className="mt-6 rounded-3xl border border-blue-100 bg-blue-50 p-5">
       <h3 className="text-lg font-black text-slate-900">
