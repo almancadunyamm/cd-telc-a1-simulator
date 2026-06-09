@@ -6123,7 +6123,13 @@ if (!isPreviousThemeCompleted) {
 
             <button
               type="button"
-              onClick={() => setShowExamNotice(true)}
+              onClick={() => {
+  if (isOpen) {
+    router.push(`/exams/${selectedLevel.toLowerCase()}`);
+  } else {
+    setShowExamNotice(true);
+  }
+}}
               className={`mt-5 w-full rounded-2xl px-4 py-3 text-sm font-black ${
                 isOpen
                   ? "bg-blue-600 text-white hover:bg-blue-700"
