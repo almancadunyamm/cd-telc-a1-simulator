@@ -587,10 +587,8 @@ export default function TelcA1Simulator() {
   }, []);
 
   const playAudio = () => { audioRef.current?.play(); };
-  const pauseAudio = () => { audioRef.current?.pause(); };
-  const seekTo = (t: number) => {
-    if (audioRef.current) { audioRef.current.currentTime = t; audioRef.current.play(); }
-  };
+const pauseAudio = () => {};
+const seekTo = (t: number) => {};
   const formatAudioTime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
@@ -799,7 +797,7 @@ export default function TelcA1Simulator() {
             ) : (
               <div className="bg-orange-50 border border-orange-100 rounded-xl px-4 py-2.5 flex items-center gap-3">
                 <button
-                  onClick={isPlaying ? pauseAudio : playAudio}
+                  onClick={!isPlaying && !hoerenFinished ? playAudio : undefined}
                   disabled={!audioReady}
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all shrink-0 ${
                     audioReady
@@ -812,12 +810,7 @@ export default function TelcA1Simulator() {
                 <div className="flex-1">
                   <div
                     className="w-full h-2 bg-orange-100 rounded-full cursor-pointer relative"
-                    onClick={(e) => {
-                      if (!audioRef.current || !audioDuration) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const pct = (e.clientX - rect.left) / rect.width;
-                      seekTo(pct * audioDuration);
-                    }}
+                    onClick={undefined}
                   >
                     <div
                       className="h-2 bg-orange-500 rounded-full transition-all"
@@ -829,11 +822,7 @@ export default function TelcA1Simulator() {
                   {formatAudioTime(audioTime)} / {formatAudioTime(audioDuration)}
                 </div>
                 {/* Teil atlama butonları */}
-                <div className="flex gap-1 shrink-0">
-                  <button onClick={() => seekTo(HOEREN_TIMESTAMPS.t1_q1)} className="text-xs bg-white border border-orange-200 text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-50 transition-all">T1</button>
-                  <button onClick={() => seekTo(HOEREN_TIMESTAMPS.t2_q7)} className="text-xs bg-white border border-orange-200 text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-50 transition-all">T2</button>
-                  <button onClick={() => seekTo(HOEREN_TIMESTAMPS.t3_q11)} className="text-xs bg-white border border-orange-200 text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-50 transition-all">T3</button>
-                </div>
+                
               </div>
             )}
           </div>
@@ -890,17 +879,6 @@ export default function TelcA1Simulator() {
 
                   {/* Ses & Transcript butonları */}
                   <div className="flex gap-2 items-center">
-                    {!q.isBeispiel && (
-                      <button
-                        onClick={() => {
-                          const key = `t1_q${q.id}`;
-                          if (HOEREN_TIMESTAMPS[key] !== undefined) seekTo(HOEREN_TIMESTAMPS[key]);
-                        }}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"
-                      >
-                        ▶ Dinle
-                      </button>
-                    )}
                     <button
                       onClick={() =>
                         setShowTranscript((prev) => ({ ...prev, [q.id]: !prev[q.id] }))
@@ -975,17 +953,7 @@ export default function TelcA1Simulator() {
                   </div>
 
                   <div className="flex gap-2 items-center">
-                    {!q.isBeispiel && (
-                      <button
-                        onClick={() => {
-                          const key = `t2_q${q.id}`;
-                          if (HOEREN_TIMESTAMPS[key] !== undefined) seekTo(HOEREN_TIMESTAMPS[key]);
-                        }}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"
-                      >
-                        ▶ Dinle
-                      </button>
-                    )}
+        
                     <button
                       onClick={() =>
                         setShowTranscript((prev) => ({ ...prev, [q.id]: !prev[q.id] }))
@@ -1050,15 +1018,7 @@ export default function TelcA1Simulator() {
                   </div>
 
                   <div className="flex gap-2 items-center">
-                    <button
-                      onClick={() => {
-                        const key = `t3_q${q.id}`;
-                        if (HOEREN_TIMESTAMPS[key] !== undefined) seekTo(HOEREN_TIMESTAMPS[key]);
-                      }}
-                      className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"
-                    >
-                      ▶ Dinle
-                    </button>
+            
                     <button
                       onClick={() =>
                         setShowTranscript((prev) => ({ ...prev, [q.id]: !prev[q.id] }))
