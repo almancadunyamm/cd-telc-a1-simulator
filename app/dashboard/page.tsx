@@ -6068,7 +6068,7 @@ if (!isPreviousThemeCompleted) {
   },
   {
     title: "Premium Denemeleri",
-    count: "7 deneme",
+    count: "10 deneme",
     tier: "master" as PackageType,
     desc: "Gerçek sınav formatıyla birebir aynı ileri seviye denemeler.",
     href: `/exams/${selectedLevel.toLowerCase()}/list?tier=premium`,
