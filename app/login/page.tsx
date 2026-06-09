@@ -130,6 +130,7 @@ if (foundStudent.role === "teacher") {
   return;
 }
 
+document.cookie = `mock_logged_user_email=${encodeURIComponent(foundStudent.email || normalizedEmail)}; path=/; max-age=86400`;
 router.push("/dashboard");
   }
 return (

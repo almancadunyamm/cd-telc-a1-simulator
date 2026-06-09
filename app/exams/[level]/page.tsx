@@ -40,9 +40,10 @@ export default async function LevelExamPage({ params }: PageProps) {
   }
 
   const cookieStore = await cookies();
-  const userId =
-    cookieStore.get(getMockUserStorageKey())?.value ??
-    getDefaultMockUserId();
+const userId =
+  cookieStore.get("mock_logged_user_email")?.value ??
+  cookieStore.get(getMockUserStorageKey())?.value ??
+  getDefaultMockUserId();
 
   await requireAccessOrRedirect({
     userId,
