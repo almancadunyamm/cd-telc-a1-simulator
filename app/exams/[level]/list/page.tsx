@@ -33,7 +33,7 @@ function ExamListContent() {
       parts: ["Hören · 20 soru", "Lesen · 20 soru", "Schreiben · 2 Teil"],
       desc: "TELC'in resmi örnek sınavı. Sınav öncesi kendinizi test edin.",
       href: `/exams/${level.toLowerCase()}/telc-set-1`,
-      available: false,
+      available: true,
     },
   ];
 
