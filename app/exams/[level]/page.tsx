@@ -128,16 +128,53 @@ export default function LevelExamPage() {
     return null;
   }
 
+  const topBar = (
+    <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-white border-b border-slate-200 px-4 py-2 shadow-sm">
+      <button
+        onClick={() => router.push(`/exams/${normalizedLevel!.toLowerCase()}/list?tier=starter`)}
+        className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition"
+      >
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Deneme Listesi
+      </button>
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-black uppercase tracking-widest text-blue-600">{normalizedLevel} · Dijital Simülatör</span>
+      </div>
+      <button
+        onClick={() => router.push("/dashboard")}
+        className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-800 transition"
+      >
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points="9 22 9 12 15 12 15 22" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Panel
+      </button>
+    </div>
+  );
+
   if (normalizedLevel === "A1") {
-    return <GoetheA1Simulator />;
+    return (
+      <>
+        {topBar}
+        <div className="pt-12">
+          <GoetheA1Simulator />
+        </div>
+      </>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-slate-200 p-6">
-      <div className="mx-auto max-w-3xl rounded-2xl bg-white p-8 shadow-xl">
-        <h1 className="text-3xl font-bold text-slate-900">{normalizedLevel} sınav alanı yakında</h1>
-        <p className="mt-4 text-slate-600">Bu seviye için sınav içeriği hazırlanıyor.</p>
-      </div>
-    </main>
+    <>
+      {topBar}
+      <main className="min-h-screen bg-slate-200 p-6 pt-16">
+        <div className="mx-auto max-w-3xl rounded-2xl bg-white p-8 shadow-xl">
+          <h1 className="text-3xl font-bold text-slate-900">{normalizedLevel} sınav alanı yakında</h1>
+          <p className="mt-4 text-slate-600">Bu seviye için sınav içeriği hazırlanıyor.</p>
+        </div>
+      </main>
+    </>
   );
 }
