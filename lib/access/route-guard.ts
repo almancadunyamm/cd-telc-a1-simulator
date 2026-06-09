@@ -50,8 +50,7 @@ export async function requireAccessOrRedirect(params: {
       .from("orders")
       .select("product_slug, status, is_activated")
       .eq("username", username.toLowerCase())
-      .eq("status", "completed")
-      .eq("is_activated", true);
+      .eq("status", "completed");
 
     if (error) {
       console.error("Route guard Supabase error:", error);
