@@ -20,10 +20,7 @@ const TIMESTAMPS = {
 type Phase =
   | "intro"
   | "hoeren-intro"
-  | "hoeren-teil1"
-  | "hoeren-teil2"
-  | "hoeren-teil3"
-  | "hoeren-end"
+  | "hoeren"
   | "lesen-intro"
   | "lesen-teil1"
   | "lesen-teil2"
@@ -205,9 +202,7 @@ function ABCButton({ label, id, selected, onClick }: { label: string; id: string
 
 function TimerBar({ phase, timerRunning }: { phase: Phase; timerRunning: boolean }) {
   const durations: Partial<Record<Phase, number>> = {
-    "hoeren-teil1": 1200,
-    "hoeren-teil2": 1200,
-    "hoeren-teil3": 1200,
+    "hoeren": 1011,
     "lesen-teil1": 500,
     "lesen-teil2": 500,
     "lesen-teil3": 500,
@@ -239,16 +234,14 @@ function TimerBar({ phase, timerRunning }: { phase: Phase; timerRunning: boolean
 // ─── Progress Steps ───────────────────────────────────────────────────────────
 
 const PHASES_ORDER: Phase[] = [
-  "hoeren-teil1", "hoeren-teil2", "hoeren-teil3",
+  "hoeren",
   "lesen-teil1", "lesen-teil2", "lesen-teil3",
   "schreiben-teil1", "schreiben-teil2",
 ];
 
 function ProgressBar({ current }: { current: Phase }) {
   const steps = [
-    { label: "Hören T1", phase: "hoeren-teil1" as Phase },
-    { label: "Hören T2", phase: "hoeren-teil2" as Phase },
-    { label: "Hören T3", phase: "hoeren-teil3" as Phase },
+    { label: "Hören", phase: "hoeren" as Phase },
     { label: "Lesen T1", phase: "lesen-teil1" as Phase },
     { label: "Lesen T2", phase: "lesen-teil2" as Phase },
     { label: "Lesen T3", phase: "lesen-teil3" as Phase },
@@ -286,28 +279,20 @@ export default function GoetheA1Simulator() {
   const [reviewMode, setReviewMode] = useState(false);
   const timerRunning = PHASES_ORDER.includes(phase) && !reviewMode;
 
-  // Ses timeupdate: otomatik Teil geçişi
+  // Ses timeupdate: Hören bitince otomatik Lesen'e geç
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    // Lesen/Schreiben'e geçince ses dursun
-    if (!phase.startsWith("hoeren")) {
+    if (phase !== "hoeren") {
       audio.pause();
       return;
     }
 
     const handleTimeUpdate = () => {
-      const t = audio.currentTime;
-      if (phase === "hoeren-teil1" && t >= TIMESTAMPS.teil2) {
+      if (audio.currentTime >= TIMESTAMPS.end) {
         audio.pause();
-        setPhase("hoeren-teil2");
-      } else if (phase === "hoeren-teil2" && t >= TIMESTAMPS.teil3) {
-        audio.pause();
-        setPhase("hoeren-teil3");
-      } else if (phase === "hoeren-teil3" && t >= TIMESTAMPS.end) {
-        audio.pause();
-        setPhase("hoeren-end");
+        setPhase("lesen-intro");
       }
     };
 
@@ -344,8 +329,7 @@ export default function GoetheA1Simulator() {
   const goNext = () => {
     const map: Partial<Record<Phase, Phase>> = {
       intro: "hoeren-intro",
-      "hoeren-intro": "hoeren-teil1",
-      "hoeren-end": "lesen-intro",
+      "hoeren-intro": "hoeren",
       "lesen-intro": "lesen-teil1",
       "lesen-teil1": "lesen-teil2",
       "lesen-teil2": "lesen-teil3",
@@ -422,11 +406,15 @@ export default function GoetheA1Simulator() {
         </div>
         <button
           onClick={() => {
-            if (audioRef.current && !reviewMode) {
-              audioRef.current.currentTime = TIMESTAMPS.teil1;
-              audioRef.current.play().catch(() => {});
-            }
             goNext();
+            if (audioRef.current && !reviewMode) {
+              setTimeout(() => {
+                if (audioRef.current) {
+                  audioRef.current.currentTime = TIMESTAMPS.teil1;
+                  audioRef.current.play().catch(() => {});
+                }
+              }, 50);
+            }
           }}
           className="mt-6 w-full rounded-xl bg-blue-600 py-4 text-lg font-black text-white hover:bg-blue-700 transition-colors"
         >
@@ -445,7 +433,12 @@ export default function GoetheA1Simulator() {
   };
 
   const jumpToQuestion = (questionId: string) => {
-    const ts = QUESTION_TIMESTAMPS[questionId];
+    const extra: Record<string, number> = {
+      "beispiel-t1": TIMESTAMPS.teil1,
+      "beispiel-t2": TIMESTAMPS.teil2,
+      "beispiel-t3": TIMESTAMPS.teil3,
+    };
+    const ts = QUESTION_TIMESTAMPS[questionId] ?? extra[questionId];
     if (ts !== undefined && audioRef.current) {
       audioRef.current.currentTime = ts;
       audioRef.current.play().catch(() => {});
@@ -664,15 +657,195 @@ export default function GoetheA1Simulator() {
     </div>
   );
 
-  const renderHoerenEnd = () => (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-6">
-      <div className="w-full max-w-lg text-center">
-        <div className="mb-4 text-5xl">✅</div>
-        <h2 className="mb-2 text-2xl font-black text-slate-900">Ende des Tests Hören.</h2>
-        <p className="mb-8 text-slate-600">Schreiben Sie jetzt Ihre Lösungen 1 bis 15 auf den Antwortbogen.</p>
-        <button onClick={goNext} className="w-full rounded-xl bg-blue-600 py-4 text-lg font-black text-white hover:bg-blue-700 transition-colors">
-          Weiter → Lesen
-        </button>
+  const renderHoeren = () => (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+      <div className="mx-auto max-w-3xl">
+        <ProgressBar current={phase} />
+        <TimerBar phase={phase} timerRunning={timerRunning} />
+
+        {reviewMode && (
+          <div className="mb-4 rounded-xl bg-amber-50 border border-amber-300 px-4 py-2 text-sm font-bold text-amber-700">
+            📚 İnceleme Modu — Cevaplarınız kaydedilmeyecek
+          </div>
+        )}
+
+        {!reviewMode && (
+          <div className="mb-4 rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-600 font-semibold">
+            🎧 Ses çalıyor — Hören bölümü bitince Lesen otomatik başlar.
+          </div>
+        )}
+
+        <SectionHeader section="Hören" duration="circa 20 Minuten" />
+
+        {/* ── Teil 1 ── */}
+        <div className="mb-10">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="rounded-lg bg-slate-900 px-3 py-1 text-sm font-black text-white">Teil 1</span>
+            <span className="text-sm text-slate-500">Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.</span>
+          </div>
+          {/* Beispiel */}
+          <div className="mb-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded bg-amber-400 px-2 py-0.5 text-xs font-black text-white">BEISPIEL</span>
+              <span className="font-bold text-slate-900">{BEISPIEL_TEIL1.question}</span>
+            </div>
+            {reviewMode && (
+              <div className="mb-2 flex items-center gap-2">
+                <button onClick={() => jumpToQuestion("beispiel-t1")} className="flex items-center gap-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white hover:bg-emerald-700">▶ Sesi Oynat</button>
+                <details className="flex-1"><summary className="cursor-pointer text-xs font-bold text-slate-400">📄 Metni Gör</summary><p className="mt-1 text-xs italic text-slate-600">{BEISPIEL_TEIL1.audioTranscript}</p></details>
+              </div>
+            )}
+            <div className="space-y-2">
+              {BEISPIEL_TEIL1.options.map((opt) => (
+                <div key={opt.id} className={`flex items-center gap-3 rounded-lg border-2 p-3 text-sm ${opt.id === BEISPIEL_TEIL1.correct ? "border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold" : "border-slate-200 bg-white text-slate-700"}`}>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-300 text-xs font-bold">{opt.id}</span>
+                  {opt.label}
+                  {opt.id === BEISPIEL_TEIL1.correct && <span className="ml-auto text-emerald-600 font-black">✓</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Sorular */}
+          <div className="space-y-4">
+            {HOEREN_TEIL1_QUESTIONS.map((item) => {
+              const userAnswer = answers[item.id];
+              const isCorrect = reviewMode && userAnswer === item.options.find(o => o.id === "c")?.id; // placeholder
+              return (
+                <div key={item.id} className={`rounded-xl border-2 bg-white p-5 ${reviewMode && userAnswer ? "border-slate-300" : "border-slate-200"}`}>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-black text-white">{item.number}</span>
+                    <span className="font-bold text-slate-900">{item.question}</span>
+                  </div>
+                  {reviewMode && (
+                    <div className="mb-3 flex items-center gap-2">
+                      <button onClick={() => jumpToQuestion(item.id)} className="flex items-center gap-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white hover:bg-emerald-700">▶ Sesi Oynat</button>
+                      <details className="flex-1"><summary className="cursor-pointer text-xs font-bold text-slate-400">📄 Metni Gör</summary><p className="mt-1 text-xs italic text-slate-600">{item.audioTranscript}</p></details>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {item.options.map((opt) => (
+                      <ABCButton key={opt.id} id={opt.id} label={opt.label} selected={userAnswer === opt.id} onClick={() => !reviewMode && setAnswer(item.id, opt.id)} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Teil 2 ── */}
+        <div className="mb-10">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="rounded-lg bg-slate-900 px-3 py-1 text-sm font-black text-white">Teil 2</span>
+            <span className="text-sm text-slate-500">Kreuzen Sie an: Richtig oder Falsch. Sie hören jeden Text einmal.</span>
+          </div>
+          {/* Beispiel */}
+          <div className="mb-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded bg-amber-400 px-2 py-0.5 text-xs font-black text-white">BEISPIEL</span>
+              <span className="font-bold text-slate-900">{BEISPIEL_TEIL2.statement}</span>
+            </div>
+            {reviewMode && (
+              <div className="mb-2 flex items-center gap-2">
+                <button onClick={() => { if (audioRef.current) { audioRef.current.currentTime = TIMESTAMPS.teil2; audioRef.current.play().catch(() => {}); }}} className="flex items-center gap-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white hover:bg-emerald-700">▶ Sesi Oynat</button>
+                <details className="flex-1"><summary className="cursor-pointer text-xs font-bold text-slate-400">📄 Metni Gör</summary><p className="mt-1 text-xs italic text-slate-600">{BEISPIEL_TEIL2.audioTranscript}</p></details>
+              </div>
+            )}
+            <div className="flex gap-2 mt-2">
+              {(["richtig", "falsch"] as const).map((v) => (
+                <div key={v} className={`rounded border-2 px-4 py-2 text-sm font-bold ${v === BEISPIEL_TEIL2.correct ? "border-emerald-400 bg-emerald-100 text-emerald-800" : "border-slate-200 bg-white text-slate-500"}`}>
+                  {v === "richtig" ? "Richtig" : "Falsch"} {v === BEISPIEL_TEIL2.correct ? "✓" : ""}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-4">
+            {HOEREN_TEIL2_QUESTIONS.map((item) => {
+              const userAnswer = answers[item.id];
+              return (
+                <div key={item.id} className="rounded-xl border-2 border-slate-200 bg-white p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-black text-white">{item.number}</span>
+                    <span className="font-bold text-slate-900">{item.statement}</span>
+                  </div>
+                  {reviewMode && (
+                    <div className="mb-3 flex items-center gap-2">
+                      <button onClick={() => jumpToQuestion(item.id)} className="flex items-center gap-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white hover:bg-emerald-700">▶ Sesi Oynat</button>
+                      <details className="flex-1"><summary className="cursor-pointer text-xs font-bold text-slate-400">📄 Metni Gör</summary><p className="mt-1 text-xs italic text-slate-600">{item.audioTranscript}</p></details>
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    {(["richtig", "falsch"] as const).map((v) => (
+                      <RFButton key={v} value={v} selected={userAnswer === v} onClick={() => !reviewMode && setAnswer(item.id, v)} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Teil 3 ── */}
+        <div className="mb-6">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="rounded-lg bg-slate-900 px-3 py-1 text-sm font-black text-white">Teil 3</span>
+            <span className="text-sm text-slate-500">Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.</span>
+          </div>
+          {/* Beispiel */}
+          <div className="mb-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded bg-amber-400 px-2 py-0.5 text-xs font-black text-white">BEISPIEL</span>
+              <span className="font-bold text-slate-900">{BEISPIEL_TEIL3.question}</span>
+            </div>
+            {reviewMode && (
+              <div className="mb-2 flex items-center gap-2">
+                <button onClick={() => { if (audioRef.current) { audioRef.current.currentTime = TIMESTAMPS.teil3; audioRef.current.play().catch(() => {}); }}} className="flex items-center gap-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white hover:bg-emerald-700">▶ Sesi Oynat</button>
+                <details className="flex-1"><summary className="cursor-pointer text-xs font-bold text-slate-400">📄 Metni Gör</summary><p className="mt-1 text-xs italic text-slate-600">{BEISPIEL_TEIL3.audioTranscript}</p></details>
+              </div>
+            )}
+            <div className="space-y-2">
+              {BEISPIEL_TEIL3.options.map((opt) => (
+                <div key={opt.id} className={`flex items-center gap-3 rounded-lg border-2 p-3 text-sm ${opt.id === BEISPIEL_TEIL3.correct ? "border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold" : "border-slate-200 bg-white text-slate-700"}`}>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-300 text-xs font-bold">{opt.id}</span>
+                  {opt.label}
+                  {opt.id === BEISPIEL_TEIL3.correct && <span className="ml-auto text-emerald-600 font-black">✓</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-4">
+            {HOEREN_TEIL3_QUESTIONS.map((item) => {
+              const userAnswer = answers[item.id];
+              return (
+                <div key={item.id} className="rounded-xl border-2 border-slate-200 bg-white p-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-black text-white">{item.number}</span>
+                    <span className="font-bold text-slate-900">{item.question}</span>
+                  </div>
+                  {reviewMode && (
+                    <div className="mb-3 flex items-center gap-2">
+                      <button onClick={() => jumpToQuestion(item.id)} className="flex items-center gap-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white hover:bg-emerald-700">▶ Sesi Oynat</button>
+                      <details className="flex-1"><summary className="cursor-pointer text-xs font-bold text-slate-400">📄 Metni Gör</summary><p className="mt-1 text-xs italic text-slate-600">{item.audioTranscript}</p></details>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {item.options.map((opt) => (
+                      <ABCButton key={opt.id} id={opt.id} label={opt.label} selected={userAnswer === opt.id} onClick={() => !reviewMode && setAnswer(item.id, opt.id)} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {reviewMode && (
+          <div className="mt-6 flex justify-end">
+            <button onClick={() => setPhase("result")} className="rounded-xl bg-slate-600 px-8 py-3 font-black text-white hover:bg-slate-700 transition-colors">
+              ← Sonuca Dön
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1101,7 +1274,7 @@ export default function GoetheA1Simulator() {
               Neu beginnen
             </button>
             <button
-              onClick={() => { setReviewMode(true); setPhase("hoeren-teil1"); }}
+              onClick={() => { setReviewMode(true); setPhase("hoeren"); }}
               className="flex-1 rounded-xl bg-emerald-600 py-3 font-bold text-white hover:bg-emerald-700 transition-colors"
             >
               🎧 Hören İncele
@@ -1152,10 +1325,7 @@ export default function GoetheA1Simulator() {
         switch (phase) {
           case "intro": return renderIntro();
           case "hoeren-intro": return renderHoerenIntro();
-          case "hoeren-teil1": return renderHoerenTeil("Teil 1", 1, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL1_QUESTIONS, "abc", BEISPIEL_TEIL1);
-          case "hoeren-teil2": return renderHoerenTeil("Teil 2", 2, "Kreuzen Sie an: Richtig oder Falsch. Sie hören jeden Text einmal.", HOEREN_TEIL2_QUESTIONS, "rf", BEISPIEL_TEIL2);
-          case "hoeren-teil3": return renderHoerenTeil("Teil 3", 3, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL3_QUESTIONS, "abc", BEISPIEL_TEIL3);
-          case "hoeren-end": return renderHoerenEnd();
+          case "hoeren": return renderHoeren();
           case "lesen-intro": return renderLesenIntro();
           case "lesen-teil1": return renderLesenTeil1();
           case "lesen-teil2": return renderLesenTeil2();
