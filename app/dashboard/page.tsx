@@ -6045,7 +6045,7 @@ if (!isPreviousThemeCompleted) {
 {activeDashboardTab === "exams" && (
   <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
     <p className="text-sm font-black uppercase tracking-widest text-blue-600">
-      TELC Deneme Merkezi
+      Goethe ve TELC Deneme Merkezi
     </p>
 
     <h2 className="mt-2 text-3xl font-black text-slate-900">
@@ -6053,7 +6053,7 @@ if (!isPreviousThemeCompleted) {
     </h2>
 
     <p className="mt-3 text-sm leading-6 text-slate-600">
-      TELC denemeleri kurs sürecinde uygun aşamalarda burada açılacaktır.
+      Gerçek dijital sınavla uyumlu Goethe ve TELC denemeleri ile pratik yap.
     </p>
 
     <div className="mt-6 grid gap-4 md:grid-cols-3">
