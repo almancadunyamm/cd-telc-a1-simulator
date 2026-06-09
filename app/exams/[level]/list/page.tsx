@@ -64,7 +64,7 @@ function ExamListContent() {
       <div className="bg-white border-b border-slate-200 px-4 py-6">
         <div className="mx-auto max-w-3xl">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push("/dashboard")}
             className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-800"
           >
             ← Geri
