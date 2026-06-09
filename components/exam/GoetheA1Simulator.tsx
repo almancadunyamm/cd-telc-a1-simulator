@@ -126,7 +126,7 @@ const LESEN_TEIL3_ITEMS = [
 const SCHREIBEN_TEIL1_FIELDS = [
   { id: "s1-1", number: 1, label: "Anzahl der Personen", correct: "4", type: "text" as const },
   { id: "s1-2", number: 2, label: "Davon Kinder", correct: "2", type: "text" as const },
-  { id: "s1-3", number: 3, label: "PLZ, Urlaubsort", correct: "Seeheim", type: "text" as const },
+  { id: "s1-3", number: 3, label: "Urlaubsort", correct: "Seeheim", type: "text" as const },
   { id: "s1-4", number: 4, label: "Zahlungsweise", correct: "Bar", type: "checkbox" as const, options: ["Bar", "Kreditkarte"] },
   { id: "s1-5", number: 5, label: "Reisetermin", correct: "Sonntag", type: "text" as const },
 ];
@@ -286,20 +286,33 @@ export default function GoetheA1Simulator() {
   const [reviewMode, setReviewMode] = useState(false);
   const timerRunning = PHASES_ORDER.includes(phase) && !reviewMode;
 
+  // Ses timeupdate: otomatik Teil geçişi
   useEffect(() => {
-    if (!audioRef.current) return;
     const audio = audioRef.current;
-    const tsMap: Partial<Record<Phase, number>> = {
-      "hoeren-teil1": TIMESTAMPS.teil1,
-      "hoeren-teil2": TIMESTAMPS.teil2,
-      "hoeren-teil3": TIMESTAMPS.teil3,
-    };
-    if (tsMap[phase] !== undefined) {
-      audio.currentTime = tsMap[phase]!;
-      audio.play().catch(() => {});
-    } else if (!phase.startsWith("hoeren")) {
+    if (!audio) return;
+
+    // Lesen/Schreiben'e geçince ses dursun
+    if (!phase.startsWith("hoeren")) {
       audio.pause();
+      return;
     }
+
+    const handleTimeUpdate = () => {
+      const t = audio.currentTime;
+      if (phase === "hoeren-teil1" && t >= TIMESTAMPS.teil2) {
+        audio.pause();
+        setPhase("hoeren-teil2");
+      } else if (phase === "hoeren-teil2" && t >= TIMESTAMPS.teil3) {
+        audio.pause();
+        setPhase("hoeren-teil3");
+      } else if (phase === "hoeren-teil3" && t >= TIMESTAMPS.end) {
+        audio.pause();
+        setPhase("hoeren-end");
+      }
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    return () => audio.removeEventListener("timeupdate", handleTimeUpdate);
   }, [phase]);
 
   const setAnswer = useCallback((id: string, val: string) => {
@@ -332,9 +345,6 @@ export default function GoetheA1Simulator() {
     const map: Partial<Record<Phase, Phase>> = {
       intro: "hoeren-intro",
       "hoeren-intro": "hoeren-teil1",
-      "hoeren-teil1": "hoeren-teil2",
-      "hoeren-teil2": "hoeren-teil3",
-      "hoeren-teil3": "hoeren-end",
       "hoeren-end": "lesen-intro",
       "lesen-intro": "lesen-teil1",
       "lesen-teil1": "lesen-teil2",
@@ -412,7 +422,7 @@ export default function GoetheA1Simulator() {
         </div>
         <button
           onClick={() => {
-            if (audioRef.current) {
+            if (audioRef.current && !reviewMode) {
               audioRef.current.currentTime = TIMESTAMPS.teil1;
               audioRef.current.play().catch(() => {});
             }
@@ -517,14 +527,14 @@ export default function GoetheA1Simulator() {
                   <div
                     key={opt.id}
                     className={`flex items-center gap-3 rounded-lg border-2 p-3 text-sm ${
-                      reviewMode && opt.id === beispiel.correct
+                      opt.id === beispiel.correct
                         ? "border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold"
                         : "border-slate-200 bg-white text-slate-700"
                     }`}
                   >
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-300 text-xs font-bold">{opt.id}</span>
                     {opt.label}
-                    {reviewMode && opt.id === beispiel.correct && <span className="ml-auto text-emerald-600">✓</span>}
+                    {opt.id === beispiel.correct && <span className="ml-auto text-emerald-600 font-black">✓</span>}
                   </div>
                 ))}
               </div>
@@ -532,8 +542,8 @@ export default function GoetheA1Simulator() {
             {!beispiel.options && (
               <div className="flex gap-2 mt-2">
                 {["richtig", "falsch"].map((v) => (
-                  <div key={v} className={`rounded border-2 px-4 py-2 text-sm font-bold ${reviewMode && v === beispiel.correct ? "border-emerald-400 bg-emerald-100 text-emerald-800" : "border-slate-200 bg-white text-slate-500"}`}>
-                    {v === "richtig" ? "Richtig" : "Falsch"} {reviewMode && v === beispiel.correct ? "✓" : ""}
+                  <div key={v} className={`rounded border-2 px-4 py-2 text-sm font-bold ${v === beispiel.correct ? "border-emerald-400 bg-emerald-100 text-emerald-800" : "border-slate-200 bg-white text-slate-500"}`}>
+                    {v === "richtig" ? "Richtig" : "Falsch"} {v === beispiel.correct ? "✓" : ""}
                   </div>
                 ))}
               </div>
@@ -622,7 +632,7 @@ export default function GoetheA1Simulator() {
                           className={`min-w-[88px] rounded border-2 px-4 py-2 text-sm font-bold transition-all ${
                             isRight ? "border-emerald-500 bg-emerald-100 text-emerald-800" :
                             isWrongSel ? "border-rose-400 bg-rose-100 text-rose-700" :
-                            isSelected ? (v === "richtig" ? "border-emerald-500 bg-emerald-500 text-white" : "border-rose-500 bg-rose-500 text-white") :
+                            isSelected ? "border-blue-600 bg-blue-600 text-white" :
                             "border-slate-300 bg-white text-slate-700 hover:border-slate-500"
                           }`}
                         >
@@ -638,17 +648,18 @@ export default function GoetheA1Simulator() {
           })}
         </div>
 
-        <div className="mt-8 flex justify-end">
-          {reviewMode ? (
+        {reviewMode && (
+          <div className="mt-8 flex justify-end">
             <button onClick={() => setPhase("result")} className="rounded-xl bg-slate-600 px-8 py-3 font-black text-white hover:bg-slate-700 transition-colors">
               ← Sonuca Dön
             </button>
-          ) : (
-            <button onClick={goNext} className="rounded-xl bg-blue-600 px-8 py-3 font-black text-white hover:bg-blue-700 transition-colors">
-              Weiter →
-            </button>
-          )}
-        </div>
+          </div>
+        )}
+        {!reviewMode && (
+          <div className="mt-8 rounded-xl bg-blue-50 border border-blue-200 p-4 text-center text-sm text-blue-600 font-semibold">
+            🎧 Ses tamamlandığında bir sonraki bölüm otomatik başlar.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -871,6 +882,7 @@ export default function GoetheA1Simulator() {
               { label: "Familienname, Vorname", value: "Kadavy, Eva", tag: "(0)" },
               { label: "Urlaubsadresse", value: "Hotel Schönblick", tag: "" },
               { label: "Straße, Hausnummer", value: "Burgstraße 34", tag: "" },
+              { label: "PLZ", value: "78014", tag: "" },
             ].map((f) => (
               <div key={f.label} className="flex items-center gap-3 py-3">
                 <span className="w-48 shrink-0 text-sm text-slate-500">{f.label}:</span>
@@ -979,6 +991,8 @@ export default function GoetheA1Simulator() {
             style={{
               backgroundImage: "repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px)",
               backgroundAttachment: "local",
+              lineHeight: "32px",
+              paddingTop: "8px",
             }}
           />
         </div>
