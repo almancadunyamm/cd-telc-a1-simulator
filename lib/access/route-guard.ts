@@ -1,48 +1,33 @@
 import { redirect } from "next/navigation";
-import { canAccessFeature } from "./access-control";
+import { createClient } from "@supabase/supabase-js";
 import type { LevelCode, FeatureKey } from "../../types/product";
 
-function getUnlockedLevelsFromCookie(rawCookie: string | undefined): string[] {
-  if (!rawCookie) {
-    return [];
-  }
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  try {
-    const decoded = decodeURIComponent(rawCookie);
-    const parsed = JSON.parse(decoded) as Record<string, boolean>;
-
-    const unlockedLevels = new Set<string>();
-
-    for (const [slug, isPurchased] of Object.entries(parsed)) {
-      if (!isPurchased) continue;
-
-      const normalized = slug.toLowerCase();
-
-      if (normalized.startsWith("a1-")) unlockedLevels.add("A1");
-      if (normalized.startsWith("a2-")) unlockedLevels.add("A2");
-      if (normalized.startsWith("b1-")) unlockedLevels.add("B1");
-    }
-
-    return Array.from(unlockedLevels);
-  } catch {
-    return [];
-  }
+function getExamCountForSlug(productSlug: string): number {
+  const slug = productSlug.toLowerCase();
+  // Zirve / master → 10 deneme
+  if (slug.includes("zirve") || slug.includes("master")) return 10;
+  // Gelişim / practice → 5 deneme
+  if (slug.includes("gelisim") || slug.includes("practice")) return 5;
+  // Başlangıç / starter / live → 2 deneme
+  if (slug.includes("starter") || slug.includes("live") || slug.includes("baslangic")) return 2;
+  return 0;
 }
 
-function getMockPurchasesFromDocumentCookie(): string | undefined {
-  if (typeof document === "undefined") {
-    return undefined;
-  }
-
-  const cookies = document.cookie.split("; ");
-
-  for (const cookie of cookies) {
-    if (cookie.startsWith("mock_purchases=")) {
-      return cookie.split("=")[1];
-    }
-  }
-
-  return undefined;
+function levelMatchesSlug(level: LevelCode, productSlug: string): boolean {
+  const slug = productSlug.toLowerCase();
+  // Tüm seviyeleri kapsayan paketler
+  if (slug.includes("a1-a2-b1") || slug.includes("full") || slug.includes("live-full")) return true;
+  // A1+A2 paketleri
+  if ((slug.includes("a1-a2") || slug.includes("a1a2")) && (level === "A1" || level === "A2")) return true;
+  // Seviyeye özel
+  if (slug.startsWith(level.toLowerCase() + "-")) return true;
+  if (slug.includes("-" + level.toLowerCase() + "-")) return true;
+  if (slug.endsWith("-" + level.toLowerCase())) return true;
+  if (slug.includes(level.toLowerCase())) return true;
+  return false;
 }
 
 export async function requireAccessOrRedirect(params: {
@@ -50,21 +35,49 @@ export async function requireAccessOrRedirect(params: {
   level: LevelCode;
   feature: FeatureKey;
 }) {
-  const result = canAccessFeature({
-    userId: params.userId,
-    level: params.level,
-    feature: params.feature,
-  });
+  // userId aslında email (username) olarak kullanılıyor
+  const username = params.userId;
 
-  // 🔥 MOCK PURCHASE KONTROLÜ
-  const rawCookie = getMockPurchasesFromDocumentCookie();
-  const unlockedLevels = getUnlockedLevelsFromCookie(rawCookie);
-
-  const hasPurchaseAccess = unlockedLevels.includes(params.level);
-
-  const hasAccess = result.allowed || hasPurchaseAccess;
-
-  if (!hasAccess) {
+  if (!username || username === "default-mock-user") {
     redirect("/dashboard");
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Kullanıcının aktif completed orderlarını çek
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("product_slug, status, is_activated")
+      .eq("username", username.toLowerCase())
+      .eq("status", "completed")
+      .eq("is_activated", true);
+
+    if (error) {
+      console.error("Route guard Supabase error:", error);
+      redirect("/dashboard");
+    }
+
+    if (!orders || orders.length === 0) {
+      redirect("/dashboard");
+    }
+
+    // Bu seviye için geçerli bir order var mı?
+    const hasAccess = orders.some((order: any) => {
+      const slug = String(order.product_slug || "");
+      if (!levelMatchesSlug(params.level, slug)) return false;
+      
+      if (params.feature === "exam_access") {
+        return getExamCountForSlug(slug) > 0;
+      }
+      return true;
+    });
+
+    if (!hasAccess) {
+      redirect("/dashboard");
+    }
+  } catch (err) {
+    // redirect() bir exception fırlatır, onu yeniden throw et
+    throw err;
   }
 }
