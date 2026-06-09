@@ -1250,6 +1250,7 @@ const currentB1Task =
   const [showUpsell, setShowUpsell] = useState(false);
   const [upsellPackage, setUpsellPackage] = useState<PackageType>("practice");
   const [showExamNotice, setShowExamNotice] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [profileName, setProfileName] = useState("");
 const [profileEmail, setProfileEmail] = useState("");
 const [profilePassword, setProfilePassword] = useState("");
@@ -6103,12 +6104,14 @@ if (!isPreviousThemeCompleted) {
       <button
         type="button"
         onClick={() => {
-          if (isOpen) {
-            router.push(examGroup.href);
-          } else {
-            setShowExamNotice(true);
-          }
-        }}
+  if (isOpen) {
+    router.push(examGroup.href);
+  } else if (examGroup.tier === "master") {
+    setShowUpgradeModal(true);
+  } else {
+    setShowExamNotice(true);
+  }
+}}
         className={`mt-5 w-full rounded-2xl px-4 py-3 text-sm font-black ${
           isOpen
             ? "bg-blue-600 text-white hover:bg-blue-700"
@@ -6159,6 +6162,44 @@ if (!isPreviousThemeCompleted) {
         </div>
       </div>
     )}
+    {showUpgradeModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-xl rounded-[32px] bg-white p-8 shadow-2xl">
+      <div className="inline-flex rounded-full bg-purple-100 px-4 py-2 text-sm font-bold text-purple-700">
+        A1 Zirve Paketi
+      </div>
+      <h3 className="mt-5 text-3xl font-black text-slate-900">
+        Gerçek sınav deneyimi için hazır mısın?
+      </h3>
+      <p className="mt-4 text-base leading-7 text-slate-600">
+        10 adet tam sınav denemesi, gerçek sınav formatıyla birebir aynı sorular ve detaylı performans analizi seni bekliyor.
+      </p>
+      <ul className="mt-4 space-y-2 text-sm text-slate-700">
+        <li>✓ 10 TELC dijital deneme sınavı</li>
+        <li>✓ Tüm video ders arşivi</li>
+        <li>✓ Zirve materyal sistemi</li>
+        <li>✓ 12 ay erişim</li>
+      </ul>
+      <div className="mt-8 flex gap-3">
+        <button
+          type="button"
+          onClick={() => setShowUpgradeModal(false)}
+          className="flex-1 rounded-2xl border-2 border-slate-200 py-4 text-sm font-black text-slate-600 hover:bg-slate-50"
+        >
+          Vazgeç
+        </button>
+        <a
+          href={`https://www.shopier.com/almanca_okulum/46635118`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 rounded-2xl bg-purple-600 py-4 text-center text-sm font-black text-white hover:bg-purple-700"
+        >
+          Zirve'ye Geç →
+        </a>
+      </div>
+    </div>
+  </div>
+)}
   </section>
 )}
 {activeDashboardTab === "progress" && (
