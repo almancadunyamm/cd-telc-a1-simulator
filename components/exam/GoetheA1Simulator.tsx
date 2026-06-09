@@ -283,7 +283,8 @@ export default function GoetheA1Simulator() {
   const [schreibenText, setSchreibenText] = useState("");
   const [wordCount, setWordCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timerRunning = PHASES_ORDER.includes(phase);
+  const [reviewMode, setReviewMode] = useState(false);
+  const timerRunning = PHASES_ORDER.includes(phase) && !reviewMode;
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -441,79 +442,212 @@ export default function GoetheA1Simulator() {
     }
   };
 
+  // Beispiel soruları
+  const BEISPIEL_TEIL1 = {
+    id: "beispiel-1",
+    number: 0,
+    question: "Welche Zimmernummer hat Herr Schneider?",
+    options: [{ id: "a", label: "Zimmer 2." }, { id: "b", label: "Zimmer 245." }, { id: "c", label: "Zimmer 254." }],
+    correct: "c",
+    audioTranscript: "Frau: Wo finde ich Herrn Schneider? Mann: Zimmer 254. Das ist im zweiten Stock.",
+  };
+  const BEISPIEL_TEIL2 = {
+    id: "beispiel-2",
+    number: 0,
+    statement: "Die Reisende soll zur Information in Halle C kommen.",
+    correct: "richtig",
+    audioTranscript: "Frau Katrin Gundlach wird zum Informationsschalter in der Ankunftshalle C gebeten.",
+  };
+  const BEISPIEL_TEIL3 = {
+    id: "beispiel-3",
+    number: 0,
+    question: "Beispiel: Nummer ist 11833?",
+    options: [{ id: "a", label: "Richtig." }, { id: "b", label: "Falsch." }],
+    correct: "a",
+    audioTranscript: "Telefonansagedienst: Bitte rufen Sie die Auskunft an unter 11 8 33.",
+  };
+
   const renderHoerenTeil = (
     tName: string,
     tNum: number,
     instructions: string,
-    items: { id: string; number: number; question?: string; statement?: string; options?: { id: string; label: string }[]; audioTranscript: string }[],
-    type: "abc" | "rf"
+    items: { id: string; number: number; question?: string; statement?: string; options?: { id: string; label: string }[]; audioTranscript: string; correct?: string }[],
+    type: "abc" | "rf",
+    beispiel?: { id: string; number: number; question?: string; statement?: string; options?: { id: string; label: string }[]; correct: string; audioTranscript: string }
   ) => (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="mx-auto max-w-3xl">
         <ProgressBar current={phase} />
         <TimerBar phase={phase} timerRunning={timerRunning} />
+
+        {reviewMode && (
+          <div className="mb-4 rounded-xl bg-amber-50 border border-amber-300 px-4 py-2 text-sm font-bold text-amber-700">
+            📚 İnceleme Modu — Cevaplarınız kaydedilmeyecek
+          </div>
+        )}
+
         <SectionHeader section="Hören" teil={tName} />
 
         <div className="mb-6 rounded-xl bg-slate-100 p-4 text-sm text-slate-600">
           {instructions}
         </div>
 
+        {/* Beispiel */}
+        {beispiel && (
+          <div className="mb-6 rounded-xl border-2 border-amber-200 bg-amber-50 p-5">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded bg-amber-400 px-2 py-0.5 text-xs font-black text-white">BEISPIEL</span>
+              <span className="font-bold text-slate-900">{beispiel.question || beispiel.statement}</span>
+            </div>
+            {reviewMode && (
+              <div className="mb-3 flex items-center gap-2">
+                <button
+                  onClick={() => { if (audioRef.current) { audioRef.current.currentTime = TIMESTAMPS.teil1; audioRef.current.play().catch(() => {}); }}}
+                  className="flex items-center gap-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white hover:bg-emerald-700"
+                >▶ Sesi Oynat</button>
+                <details className="flex-1">
+                  <summary className="cursor-pointer text-xs font-bold text-slate-400 hover:text-slate-600">📄 Metni Gör</summary>
+                  <p className="mt-1 text-xs italic text-slate-600">{beispiel.audioTranscript}</p>
+                </details>
+              </div>
+            )}
+            {beispiel.options && (
+              <div className="space-y-2">
+                {beispiel.options.map((opt) => (
+                  <div
+                    key={opt.id}
+                    className={`flex items-center gap-3 rounded-lg border-2 p-3 text-sm ${
+                      reviewMode && opt.id === beispiel.correct
+                        ? "border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold"
+                        : "border-slate-200 bg-white text-slate-700"
+                    }`}
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-300 text-xs font-bold">{opt.id}</span>
+                    {opt.label}
+                    {reviewMode && opt.id === beispiel.correct && <span className="ml-auto text-emerald-600">✓</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+            {!beispiel.options && (
+              <div className="flex gap-2 mt-2">
+                {["richtig", "falsch"].map((v) => (
+                  <div key={v} className={`rounded border-2 px-4 py-2 text-sm font-bold ${reviewMode && v === beispiel.correct ? "border-emerald-400 bg-emerald-100 text-emerald-800" : "border-slate-200 bg-white text-slate-500"}`}>
+                    {v === "richtig" ? "Richtig" : "Falsch"} {reviewMode && v === beispiel.correct ? "✓" : ""}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="space-y-6">
-          {items.map((item) => (
-            <div key={item.id} className="rounded-xl border-2 border-slate-200 bg-white p-5">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-black text-white">
+          {items.map((item) => {
+            const userAnswer = answers[item.id];
+            const isCorrect = reviewMode && item.correct && userAnswer === item.correct;
+            const isWrong = reviewMode && item.correct && userAnswer && userAnswer !== item.correct;
+            return (
+              <div key={item.id} className={`rounded-xl border-2 bg-white p-5 ${
+                isCorrect ? "border-emerald-400" : isWrong ? "border-rose-400" : "border-slate-200"
+              }`}>
+                <div className="mb-3 flex items-center gap-2">
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-black text-white ${
+                    isCorrect ? "bg-emerald-500" : isWrong ? "bg-rose-500" : "bg-slate-900"
+                  }`}>
                     {item.number}
                   </span>
                   <span className="font-bold text-slate-900">{item.question || item.statement}</span>
+                  {isCorrect && <span className="ml-auto text-emerald-600 font-bold text-sm">✓ Doğru</span>}
+                  {isWrong && <span className="ml-auto text-rose-600 font-bold text-sm">✗ Yanlış</span>}
                 </div>
-                <button
-                  onClick={() => jumpToQuestion(item.id)}
-                  className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors shrink-0"
-                >
-                  ▶ Sesi Oynat
-                </button>
+
+                {/* İnceleme modunda: ses ve metin */}
+                {reviewMode && (
+                  <div className="mb-3 flex items-center gap-2">
+                    <button
+                      onClick={() => jumpToQuestion(item.id)}
+                      className="flex items-center gap-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white hover:bg-emerald-700"
+                    >▶ Sesi Oynat</button>
+                    <details className="flex-1">
+                      <summary className="cursor-pointer text-xs font-bold text-slate-400 hover:text-slate-600">📄 Metni Gör</summary>
+                      <p className="mt-1 text-xs italic text-slate-600">{item.audioTranscript}</p>
+                    </details>
+                  </div>
+                )}
+
+                {type === "abc" && item.options && (
+                  <div className="space-y-2">
+                    {item.options.map((opt) => {
+                      const isSelected = userAnswer === opt.id;
+                      const isRightOpt = reviewMode && item.correct === opt.id;
+                      const isWrongOpt = reviewMode && isSelected && !isRightOpt;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => !reviewMode && setAnswer(item.id, opt.id)}
+                          disabled={reviewMode}
+                          className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left text-sm transition-all ${
+                            isRightOpt ? "border-emerald-500 bg-emerald-50 text-emerald-800 font-semibold" :
+                            isWrongOpt ? "border-rose-400 bg-rose-50 text-rose-700" :
+                            isSelected ? "border-blue-600 bg-blue-600 text-white" :
+                            "border-slate-200 bg-white text-slate-800 hover:border-blue-300"
+                          }`}
+                        >
+                          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-xs font-black uppercase ${
+                            isRightOpt ? "border-emerald-600 text-emerald-700" :
+                            isWrongOpt ? "border-rose-400 text-rose-600" :
+                            isSelected ? "border-white text-white" : "border-slate-400 text-slate-500"
+                          }`}>{opt.id}</span>
+                          <span className="font-medium">{opt.label}</span>
+                          {isRightOpt && <span className="ml-auto">✓</span>}
+                          {isWrongOpt && <span className="ml-auto">✗</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {type === "rf" && (
+                  <div className="flex gap-3">
+                    {(["richtig", "falsch"] as const).map((v) => {
+                      const isSelected = userAnswer === v;
+                      const isRight = reviewMode && item.correct === v;
+                      const isWrongSel = reviewMode && isSelected && item.correct !== v;
+                      return (
+                        <button
+                          key={v}
+                          onClick={() => !reviewMode && setAnswer(item.id, v)}
+                          disabled={reviewMode}
+                          className={`min-w-[88px] rounded border-2 px-4 py-2 text-sm font-bold transition-all ${
+                            isRight ? "border-emerald-500 bg-emerald-100 text-emerald-800" :
+                            isWrongSel ? "border-rose-400 bg-rose-100 text-rose-700" :
+                            isSelected ? (v === "richtig" ? "border-emerald-500 bg-emerald-500 text-white" : "border-rose-500 bg-rose-500 text-white") :
+                            "border-slate-300 bg-white text-slate-700 hover:border-slate-500"
+                          }`}
+                        >
+                          {v === "richtig" ? "Richtig" : "Falsch"}
+                          {isRight && " ✓"}{isWrongSel && " ✗"}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-
-              {/* Yardımcı metin (gizlenebilir) */}
-              <details className="mb-4">
-                <summary className="cursor-pointer rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200">
-                  📄 Yardımcı metin göster
-                </summary>
-                <div className="mt-2 rounded-lg bg-blue-50 border border-blue-200 p-3">
-                  <p className="text-sm text-slate-700 italic leading-relaxed">{item.audioTranscript}</p>
-                </div>
-              </details>
-
-              {type === "abc" && item.options && (
-                <div className="space-y-2">
-                  {item.options.map((opt) => (
-                    <ABCButton
-                      key={opt.id}
-                      id={opt.id}
-                      label={opt.label}
-                      selected={answers[item.id] === opt.id}
-                      onClick={() => setAnswer(item.id, opt.id)}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {type === "rf" && (
-                <div className="flex gap-3">
-                  <RFButton value="richtig" selected={answers[item.id] === "richtig"} onClick={() => setAnswer(item.id, "richtig")} />
-                  <RFButton value="falsch" selected={answers[item.id] === "falsch"} onClick={() => setAnswer(item.id, "falsch")} />
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-8 flex justify-end">
-          <button onClick={goNext} className="rounded-xl bg-blue-600 px-8 py-3 font-black text-white hover:bg-blue-700 transition-colors">
-            Weiter →
-          </button>
+          {reviewMode ? (
+            <button onClick={() => setPhase("result")} className="rounded-xl bg-slate-600 px-8 py-3 font-black text-white hover:bg-slate-700 transition-colors">
+              ← Sonuca Dön
+            </button>
+          ) : (
+            <button onClick={goNext} className="rounded-xl bg-blue-600 px-8 py-3 font-black text-white hover:bg-blue-700 transition-colors">
+              Weiter →
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -947,16 +1081,22 @@ export default function GoetheA1Simulator() {
 
           <div className="mt-6 flex gap-3">
             <button
-              onClick={() => { setPhase("intro"); setAnswers({}); setSchreibenText(""); setWordCount(0); }}
+              onClick={() => { setPhase("intro"); setAnswers({}); setSchreibenText(""); setWordCount(0); setReviewMode(false); }}
               className="flex-1 rounded-xl border-2 border-slate-300 py-3 font-bold text-slate-700 hover:bg-slate-100 transition-colors"
             >
               Neu beginnen
             </button>
             <button
-              onClick={() => { setPhase("lesen-intro"); setAnswers({}); }}
+              onClick={() => { setReviewMode(true); setPhase("hoeren-teil1"); }}
+              className="flex-1 rounded-xl bg-emerald-600 py-3 font-bold text-white hover:bg-emerald-700 transition-colors"
+            >
+              🎧 Hören İncele
+            </button>
+            <button
+              onClick={() => { setReviewMode(false); setPhase("lesen-intro"); setAnswers({}); }}
               className="flex-1 rounded-xl bg-blue-600 py-3 font-bold text-white hover:bg-blue-700 transition-colors"
             >
-              Nur Lesen wiederholen
+              Nur Lesen
             </button>
           </div>
         </div>
@@ -998,9 +1138,9 @@ export default function GoetheA1Simulator() {
         switch (phase) {
           case "intro": return renderIntro();
           case "hoeren-intro": return renderHoerenIntro();
-          case "hoeren-teil1": return renderHoerenTeil("Teil 1", 1, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL1_QUESTIONS, "abc");
-          case "hoeren-teil2": return renderHoerenTeil("Teil 2", 2, "Kreuzen Sie an: Richtig oder Falsch. Sie hören jeden Text einmal.", HOEREN_TEIL2_QUESTIONS, "rf");
-          case "hoeren-teil3": return renderHoerenTeil("Teil 3", 3, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL3_QUESTIONS, "abc");
+          case "hoeren-teil1": return renderHoerenTeil("Teil 1", 1, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL1_QUESTIONS, "abc", BEISPIEL_TEIL1);
+          case "hoeren-teil2": return renderHoerenTeil("Teil 2", 2, "Kreuzen Sie an: Richtig oder Falsch. Sie hören jeden Text einmal.", HOEREN_TEIL2_QUESTIONS, "rf", BEISPIEL_TEIL2);
+          case "hoeren-teil3": return renderHoerenTeil("Teil 3", 3, "Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.", HOEREN_TEIL3_QUESTIONS, "abc", BEISPIEL_TEIL3);
           case "hoeren-end": return renderHoerenEnd();
           case "lesen-intro": return renderLesenIntro();
           case "lesen-teil1": return renderLesenTeil1();
