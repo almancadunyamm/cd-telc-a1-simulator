@@ -369,11 +369,6 @@ export default function GoetheA1Simulator() {
           ))}
         </div>
 
-        <div className="mb-6 rounded-xl bg-amber-50 border border-amber-200 p-4 text-left text-sm text-amber-800">
-          <p className="font-bold mb-1">⚠ Not:</p>
-          <p>Hören bölümü için ses dosyaları henüz eklenmemiştir. Transkript metinleri gösterilmektedir. Lesen ve Schreiben bölümleri tam olarak çalışmaktadır.</p>
-        </div>
-
         <button
           onClick={goNext}
           className="w-full rounded-xl bg-blue-600 px-6 py-4 text-lg font-black text-white shadow-lg hover:bg-blue-700 transition-colors"
