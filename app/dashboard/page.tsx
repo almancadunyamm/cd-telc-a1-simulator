@@ -1113,6 +1113,7 @@ const handleMasteryAnswer = (answer: string) => {
       const nextIndex = masteryIndex + 1;
 
       setMasteryAnswers((prev) => [...prev, currentMasteryQuestion]);
+      completeDailyTask("lesson");
       setMasteryFeedback(null);
 
       if (nextIndex >= selectedMasteryQuestions.length) {
@@ -2851,7 +2852,10 @@ if (!currentUser) {
     <button
       key={item.key}
       type="button"
-      onClick={() => setActiveDashboardTab(item.key)}
+      onClick={() => {
+  setActiveDashboardTab(item.key);
+  if (item.key === "wordgame") completeDailyTask("pdf");
+}}
       className={`flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-left transition-all duration-300 ${
         activeDashboardTab === item.key
   ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
@@ -2909,7 +2913,10 @@ if (!currentUser) {
         <button
           key={item.key}
           type="button"
-          onClick={() => setActiveDashboardTab(item.key)}
+          onClick={() => {
+  setActiveDashboardTab(item.key);
+  if (item.key === "wordgame") completeDailyTask("pdf");
+}}
           className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold whitespace-nowrap ${
             activeDashboardTab === item.key
               ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow"
