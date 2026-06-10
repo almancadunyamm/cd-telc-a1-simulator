@@ -342,10 +342,7 @@ allLessons =
     const lessonData: LessonItem = {
       id: editingLessonId || crypto.randomUUID(),
       level: selectedClass.level,
-      classId:
-  contentType === "digitalPackage"
-    ? ""
-    : selectedClass.id,
+      classId: selectedClass.id,
       className: selectedClass.name,
       teacherId: selectedClass.teacherId || currentTeacherId,
       teacherName: selectedClass.teacherName || currentTeacherName,
