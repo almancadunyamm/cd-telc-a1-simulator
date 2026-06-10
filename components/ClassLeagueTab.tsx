@@ -146,74 +146,85 @@ export default function ClassLeagueTab({
   return (
     <section className="mb-8 space-y-5">
 
-      {/* BAŞLIK KARTI */}
-      <div className="rounded-3xl bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 p-6 text-white shadow-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-black uppercase tracking-widest text-white/70">Sınıf Ligi ⚡</p>
-            <h2 className="mt-1 text-2xl font-black">{myClass?.name || "Sınıfım"}</h2>
-            {myClass?.teacherName && (
-              <p className="mt-1 text-sm text-white/80">👨‍🏫 {myClass.teacherName}</p>
-            )}
+      {/* BAŞLIK KARTI — sitenin ana renk paleti */}
+      <div className="rounded-3xl bg-white border border-slate-200 shadow-lg overflow-hidden">
+        {/* Üst şerit */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-blue-200">
+                Sınıf Ligi ⚡
+              </p>
+              <h2 className="mt-1 text-xl font-black text-white">
+                {myClass?.name || "Sınıfım"}
+              </h2>
+              {myClass?.teacherName && (
+                <p className="mt-0.5 text-sm text-blue-200">
+                  👨‍🏫 {myClass.teacherName}
+                </p>
+              )}
+            </div>
+            <div className="rounded-2xl bg-white/20 px-5 py-3 text-center">
+              {myIsInactive ? (
+                <>
+                  <p className="text-2xl">😴</p>
+                  <p className="text-xs font-bold text-white/80 mt-0.5">Başlamadın</p>
+                </>
+              ) : myRank > 0 ? (
+                <>
+                  <p className="text-3xl font-black text-white">#{myRank}</p>
+                  <p className="text-xs font-bold text-white/80">Sıran</p>
+                </>
+              ) : null}
+            </div>
           </div>
-          {myData && !myIsInactive && (
-            <div className="rounded-2xl bg-white/20 px-5 py-3 text-center backdrop-blur">
-              <p className="text-3xl font-black">#{myRank}</p>
-              <p className="text-xs font-bold text-white/80">Sıran</p>
-            </div>
-          )}
-          {myIsInactive && (
-            <div className="rounded-2xl bg-white/20 px-5 py-3 text-center backdrop-blur">
-              <p className="text-2xl">😴</p>
-              <p className="text-xs font-bold text-white/80">Henüz başlamadın</p>
-            </div>
-          )}
         </div>
 
+        {/* Benim istatistiklerim */}
         {myData && (
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            <div className="rounded-2xl bg-white/20 p-3 text-center backdrop-blur">
-              <p className="text-xl font-black">{myData.score}</p>
-              <p className="text-xs text-white/80">Puanım</p>
-            </div>
-            <div className="rounded-2xl bg-white/20 p-3 text-center backdrop-blur">
-              <p className="text-xl font-black">{myData.masteryThemes}/12</p>
-              <p className="text-xs text-white/80">Ustalık</p>
-            </div>
-            <div className="rounded-2xl bg-white/20 p-3 text-center backdrop-blur">
-              <p className="text-xl font-black">{myData.speakingTema}</p>
-              <p className="text-xs text-white/80">Konuşma</p>
-            </div>
+          <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
+            {[
+              { label: "Puanım", value: myData.score },
+              { label: "Ustalık", value: `${myData.masteryThemes}/12` },
+              { label: "Konuşma", value: myData.speakingTema },
+            ].map((item) => (
+              <div key={item.label} className="py-4 text-center">
+                <p className="text-xl font-black text-slate-900">{item.value}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{item.label}</p>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Puan sistemi açıklaması */}
-        <div className="mt-5 rounded-2xl bg-white/10 p-4 backdrop-blur">
-          <p className="text-xs font-black text-white/70 uppercase tracking-wider mb-2">⚡ Nasıl puan kazanırsın?</p>
-          <div className="grid grid-cols-2 gap-2 text-xs text-white/90">
+        {/* Puan sistemi */}
+        <div className="px-6 py-4 bg-slate-50">
+          <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+            ⚡ Puan Sistemi
+          </p>
+          <div className="flex flex-wrap gap-4 text-sm text-slate-600">
             <div className="flex items-center gap-1.5">
-              <span className="text-base">🏆</span>
-              <span>Ustalık Testi: <strong>tema × 10 puan</strong></span>
+              <span>🏆</span>
+              <span>Ustalık Testi: <strong className="text-slate-800">tema × 10 puan</strong></span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-base">🎙️</span>
-              <span>Konuşma Kulübü: <strong>tema × 8 puan</strong></span>
+              <span>🎙️</span>
+              <span>Konuşma Kulübü: <strong className="text-slate-800">tema × 8 puan</strong></span>
             </div>
           </div>
-          <p className="mt-2 text-xs text-white/60">
-            Ne kadar çok tema tamamlarsan o kadar yukarı çıkarsın. Her gün aktif ol, sıranı koru!
+          <p className="mt-1.5 text-xs text-slate-400">
+            Ne kadar çok tema tamamlarsan o kadar yukarı çıkarsın. Her gün aktif ol!
           </p>
         </div>
       </div>
 
-      {/* AKTİF ÖĞRENCİLER */}
+      {/* AKTİF ÖĞRENCİLER — GRID */}
       <div className="rounded-3xl bg-white p-6 shadow-lg">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-5 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-black text-slate-900">
-              🔥 Aktif Öğrenciler
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">{activeStudents.length} öğrenci sıralamada</p>
+            <h3 className="text-lg font-black text-slate-900">🔥 Sıralama</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {activeStudents.length} öğrenci aktif
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {lastUpdated && (
@@ -232,15 +243,15 @@ export default function ClassLeagueTab({
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-400 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
           </div>
         ) : activeStudents.length === 0 ? (
           <div className="rounded-2xl bg-slate-50 p-6 text-center">
             <p className="text-2xl mb-2">😴</p>
-            <p className="text-sm text-slate-500">Henüz hiç aktif öğrenci yok. İlk sen başla!</p>
+            <p className="text-sm text-slate-500">Henüz aktif öğrenci yok. İlk sen başla!</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {activeStudents.map((student, index) => {
               const pct = Math.round((student.score / maxScore) * 100);
               const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : null;
@@ -250,62 +261,55 @@ export default function ClassLeagueTab({
                   key={student.username}
                   className={`rounded-2xl border-2 p-4 transition-all ${
                     student.isMe
-                      ? "border-orange-300 bg-orange-50 shadow-md"
-                      : "border-slate-100 bg-white hover:border-slate-200"
+                      ? "border-blue-300 bg-blue-50 shadow-md"
+                      : "border-slate-100 bg-white hover:border-slate-200 hover:shadow-sm"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    {/* Sıra */}
-                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black ${
+                  {/* Üst satır: sıra + isim + puan */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-black ${
                       index < 3
                         ? "bg-gradient-to-br from-yellow-100 to-orange-100 text-orange-700"
                         : "bg-slate-100 text-slate-500"
                     }`}>
                       {medal || (index + 1)}
                     </div>
+                    <p className={`flex-1 text-sm font-black truncate ${
+                      student.isMe ? "text-blue-700" : "text-slate-900"
+                    }`}>
+                      {student.isMe ? `${student.name} ✦` : student.name}
+                    </p>
+                    <p className={`text-base font-black shrink-0 ${
+                      student.isMe ? "text-blue-600" : "text-slate-700"
+                    }`}>
+                      {student.score}
+                    </p>
+                  </div>
 
-                    {/* İçerik */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`font-black truncate ${student.isMe ? "text-orange-700" : "text-slate-900"}`}>
-                          {student.isMe ? `${student.name} (Sen)` : student.name}
-                        </p>
-                      </div>
+                  {/* İlerleme barı */}
+                  <div className="h-1.5 w-full rounded-full bg-slate-100 mb-2">
+                    <div
+                      className={`h-1.5 rounded-full transition-all duration-700 ${
+                        student.isMe
+                          ? "bg-gradient-to-r from-blue-500 to-indigo-500"
+                          : "bg-gradient-to-r from-yellow-400 to-orange-400"
+                      }`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
 
-                      {/* Bar */}
-                      <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
-                        <div
-                          className={`h-2 rounded-full transition-all duration-700 ${
-                            student.isMe
-                              ? "bg-gradient-to-r from-orange-400 to-red-400"
-                              : "bg-gradient-to-r from-yellow-400 to-orange-400"
-                          }`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-
-                      {/* Rozetler */}
-                      <div className="mt-1.5 flex flex-wrap gap-1.5">
-                        {student.masteryBadge && (
-                          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700">
-                            {student.masteryBadge}
-                          </span>
-                        )}
-                        {student.speakingBadge && (
-                          <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
-                            {student.speakingBadge}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Puan */}
-                    <div className="shrink-0 text-right">
-                      <p className={`text-lg font-black ${student.isMe ? "text-orange-600" : "text-slate-700"}`}>
-                        {student.score}
-                      </p>
-                      <p className="text-xs text-slate-400">puan</p>
-                    </div>
+                  {/* Rozetler */}
+                  <div className="flex flex-wrap gap-1">
+                    {student.masteryBadge && (
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700">
+                        {student.masteryBadge}
+                      </span>
+                    )}
+                    {student.speakingBadge && (
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
+                        {student.speakingBadge}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -316,14 +320,16 @@ export default function ClassLeagueTab({
 
       {/* HAREKETSİZ ÖĞRENCİLER */}
       {inactiveStudents.length > 0 && (
-        <div className="rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 p-6">
+        <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-6">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-xl">
               😴
             </div>
             <div>
-              <h3 className="font-black text-slate-700">Henüz Başlamayanlar</h3>
-              <p className="text-xs text-slate-500">{inactiveStudents.length} öğrenci — sıralamada yer almıyor</p>
+              <h3 className="font-black text-slate-600">Henüz Başlamayanlar</h3>
+              <p className="text-xs text-slate-400">
+                {inactiveStudents.length} öğrenci — sıralamada yer almıyor
+              </p>
             </div>
           </div>
 
@@ -333,22 +339,26 @@ export default function ClassLeagueTab({
                 key={student.username}
                 className={`rounded-2xl border p-3 ${
                   student.isMe
-                    ? "border-orange-200 bg-orange-50"
+                    ? "border-blue-200 bg-blue-50"
                     : "border-slate-200 bg-white"
                 }`}
               >
-                <p className={`text-sm font-black truncate ${student.isMe ? "text-orange-600" : "text-slate-500"}`}>
+                <p className={`text-sm font-black truncate ${
+                  student.isMe ? "text-blue-600" : "text-slate-400"
+                }`}>
                   {student.isMe ? `${student.name} (Sen)` : student.name}
                 </p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  {student.isMe ? "Ustalık Testini başlatarak listeye gir!" : "Henüz başlamadı"}
+                  {student.isMe
+                    ? "Ustalık Testini başlatarak listeye gir! 🚀"
+                    : "Henüz başlamadı"}
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 rounded-2xl bg-white border border-slate-200 p-4">
-            <p className="text-xs text-slate-500 text-center">
+          <div className="mt-4 rounded-2xl bg-white border border-slate-200 p-3 text-center">
+            <p className="text-xs text-slate-500">
               💡 Ustalık Testi'nde ilk temayı tamamla → hemen sıralamaya gir!
             </p>
           </div>
