@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 const KelimeOyunu = dynamic(() => import("@/components/KelimeOyunu"), { ssr: false });
+import ClassLeagueTab from "@/components/ClassLeagueTab";
 import {
   createPendingOrder,
   getActiveOrderForUserAndLevel,
@@ -2844,6 +2845,7 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
+  ...(hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
   { key: "badges", label: "Rozetler", icon: "🏆" },
@@ -2905,6 +2907,7 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
+  ...(hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
   { key: "badges", label: "Rozetler", icon: "🏆" },
@@ -5107,6 +5110,15 @@ createPendingOrder({
       </div>
     )}
   </section>
+)}
+{activeDashboardTab === "classleague" && (
+  <ClassLeagueTab
+    currentUsername={currentUser?.username || ""}
+    currentUserName={currentUser?.name || ""}
+    mainClassId={studentAccess?.mainClassId || ""}
+    classes={classes}
+    hasAnyLiveCourseOrder={!!hasAnyLiveCourseOrder}
+  />
 )}
 {activeDashboardTab === "wordgame" && (
   <section className="mb-8">
