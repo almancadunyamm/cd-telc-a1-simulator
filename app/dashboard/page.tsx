@@ -492,14 +492,14 @@ setLessons(
   .select("*")
   .eq("username", normalizedUsername);
 
+const allAccessIds = (accessFromDb || []).map((item: any) => item.main_class_id).filter(Boolean);
+
 setStudentAccess(
-  accessFromDb && accessFromDb.length > 0
+  allAccessIds.length > 0
     ? {
         username: normalizedUsername,
-        mainClassId: accessFromDb[0].main_class_id,
-        extraClassAccess: accessFromDb
-          .slice(1)
-          .map((item: any) => item.main_class_id),
+        mainClassId: allAccessIds[0],
+        extraClassAccess: allAccessIds.slice(1),
       }
     : null
 );
@@ -1406,14 +1406,15 @@ setLessons(
 
 const allAccess = accessFromDb || [];
 
+// Tüm sınıf ID'lerini topla
+const allClassIds = allAccess.map((item: any) => item.main_class_id).filter(Boolean);
+
 setStudentAccess(
-  allAccess.length > 0
+  allClassIds.length > 0
     ? {
         username: normalizedUsername,
-        mainClassId: allAccess[0].main_class_id,
-        extraClassAccess: allAccess
-          .slice(1)
-          .map((item: any) => item.main_class_id),
+        mainClassId: allClassIds[0],
+        extraClassAccess: allClassIds.slice(1),
       }
     : null
 );
@@ -1423,13 +1424,18 @@ setStudentAccess(
 }, [router]);
 
   const accessibleClassIds = useMemo(() => {
-    if (!studentAccess) return [];
+  if (!studentAccess) return [];
+  // Tüm class ID'leri: mainClass + extraClassAccess
+  const allIds = [
+    studentAccess.mainClassId,
+    ...(studentAccess.extraClassAccess || []),
+  ].filter(Boolean);
 
-    return [
-      studentAccess.mainClassId,
-      ...(studentAccess.extraClassAccess || []),
-    ].filter(Boolean);
-  }, [studentAccess]);
+  // Eğer hiç class yoksa, aynı level'daki varsayılan sınıfları da ekle
+  if (allIds.length === 0) return [];
+
+  return allIds;
+}, [studentAccess]);
 
   const userClasses = useMemo(() => {
     return classes.filter((item) => accessibleClassIds.includes(item.id));
