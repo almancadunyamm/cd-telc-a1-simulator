@@ -294,23 +294,27 @@ console.log("ALL CLASSES", classes);
         return;
       }
 
-await supabase
+// Zaten bu sınıfa atanmış mı kontrol et
+const { data: existingAccess } = await supabase
   .from("student_class_access")
-  .delete()
+  .select("id")
   .eq("username", normalizedUsername)
-  .eq("main_class_id", defaultClass.id);
+  .eq("main_class_id", defaultClass.id)
+  .maybeSingle();
 
-const { error: accessInsertError } = await supabase
-  .from("student_class_access")
-  .insert({
-    username: normalizedUsername,
-    main_class_id: defaultClass.id,
-    extra_class_access: [],
-  });
+if (!existingAccess) {
+  const { error: accessInsertError } = await supabase
+    .from("student_class_access")
+    .insert({
+      username: normalizedUsername,
+      main_class_id: defaultClass.id,
+      extra_class_access: [],
+    });
 
-if (accessInsertError) {
-  alert("Öğrenci varsayılan sınıfa atanamadı: " + accessInsertError.message);
-  return;
+  if (accessInsertError) {
+    alert("Öğrenci varsayılan sınıfa atanamadı: " + accessInsertError.message);
+    return;
+  }
 }
 
       if (isLiveCourse) {

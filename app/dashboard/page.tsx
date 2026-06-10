@@ -1402,17 +1402,18 @@ setLessons(
     const { data: accessFromDb } = await supabase
   .from("student_class_access")
   .select("*")
-  .eq("username", normalizedUsername)
-  .limit(1);
+  .eq("username", normalizedUsername);
 
-const access = accessFromDb?.[0];
+const allAccess = accessFromDb || [];
 
 setStudentAccess(
-  access
+  allAccess.length > 0
     ? {
-        username: access.username,
-        mainClassId: access.main_class_id,
-        extraClassAccess: access.extra_class_access || [],
+        username: normalizedUsername,
+        mainClassId: allAccess[0].main_class_id,
+        extraClassAccess: allAccess
+          .slice(1)
+          .map((item: any) => item.main_class_id),
       }
     : null
 );
