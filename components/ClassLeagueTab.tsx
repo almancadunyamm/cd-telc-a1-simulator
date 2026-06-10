@@ -89,14 +89,14 @@ export default function ClassLeagueTab({
 
     const { data: masteryData } = await supabase
       .from("mastery_progress")
-      .select("username, theme_id")
-      .in("username", usernames)
+      .select("student_key, theme_id")
+.in("student_key", usernames)
       .eq("level", "A1")
       .eq("status", "completed");
 
     const masteryMap: Record<string, Set<number>> = {};
     (masteryData || []).forEach((m: any) => {
-      const key = String(m.username || "").toLowerCase();
+      const key = String(m.student_key || "").toLowerCase();
       if (!masteryMap[key]) masteryMap[key] = new Set();
       masteryMap[key].add(m.theme_id);
     });
