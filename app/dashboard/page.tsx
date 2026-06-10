@@ -363,18 +363,18 @@ const dailyTasks: {
 }[] = [
   {
     key: "lesson",
-    title: "1 ders izle",
-    desc: "Bugün en az bir video dersi tamamla.",
+    title: "Ustalık Testi çöz",
+    desc: "Bugün en az bir tema testini tamamla.",
   },
   {
     key: "pdf",
-    title: "1 PDF materyalini incele",
-    desc: "Ders notlarını indir veya gözden geçir.",
+    title: "Kelime Arenasında oyna",
+    desc: "En az 1 tur kelime pratiği yap.",
   },
   {
     key: "speaking",
-    title: "1 konuşma görevi gönder",
-    desc: "Ses veya video kaydını WhatsApp’tan gönder.",
+    title: "Konuşma görevi gönder",
+    desc: "Partnerinle görüş veya WhatsApp'tan gönder.",
   },
 ];
 
@@ -3538,48 +3538,89 @@ const isOpen =
 
 {activeDashboardTab === "home" && (
   <>
-    <section className="mb-5 rounded-3xl border border-blue-100 bg-white p-4 shadow-sm">
-  <p className="text-xs font-black uppercase tracking-widest text-blue-700">
-    Almanca Okulum Premium Sistemine Hoş Geldin
-  </p>
-
-  <h2 className="mt-1 text-xl font-black text-slate-900">
-    Bugün sistemde nasıl ilerleyeceksin?
-  </h2>
+    <section className="mb-5 rounded-3xl border border-blue-100 bg-white p-5 shadow-sm">
+  <div className="flex items-center justify-between gap-3">
+    <div>
+      <p className="text-xs font-black uppercase tracking-widest text-blue-700">
+        Almanca Okulum
+      </p>
+      <h2 className="mt-1 text-xl font-black text-slate-900">
+        {Object.values(completedTasks).filter(Boolean).length === 0
+          ? "Bugün seni bekleyen görevler var 👇"
+          : Object.values(completedTasks).filter(Boolean).length === dailyTasks.length
+          ? "Bugün tüm görevleri tamamladın 🎉"
+          : `${Object.values(completedTasks).filter(Boolean).length}/${dailyTasks.length} görev tamamlandı`}
+      </h2>
+    </div>
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white font-black text-sm">
+      {Object.values(completedTasks).filter(Boolean).length === dailyTasks.length ? "🏆" : `${Object.values(completedTasks).filter(Boolean).length}/${dailyTasks.length}`}
+    </div>
+  </div>
 
   <div className="mt-4 grid gap-2 md:grid-cols-4">
-  {[
-    {
-      icon: GraduationCap,
-      title: "Ders kaydını izle",
-    },
-    {
-      icon: FileText,
-      title: "PDF materyalini indir",
-    },
-    {
-      icon: Target,
-      title: "Konuşma görevini tamamla",
-    },
-    {
-      icon: MessageCircle,
-      title: "Öğretmenine soru sor",
-    },
-  ].map((item) => (
-    <div
-      key={item.title}
-      className="rounded-2xl border border-slate-100 bg-slate-50 p-3"
-    >
-      <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
-        <item.icon className="h-4 w-4" />
-      </div>
-
-      <p className="mt-2 text-xs font-bold text-slate-800">
-        {item.title}
-      </p>
-    </div>
-  ))}
-</div>
+    {[
+      {
+        icon: "🏆",
+        title: "Ustalık Testi Çöz",
+        desc: completedMasteryThemes.length > 0 ? `${completedMasteryThemes.length}/12 tema bitti` : "Henüz başlanmadı",
+        color: "bg-yellow-50 border-yellow-200",
+        iconBg: "bg-yellow-100",
+        action: () => setActiveDashboardTab("vocabulary"),
+        badge: completedMasteryThemes.length > 0 ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-500",
+        badgeText: completedMasteryThemes.length > 0 ? `${completedMasteryThemes.length} tema` : "Başla",
+      },
+      {
+        icon: "🎮",
+        title: "Kelime Arenası",
+        desc: "Kelime bilgini test et",
+        color: "bg-purple-50 border-purple-200",
+        iconBg: "bg-purple-100",
+        action: () => setActiveDashboardTab("wordgame"),
+        badge: "bg-purple-100 text-purple-700",
+        badgeText: "Oyna",
+      },
+      {
+        icon: "🎙️",
+        title: "Konuşma Kulübü",
+        desc: speakingProgress
+          ? `Tema ${speakingProgress.current_tema} — Görev ${speakingProgress.current_gorev}`
+          : completedMasteryThemes.length >= 3 ? "Başlat" : `${completedMasteryThemes.length}/3 tema gerek`,
+        color: "bg-emerald-50 border-emerald-200",
+        iconBg: "bg-emerald-100",
+        action: () => setActiveDashboardTab("speaking"),
+        badge: speakingProgress ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500",
+        badgeText: speakingProgress ? "Aktif" : "Kilitli",
+      },
+      {
+        icon: "📝",
+        title: "Deneme Sınavı",
+        desc: "TELC & Goethe formatında",
+        color: "bg-blue-50 border-blue-200",
+        iconBg: "bg-blue-100",
+        action: () => setActiveDashboardTab("exams"),
+        badge: "bg-blue-100 text-blue-700",
+        badgeText: "Gör",
+      },
+    ].map((item) => (
+      <button
+        key={item.title}
+        type="button"
+        onClick={item.action}
+        className={`rounded-2xl border p-3 text-left transition hover:scale-[1.02] hover:shadow-md ${item.color}`}
+      >
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className={`flex h-9 w-9 items-center justify-center rounded-xl text-lg ${item.iconBg}`}>
+            {item.icon}
+          </div>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-black ${item.badge}`}>
+            {item.badgeText}
+          </span>
+        </div>
+        <p className="text-xs font-black text-slate-800">{item.title}</p>
+        <p className="mt-0.5 text-xs text-slate-500">{item.desc}</p>
+      </button>
+    ))}
+  </div>
 </section>
     <section className="mb-8 max-w-full overflow-hidden rounded-3xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 p-4 text-white shadow-xl sm:p-6">
   <div className="grid min-w-0 gap-5 lg:grid-cols-[1fr_340px] lg:items-start">
@@ -3742,15 +3783,10 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
       <div className="rounded-3xl bg-white p-5 text-slate-900 shadow-lg transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm font-semibold text-emerald-600">
-            {isDigitalStarterStudent
-  ? "🔒 Günlük Koçluk Görevleri"
-  : "Günlük Görevler"}
+            {isDigitalStarterStudent ? "🔒 Günlük Koçluk Görevleri" : "Günlük Görevler"}
           </p>
-
           <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-            {isDigitalStarterStudent
-  ? "Premium"
-  : `${completedCount}/${dailyTasks.length}`}
+            {isDigitalStarterStudent ? "Premium" : `${completedCount}/${dailyTasks.length}`}
           </span>
         </div>
 
