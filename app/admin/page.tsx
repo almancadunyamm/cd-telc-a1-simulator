@@ -6,217 +6,266 @@ import Link from "next/link";
 const adminCards = [
   {
     title: "Sipariş Aktivasyonu",
-    description:
-      "Dijital paket ve canlı kurs ödemelerinden sonra öğrencilerin erişimini aktif et.",
+    description: "Ödeme yapan öğrencilerin erişimini tek tıkla aç.",
     href: "/admin/activate-orders",
     icon: "✅",
-    color: "bg-emerald-500",
+    accent: "#10b981",
+    tag: "Öncelikli",
   },
   {
     title: "Sınıf Yönetimi",
-    description:
-      "A1, A2, B1 sınıfları oluştur, öğretmen ata ve varsayılan satış sınıfını belirle.",
+    description: "Sınıf oluştur, öğretmen ata, varsayılanı belirle.",
     href: "/admin/classes",
     icon: "🏫",
-    color: "bg-blue-500",
+    accent: "#3b82f6",
   },
-  {
-  title: "Konuşma Kulübü Eşleştirme",
-  description:
-    "Partner talep eden öğrencileri görüntüle, uygun kişileri tek tıkla eşleştir.",
-  href: "/admin/speaking-matches",
-  icon: "🎙️",
-  color: "bg-teal-500",
-},
-  {
-  title: "SSS Yönetimi",
-  description:
-    "Ana sayfadaki sık sorulan soruları ekle, düzenle veya sil.",
-  href: "/admin/faqs",
-  icon: "❓",
-  color: "bg-pink-500",
-},
-{
-  title: "Öğrenci Yönetimi",
-  description:
-    "Tüm dijital ve canlı öğrencileri görüntüle, durumlarını takip et ve sahte test hesaplarını temizle.",
-  href: "/admin/student-management",
-  icon: "🎓",
-  color: "bg-purple-500",
-},
   {
     title: "Öğrenci Sınıf Atama",
-    description:
-      "Öğrencileri manuel olarak canlı kurs veya dijital sınıflara ata.",
+    description: "Öğrencileri canlı kurs veya dijital sınıflara ata.",
     href: "/admin/students",
     icon: "👤",
-    color: "bg-violet-500",
+    accent: "#8b5cf6",
   },
   {
-    title: "Shopier Link Yönetimi",
-    description:
-      "Dijital paketler ve canlı kurslar için ödeme linklerini güncelle.",
-    href: "/admin/shopier-links",
-    icon: "💳",
-    color: "bg-yellow-400",
+    title: "Öğrenci Yönetimi",
+    description: "Tüm öğrencileri görüntüle, durumları takip et.",
+    href: "/admin/student-management",
+    icon: "🎓",
+    accent: "#a855f7",
+  },
+  {
+    title: "Konuşma Kulübü",
+    description: "Partner talep eden öğrencileri eşleştir.",
+    href: "/admin/speaking-matches",
+    icon: "🎙️",
+    accent: "#14b8a6",
+  },
+  {
+    title: "Öğretmen Yönetimi",
+    description: "Öğretmen hesapları ve giriş bilgilerini yönet.",
+    href: "/admin/teachers",
+    icon: "👨‍🏫",
+    accent: "#f97316",
   },
   {
     title: "Öğretmen Paneli",
-    description:
-      "Ders kayıtları, PDF materyaller ve ödev içeriklerini sınıflara ekle.",
+    description: "Ders kayıtları, PDF ve ödev içerikleri ekle.",
     href: "/teacher",
     icon: "🎥",
-    color: "bg-red-500",
+    accent: "#ef4444",
   },
   {
-    title: "TELC Simülasyon Yönetimi",
-    description:
-      "TELC dijital deneme sınavlarını, soru setlerini ve seviye içeriklerini yönet.",
+    title: "Shopier Linkleri",
+    description: "Paket ve kurs ödeme linklerini güncelle.",
+    href: "/admin/shopier-links",
+    icon: "💳",
+    accent: "#eab308",
+  },
+  {
+    title: "SSS Yönetimi",
+    description: "Ana sayfadaki sık sorulan soruları düzenle.",
+    href: "/admin/faqs",
+    icon: "❓",
+    accent: "#ec4899",
+  },
+  {
+    title: "Footer SEO",
+    description: "Footer başlıkları, açıklamalar ve bağlantılar.",
+    href: "/admin/footer",
+    icon: "🧠",
+    accent: "#6366f1",
+  },
+  {
+    title: "TELC Simülasyon",
+    description: "Deneme sınavı soru setlerini ve içerikleri yönet.",
     href: "/admin/telc",
     icon: "📝",
-    color: "bg-cyan-500",
+    accent: "#06b6d4",
     soon: true,
   },
-  {
-  title: "Öğretmen Yönetimi",
-  description:
-    "Öğretmen hesaplarını oluştur, öğretmen ID ve giriş bilgilerini yönet.",
-  href: "/admin/teachers",
-  icon: "👨‍🏫",
-  color: "bg-orange-500",
-},
-{
-  title: "Footer SEO Yönetimi",
-  description:
-    "Footer alanındaki SEO başlıklarını, açıklamaları ve bağlantıları düzenle.",
-  href: "/admin/footer",
-  icon: "🧠",
-  color: "bg-indigo-500",
-},
 ];
 
 export default function AdminHomePage() {
   const router = useRouter();
-const [allowed, setAllowed] = useState(false);
+  const [allowed, setAllowed] = useState(false);
+  const [time, setTime] = useState("");
 
-useEffect(() => {
-  const raw = localStorage.getItem("mock_logged_user");
-  const user = raw ? JSON.parse(raw) : null;
+  useEffect(() => {
+    const raw = localStorage.getItem("mock_logged_user");
+    const user = raw ? JSON.parse(raw) : null;
+    if (!user || user.role !== "admin") {
+      router.replace("/login");
+      return;
+    }
+    setAllowed(true);
 
-  if (!user || user.role !== "admin") {
-    router.replace("/login");
-    return;
-  }
+    const tick = () => setTime(new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }));
+    tick();
+    const interval = setInterval(tick, 10000);
+    return () => clearInterval(interval);
+  }, [router]);
 
-  setAllowed(true);
-}, [router]);
-
-if (!allowed) {
-  return (
-    <main className="min-h-screen bg-slate-950 p-6 text-white">
-      Yetki kontrol ediliyor...
+  if (!allowed) return (
+    <main className="min-h-screen bg-slate-950 p-6 text-white flex items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
     </main>
   );
-}
+
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
+    <main className="min-h-screen bg-[#0a0f1e] px-4 py-10 text-white">
       <div className="mx-auto max-w-7xl">
-        <header className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl">
-          <p className="text-sm font-black uppercase tracking-widest text-yellow-300">
-            Almanca Okulum
-          </p>
 
-          <h1 className="mt-3 text-3xl font-black md:text-5xl">
-            Admin Yönetim Merkezi
-          </h1>
-
-          <p className="mt-4 max-w-3xl text-slate-300">
-            Sipariş, sınıf, öğrenci, Shopier linkleri, ders içerikleri ve TELC
-            simülasyon sistemini tek merkezden yönetin.
-          </p>
-
-          <div className="mt-6 flex flex-wrap gap-3 text-sm font-bold">
-            <span className="rounded-full bg-emerald-500/15 px-4 py-2 text-emerald-200">
-              Sipariş aktivasyonu
-            </span>
-            <span className="rounded-full bg-blue-500/15 px-4 py-2 text-blue-200">
-              Sınıf yönetimi
-            </span>
-            <span className="rounded-full bg-yellow-400/15 px-4 py-2 text-yellow-200">
-              Shopier linkleri
-            </span>
-            <span className="rounded-full bg-cyan-500/15 px-4 py-2 text-cyan-200">
-              TELC simülasyon
-            </span>
+        {/* HEADER */}
+        <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-emerald-400">
+                Almanca Okulum — Admin
+              </span>
+            </div>
+            <h1 className="text-4xl font-black leading-tight tracking-tight md:text-5xl">
+              Yönetim<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">
+                Merkezi
+              </span>
+            </h1>
+            <p className="mt-3 text-sm text-slate-400 max-w-md">
+              Sipariş, sınıf, öğrenci ve içerik yönetimi tek panelde.
+            </p>
           </div>
-        </header>
 
-        <section className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="flex items-center gap-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-right">
+              <p className="text-xs text-slate-500">Şu an</p>
+              <p className="text-2xl font-black tabular-nums">{time}</p>
+            </div>
+            <Link
+              href="/admin/activate-orders"
+              className="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-black text-white hover:bg-emerald-400 transition-all hover:scale-105 shadow-lg shadow-emerald-500/20"
+            >
+              ✅ Siparişler
+            </Link>
+          </div>
+        </div>
+
+        {/* KARTLAR */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {adminCards.map((card) => (
             <Link
               key={card.title}
               href={card.href}
-              className="group rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl transition hover:-translate-y-1 hover:bg-white/10"
+              className="group relative overflow-hidden rounded-2xl border border-white/8 bg-white/4 p-5 transition-all duration-200 hover:-translate-y-1 hover:border-white/15 hover:bg-white/8 hover:shadow-xl"
+              style={{ "--accent": card.accent } as React.CSSProperties}
             >
+              {/* Accent glow */}
               <div
-                className={`flex h-14 w-14 items-center justify-center rounded-2xl ${card.color} text-2xl shadow-lg`}
-              >
-                {card.icon}
+                className="absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-10 blur-2xl transition-opacity group-hover:opacity-20"
+                style={{ backgroundColor: card.accent }}
+              />
+
+              <div className="relative">
+                {/* İkon + rozet */}
+                <div className="flex items-start justify-between gap-2 mb-4">
+                  <div
+                    className="flex h-11 w-11 items-center justify-center rounded-xl text-xl shadow-lg"
+                    style={{ backgroundColor: card.accent + "22", border: `1px solid ${card.accent}44` }}
+                  >
+                    {card.icon}
+                  </div>
+                  {card.tag && (
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-black text-emerald-400">
+                      {card.tag}
+                    </span>
+                  )}
+                  {card.soon && (
+                    <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-xs font-black text-yellow-400">
+                      Yakında
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="text-sm font-black text-white leading-snug">
+                  {card.title}
+                </h2>
+                <p className="mt-1.5 text-xs leading-5 text-slate-500">
+                  {card.description}
+                </p>
+
+                <div
+                  className="mt-4 flex items-center gap-1 text-xs font-black opacity-0 transition-opacity group-hover:opacity-100"
+                  style={{ color: card.accent }}
+                >
+                  Panele Git
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </div>
               </div>
-
-              <div className="mt-5 flex items-center gap-3">
-                <h2 className="text-xl font-black">{card.title}</h2>
-
-                {card.soon && (
-                  <span className="rounded-full bg-yellow-400 px-2 py-1 text-xs font-black text-slate-950">
-                    Yakında
-                  </span>
-                )}
-              </div>
-
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                {card.description}
-              </p>
-
-              <p className="mt-5 text-sm font-black text-yellow-300 group-hover:text-yellow-200">
-                Panele Git →
-              </p>
             </Link>
           ))}
-        </section>
+        </div>
 
-        <section className="mt-8 grid gap-5 lg:grid-cols-3">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <p className="text-sm font-black text-slate-400">Bugünkü Öncelik</p>
-            <h3 className="mt-2 text-2xl font-black">
+        {/* ALT BİLGİ ÇUBUĞU */}
+        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-2xl border border-white/8 bg-white/4 p-5">
+            <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">
+              Hızlı Erişim
+            </p>
+            <div className="space-y-2">
+              {[
+                { label: "Bekleyen siparişler", href: "/admin/activate-orders" },
+                { label: "Öğrenci sınıf ata", href: "/admin/students" },
+                { label: "Yeni sınıf oluştur", href: "/admin/classes" },
+              ].map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-2.5 text-xs font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-all"
+                >
+                  {item.label}
+                  <span className="text-slate-600">→</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/8 bg-white/4 p-5">
+            <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">
+              Sistem Durumu
+            </p>
+            {[
+              { label: "Supabase DB", status: "Aktif" },
+              { label: "Vercel Deploy", status: "Canlı" },
+              { label: "Shopier Ödeme", status: "Açık" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                <span className="text-xs text-slate-400">{item.label}</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-xs font-bold text-emerald-400">{item.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5">
+            <p className="text-xs font-black uppercase tracking-wider text-blue-400 mb-2">
+              Öncelikli İşlem
+            </p>
+            <h3 className="text-base font-black text-white leading-snug">
               Canlı kurs öğrencilerini sisteme bağla
             </h3>
-            <p className="mt-3 text-sm text-slate-300">
-              Canlı kurs öğrencileri ödeme sonrası sınıfa atanmalı ve öğrenci
-              panelinden ders kayıtlarına erişebilmelidir.
+            <p className="mt-2 text-xs leading-5 text-slate-400">
+              Ödeme yapan öğrenciler aktivasyon panelinden onaylandıktan sonra ders kayıtlarına erişebilir.
             </p>
+            <Link
+              href="/admin/activate-orders"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-500/20 px-4 py-2 text-xs font-black text-blue-300 hover:bg-blue-500/30 transition-all"
+            >
+              Aktivasyon Paneline Git →
+            </Link>
           </div>
+        </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <p className="text-sm font-black text-slate-400">Satış Fırsatı</p>
-            <h3 className="mt-2 text-2xl font-black">
-              Başlangıç → Gelişim → Zirve
-            </h3>
-            <p className="mt-3 text-sm text-slate-300">
-              Canlı kurs öğrencilerine Başlangıç erişimi verilip daha fazla
-              TELC denemesi ve materyal için yükseltme teklifleri gösterilebilir.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <p className="text-sm font-black text-slate-400">Acil Ürün Vaadi</p>
-            <h3 className="mt-2 text-2xl font-black">TELC Simülasyon MVP</h3>
-            <p className="mt-3 text-sm text-slate-300">
-              Ana sayfadaki TELC dijital sınav vaadi için ilk çalışan deneme
-              ekranı hızlıca aktif edilmelidir.
-            </p>
-          </div>
-        </section>
       </div>
     </main>
   );
