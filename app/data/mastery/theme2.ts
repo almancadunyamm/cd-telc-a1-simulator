@@ -348,7 +348,7 @@ export const theme2Questions = [
     lessonNumber: 5,
     lessonTitle: "İyelik (mein/dein)",
     tr: "Küçük aile Almancada nasıl söylenir?",
-    de: "eine kleine Famillie",
+    de: "eine kleine Familie",
     options: ["eine kleine Familie", "eine große Familie", "eine alte Familie", "eine schlechte Familie"],
     difficulty: "medium",
   },
