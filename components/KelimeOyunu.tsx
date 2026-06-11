@@ -2,9 +2,22 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { a2Kelimeler } from "@/app/data/vocabulary/a2";
 
 type Kelime = { de: string; tr: string };
-type TemaKey = keyof typeof KELIMELER;
+type TemaKey =
+  | "tema1"
+  | "tema2"
+  | "tema3"
+  | "tema4"
+  | "tema5"
+  | "tema6"
+  | "tema7"
+  | "tema8"
+  | "tema9"
+  | "tema10"
+  | "tema11"
+  | "tema12";
 type Mod = "de_to_tr" | "tr_to_de";
 type Soru = { soru: string; dogru: string; secenekler: string[] };
 
@@ -329,6 +342,12 @@ const KELIMELER = {
   ] as Kelime[]},
 };
 
+const KELIMELER_BY_LEVEL = {
+  A1: KELIMELER,
+  A2: a2Kelimeler,
+  B1: KELIMELER,
+};
+
 const ROZETLER = [
   { min: 0,   max: 49,  icon: "🌱", ad: "Kelime Yolcusu",    renk: "#6b7280" },
   { min: 50,  max: 149, icon: "🔥", ad: "Kelime Avcısı",     renk: "#f59e0b" },
@@ -487,13 +506,14 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   }, [oyunBitti]);
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
-    const kelimeler = shuffle(KELIMELER[secilenTema].kelimeler).slice(0, 15);
+    const aktifKelimeler = KELIMELER_BY_LEVEL[selectedWordLevel] || KELIMELER;
+const kelimeler = shuffle(aktifKelimeler[secilenTema].kelimeler).slice(0, 15);
     const hazirSorular: Soru[] = kelimeler.map((k) => {
       const dogruCevap = secilenMod === "de_to_tr" ? k.tr : k.de;
       const soru = secilenMod === "de_to_tr" ? k.de : k.tr;
       const yanlislar = secilenMod === "de_to_tr"
-        ? getWrongOptions(k.tr, KELIMELER[secilenTema].kelimeler)
-        : shuffle(KELIMELER[secilenTema].kelimeler.filter((x) => x.de !== k.de)).slice(0, 3).map((x) => x.de);
+        ? getWrongOptions(k.tr, aktifKelimeler[secilenTema].kelimeler)
+: shuffle(aktifKelimeler[secilenTema].kelimeler.filter((x) => x.de !== k.de)).slice(0, 3).map((x) => x.de);
       return { soru, dogru: dogruCevap, secenekler: shuffle([dogruCevap, ...yanlislar]) };
     });
     setSorular(hazirSorular);
@@ -591,7 +611,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
           </div>
 
           {/* Aksiyon butonları */}
-          {selectedWordLevel === "A1" && (
+          {(["A1", "A2"].includes(selectedWordLevel)) && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
               <button onClick={() => {
                 const ilkAcik = (Object.keys(KELIMELER) as TemaKey[]).find((_k, i) => {
@@ -653,7 +673,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
           )}
 
           {/* Tema kartları */}
-          {selectedWordLevel !== "A1" ? (
+          {selectedWordLevel === "B1" ? (
             <div style={{ background: "linear-gradient(135deg, #fffbeb, #fff)", border: "1px solid #fde68a", borderRadius: 20, padding: "28px 24px", textAlign: "center" }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
               <p style={{ fontSize: 11, fontWeight: 900, color: "#b45309", letterSpacing: 2, textTransform: "uppercase", margin: "0 0 8px" }}>Premium Seviye Kilitli</p>
