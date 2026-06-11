@@ -1702,14 +1702,10 @@ const pendingOrders =
 
     if (hasAnyLiveCourseOrder) {
   const lessonPackage = lesson.packageType || "starter";
-
-  const isDigitalStarterLesson =
-    isDigitalLesson && lessonPackage === "starter";
-
-  const isAccessibleLiveLesson =
-    isLiveLesson && hasClassAccess;
-
-  return isDigitalStarterLesson || isAccessibleLiveLesson;
+  const isDigitalStarterLesson = isDigitalLesson && lessonPackage === "starter";
+  const isDigitalPracticeLesson = isDigitalLesson && lessonPackage === "practice";
+  const isAccessibleLiveLesson = isLiveLesson && hasClassAccess;
+  return isDigitalStarterLesson || isDigitalPracticeLesson || isAccessibleLiveLesson;
 }
 
     if (isDigitalLesson) {
