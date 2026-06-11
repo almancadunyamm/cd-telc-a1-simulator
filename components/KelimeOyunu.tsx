@@ -507,23 +507,43 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   }, [oyunBitti]);
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
-    const aktifKelimeler = KELIMELER_BY_LEVEL[selectedWordLevel] || KELIMELER;
-const kelimeler = shuffle(aktifKelimeler[secilenTema].kelimeler).slice(0, 15);
-    const hazirSorular: Soru[] = kelimeler.map((k) => {
-      const dogruCevap = secilenMod === "de_to_tr" ? k.tr : k.de;
-      const soru = secilenMod === "de_to_tr" ? k.de : k.tr;
-      const yanlislar = secilenMod === "de_to_tr"
-        ? getWrongOptions(k.tr, aktifKelimeler[secilenTema].kelimeler)
-: shuffle(aktifKelimeler[secilenTema].kelimeler.filter((x) => x.de !== k.de)).slice(0, 3).map((x) => x.de);
-      return { soru, dogru: dogruCevap, secenekler: shuffle([dogruCevap, ...yanlislar]) };
-    });
-    setSorular(hazirSorular);
-    setSuankiIndex(0); setCanlar(3); setSkor(0);
-    setSecilenCevap(null); setOyunBitti(false);
-    setStreak(0); setDogru(0); setYanlis(0);
-    setYanlisKelimeler([]); setYanlisGoster(false);
-    setTema(secilenTema); setMod(secilenMod);
-  }, []);
+  const aktifKelimeler = KELIMELER_BY_LEVEL[selectedWordLevel] || KELIMELER;
+  const kelimeHavuzu = aktifKelimeler[secilenTema].kelimeler;
+
+  const kelimeler: Kelime[] = shuffle(kelimeHavuzu).slice(0, 15);
+
+  const hazirSorular: Soru[] = kelimeler.map((k) => {
+    const dogruCevap = secilenMod === "de_to_tr" ? k.tr : k.de;
+    const soru = secilenMod === "de_to_tr" ? k.de : k.tr;
+
+    const yanlislar =
+      secilenMod === "de_to_tr"
+        ? getWrongOptions(k.tr, kelimeHavuzu)
+        : shuffle(kelimeHavuzu.filter((x) => x.de !== k.de))
+            .slice(0, 3)
+            .map((x) => x.de);
+
+    return {
+      soru,
+      dogru: dogruCevap,
+      secenekler: shuffle([dogruCevap, ...yanlislar]),
+    };
+  });
+
+  setSorular(hazirSorular);
+  setSuankiIndex(0);
+  setCanlar(3);
+  setSkor(0);
+  setSecilenCevap(null);
+  setOyunBitti(false);
+  setStreak(0);
+  setDogru(0);
+  setYanlis(0);
+  setYanlisKelimeler([]);
+  setYanlisGoster(false);
+  setTema(secilenTema);
+  setMod(secilenMod);
+}, [selectedWordLevel]);
 
   const cevapSec = (cevap: string) => {
     if (secilenCevap) return;
