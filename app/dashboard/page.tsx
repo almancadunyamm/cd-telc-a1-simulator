@@ -1141,23 +1141,28 @@ const masteryUsername = String(currentUser?.username || currentUsername || "")
   .trim()
   .toLowerCase();
 
-const { error: masterySaveError } = await supabase
+const { data: existingMastery } = await supabase
   .from("mastery_progress")
-  .upsert(
-    {
+  .select("id")
+  .eq("student_key", studentKey)
+  .eq("level", selectedMasteryLevel)
+  .eq("theme_id", selectedMasteryThemeId)
+  .maybeSingle();
+
+if (!existingMastery) {
+  const { error: masterySaveError } = await supabase
+    .from("mastery_progress")
+    .insert({
       student_key: studentKey,
       username: currentUser?.name || profileName || studentKey,
       level: selectedMasteryLevel,
       theme_id: selectedMasteryThemeId,
       status: "completed",
-    },
-    {
-      onConflict: "student_key,level,theme_id",
-    }
-  );
+    });
 
-if (masterySaveError) {
-  alert("Ustalık ilerlemesi kaydedilemedi: " + masterySaveError.message);
+  if (masterySaveError) {
+    alert("Ustalık ilerlemesi kaydedilemedi: " + masterySaveError.message);
+  }
 }
   }
 } else {
