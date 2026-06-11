@@ -1591,14 +1591,18 @@ const isFutureLiveCourseLevel =
       ["completed", "active"].includes(order.status)
   );
 
-  const levels = completedOrders.flatMap((order: any) =>
+  const levelsFromOrders = completedOrders.flatMap((order: any) =>
     getLevelsFromSlug(order.product_slug || order.productSlug || "")
   );
 
-  return levels.length > 0
-    ? Array.from(new Set(levels))
-    : [selectedLevel];
-}, [currentUser, selectedLevel, dbActiveOrders]);
+  const levelsFromAccess = accessibleClassIds
+    .map((classId) => classes.find((c) => c.id === classId)?.level)
+    .filter(Boolean) as string[];
+
+  const allLevels = Array.from(new Set([...levelsFromOrders, ...levelsFromAccess]));
+
+  return allLevels.length > 0 ? allLevels : [selectedLevel];
+}, [currentUser, selectedLevel, dbActiveOrders, accessibleClassIds, classes]);
 
   const effectivePackageType: PackageType | undefined =
   activeDigitalOrder?.productSlug?.includes("master")
