@@ -3400,14 +3400,11 @@ window.open(worksheet.url, "_blank");
   // Başlangıç havuzundaki tüm resmi dersleri görür.
   return isDigitalPackage;
 }
-
-  if (packageGroup === "practice") {
-    if (packageGroup === "practice") {
+if (packageGroup === "practice") {
   if (hasAnyLiveCourseOrder) {
     return (
-      isLiveClassLesson &&
-      hasClassAccess &&
-      (lesson.packageType || "starter") === "practice"
+      (isLiveClassLesson && hasClassAccess) ||
+      (isDigitalPackage && (lesson.packageType || "starter") === "practice")
     );
   }
 
@@ -3416,7 +3413,6 @@ window.open(worksheet.url, "_blank");
     (lesson.packageType || "starter") === "practice"
   );
 }
-  }
 
   if (packageGroup === "master") {
     return (
