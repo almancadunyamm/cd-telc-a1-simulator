@@ -1703,8 +1703,8 @@ const pendingOrders =
     if (hasAnyLiveCourseOrder) {
   const lessonPackage = lesson.packageType || "starter";
   const isDigitalStarterLesson = isDigitalLesson && lessonPackage === "starter";
-  const isAccessibleLiveLesson = isLiveLesson && hasClassAccess;
-  return isDigitalStarterLesson || isAccessibleLiveLesson;
+  const isAccessibleLiveLessonAnyPackage = isLiveLesson && hasClassAccess;
+  return isDigitalStarterLesson || isAccessibleLiveLessonAnyPackage;
 }
 
     if (isDigitalLesson) {
@@ -3398,9 +3398,8 @@ window.open(worksheet.url, "_blank");
 if (packageGroup === "practice") {
   if (hasAnyLiveCourseOrder) {
     return (
-      isLiveClassLesson &&
-      hasClassAccess &&
-      (lesson.packageType || "starter") === "practice"
+      (isLiveClassLesson && hasClassAccess && (lesson.packageType || "starter") === "practice") ||
+      (isDigitalPackage && (lesson.packageType || "starter") === "practice")
     );
   }
 
