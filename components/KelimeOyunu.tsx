@@ -20,6 +20,7 @@ type TemaKey =
   | "tema12";
 type Mod = "de_to_tr" | "tr_to_de";
 type Soru = { soru: string; dogru: string; secenekler: string[] };
+type KelimeTemaMap = Record<TemaKey, { ad: string; kelimeler: Kelime[] }>;
 
 const KELIMELER = {
   tema1: { ad: "Kendini Tanıtma", kelimeler: [
@@ -500,7 +501,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     if (!oyunBitti || !tema) return;
     const mevcutTemaDogru = temaDogruSayilari[tema] || 0;
     const yeniTemaToplamDogru = mevcutTemaDogru + dogru;
-    const toplamKelimeSayisi = KELIMELER[tema].kelimeler.length;
+    const toplamKelimeSayisi = aktifKelimeListesi[tema].kelimeler.length;
     const tamamlandi = yeniTemaToplamDogru >= Math.ceil(toplamKelimeSayisi * 0.8);
     kaydetIlerleme(tema, dogru, sorular.length, tamamlandi, yeniTemaToplamDogru);
   }, [oyunBitti]);
@@ -583,6 +584,7 @@ const kelimeler = shuffle(aktifKelimeler[secilenTema].kelimeler).slice(0, 15);
     }, { onConflict: "user_email" });
   };
 
+  const aktifKelimeListesi = KELIMELER_BY_LEVEL[selectedWordLevel] || KELIMELER;
   const canIkonu = (dolu: boolean) => (dolu ? "❤️" : "🖤");
   const mevcutRozet = getRozet(toplamDogru);
   const sonrakiRozet = getSonrakiRozet(toplamDogru);
@@ -697,7 +699,7 @@ const kelimeler = shuffle(aktifKelimeler[secilenTema].kelimeler).slice(0, 15);
             <>
               <div id="kelime-tema-listesi" style={{ scrollMarginTop: 20 }} />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
-                {(Object.entries(KELIMELER) as [TemaKey, typeof KELIMELER[TemaKey]][]).map(([key, val], i) => {
+                {(Object.entries(aktifKelimeListesi) as [TemaKey, KelimeTemaMap[TemaKey]][]).map(([key, val], i) => {
                   const temaNo = i + 1;
                   const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
                   const hasAccess = temaNo <= 6 || hasDev;
@@ -756,7 +758,7 @@ const kelimeler = shuffle(aktifKelimeler[secilenTema].kelimeler).slice(0, 15);
         <div style={{ maxWidth: 460, width: "100%", textAlign: "center" }}>
           <div style={{ fontSize: 42, marginBottom: 12 }}>⚙️</div>
           <p style={{ color: "#059669", fontWeight: 900, letterSpacing: 2, fontSize: 12, margin: 0, textTransform: "uppercase" }}>Çalışma Modu</p>
-          <h2 style={{ fontSize: 24, margin: "8px 0", fontWeight: 900 }}>{KELIMELER[tema].ad}</h2>
+          <h2 style={{ fontSize: 24, margin: "8px 0", fontWeight: 900 }}>{aktifKelimeListesi[tema].ad}</h2>
           <p style={{ color: "#64748b", fontSize: 14, marginBottom: 28 }}>Hangi yönde çalışmak istersin?</p>
           {([
             { id: "de_to_tr" as Mod, icon: "🇩🇪→🇹🇷", label: "Almanca → Türkçe", desc: "Almanca kelimeyi gör, Türkçesini bul" },
@@ -779,7 +781,7 @@ const kelimeler = shuffle(aktifKelimeler[secilenTema].kelimeler).slice(0, 15);
   if (oyunBitti) {
     const basari = Math.round((dogru / sorular.length) * 100);
     const temaNo = Number(String(tema).replace("tema", ""));
-    const toplamKelimeSayisi = KELIMELER[tema].kelimeler.length;
+    const toplamKelimeSayisi = aktifKelimeListesi[tema].kelimeler.length;
     const mevcutTemaDogru = temaDogruSayilari[tema] || 0;
     const yeniTemaToplamDogru = mevcutTemaDogru + dogru;
     const temaYuzde = Math.min(100, Math.round((yeniTemaToplamDogru / toplamKelimeSayisi) * 100));
