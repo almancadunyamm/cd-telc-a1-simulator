@@ -3398,8 +3398,9 @@ window.open(worksheet.url, "_blank");
 if (packageGroup === "practice") {
   if (hasAnyLiveCourseOrder) {
     return (
-      (isLiveClassLesson && hasClassAccess) ||
-      (isDigitalPackage && (lesson.packageType || "starter") === "practice")
+      isLiveClassLesson &&
+      hasClassAccess &&
+      (lesson.packageType || "starter") === "practice"
     );
   }
 
