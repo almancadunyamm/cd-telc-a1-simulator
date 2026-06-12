@@ -619,6 +619,10 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const canIkonu = (dolu: boolean) => (dolu ? "❤️" : "🖤");
   const mevcutRozet = getRozet(toplamDogru);
   const sonrakiRozet = getSonrakiRozet(toplamDogru);
+  const tumTemalarTamamlandi = completedWordThemes.length >= 12;
+const sertifikaUrl = `/certificate?level=${selectedWordLevel}&name=${encodeURIComponent(
+  currentUserName || currentUserEmail || "Almanca Okulum Öğrencisi"
+)}`;
 
   const C = { background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" };
 
@@ -670,8 +674,32 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
               <p style={{ fontSize: 11, fontWeight: 900, color: "#b45309", letterSpacing: 2, textTransform: "uppercase", margin: "0 0 4px" }}>🎖 Mevcut Rozet</p>
               <h3 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 4px" }}>{mevcutRozet.icon} {mevcutRozet.ad}</h3>
               <p style={{ fontSize: 13, color: "#64748b", margin: 0, fontWeight: 700 }}>
-                {sonrakiRozet ? `Bir sonraki rozete ${sonrakiRozet.min - toplamDogru} kelime kaldı.` : "Tebrikler! En yüksek rozeti kazandın."}
+                {tumTemalarTamamlandi
+  ? `Tebrikler! Goethe ${selectedWordLevel} Kelime Şampiyonu oldun.`
+  : sonrakiRozet
+  ? `Bir sonraki rozete ${sonrakiRozet.min - toplamDogru} kelime kaldı.`
+  : "Tebrikler! En yüksek rozeti kazandın."}
               </p>
+              {tumTemalarTamamlandi && (
+  <button
+    type="button"
+    onClick={() => window.open(sertifikaUrl, "_blank")}
+    style={{
+      marginTop: 14,
+      width: "100%",
+      border: "none",
+      borderRadius: 14,
+      padding: "12px 16px",
+      background: "linear-gradient(135deg, #facc15, #f59e0b)",
+      color: "#0f172a",
+      fontWeight: 900,
+      cursor: "pointer",
+      boxShadow: "0 8px 20px rgba(245, 158, 11, 0.25)",
+    }}
+  >
+    📜 Sertifikanı Al
+  </button>
+)}
             </div>
           )}
 
