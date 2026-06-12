@@ -680,25 +680,37 @@ const sertifikaUrl = `/certificate?level=${selectedWordLevel}&name=${encodeURICo
   ? `Bir sonraki rozete ${sonrakiRozet.min - toplamDogru} kelime kaldı.`
   : "Tebrikler! En yüksek rozeti kazandın."}
               </p>
-              {tumTemalarTamamlandi && (
-  <button
-    type="button"
-    onClick={() => window.open(sertifikaUrl, "_blank")}
+  {tumTemalarTamamlandi && (
+  <div
     style={{
       marginTop: 14,
-      width: "100%",
-      border: "none",
-      borderRadius: 14,
-      padding: "12px 16px",
-      background: "linear-gradient(135deg, #facc15, #f59e0b)",
-      color: "#0f172a",
-      fontWeight: 900,
-      cursor: "pointer",
-      boxShadow: "0 8px 20px rgba(245, 158, 11, 0.25)",
+      padding: 16,
+      borderRadius: 16,
+      background: "#f8fafc",
+      border: "1px solid #e2e8f0",
+      textAlign: "center",
     }}
   >
-    📜 Sertifikanı Al
-  </button>
+    <p style={{ fontWeight: 900, marginBottom: 10 }}>
+      🏆 Başarı paylaşıldıkça büyür.
+    </p>
+
+    <p
+      style={{
+        fontSize: 14,
+        lineHeight: 1.7,
+        color: "#475569",
+      }}
+    >
+      Bugün sen başardın.
+      <br />
+      Yarın bir başka öğrenci senin paylaştığın sertifikadan ilham alarak
+      başaracak.
+      <br />
+      <br />
+      Sertifikanı WhatsApp grubunda paylaşmayı unutma.
+    </p>
+  </div>
 )}
             </div>
           )}
