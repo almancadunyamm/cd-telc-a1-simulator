@@ -623,6 +623,33 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
 const sertifikaUrl = `/certificate?level=${selectedWordLevel}&name=${encodeURIComponent(
   currentUserName || currentUserEmail || "Almanca Okulum Öğrencisi"
 )}`;
+const whatsappMesaji = encodeURIComponent(
+  `🏆 Goethe ${selectedWordLevel} Kelime Şampiyonu oldum!
+
+Almanca Okulum Kelime Arenasındaki tüm temaları tamamlayarak sertifikamı almaya hak kazandım.
+
+${typeof window !== "undefined" ? window.location.origin : "https://almancaokulum.com"}${sertifikaUrl}`
+);
+
+const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
+<button
+  type="button"
+  onClick={() => window.open(whatsappPaylasUrl, "_blank")}
+  style={{
+    marginTop: 14,
+    width: "100%",
+    border: "none",
+    borderRadius: 14,
+    padding: "12px 16px",
+    background: "#25D366",
+    color: "#ffffff",
+    fontWeight: 900,
+    cursor: "pointer",
+    boxShadow: "0 8px 20px rgba(37, 211, 102, 0.25)",
+  }}
+>
+  📲 WhatsApp’ta Paylaş
+</button>
 
   const C = { background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" };
 
