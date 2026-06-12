@@ -707,13 +707,17 @@ const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
           {(["A1", "A2"].includes(selectedWordLevel)) && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
               <button onClick={() => {
-                const ilkAcik = (Object.keys(KELIMELER) as TemaKey[]).find((_k, i) => {
-                  const no = i + 1;
-                  const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
-                  return (no <= 6 || hasDev) && (no === 1 || completedWordThemes.includes(no - 1));
-                });
-                if (ilkAcik) setTema(ilkAcik);
-              }}
+  if (selectedWordLevel === "A2" && a1TamamlananTema.length < 12) {
+    alert(`A2 seviyesine geçmek için önce A1'deki tüm 12 temayı tamamlamalısınız. Şu an ${a1TamamlananTema.length}/12 tema tamamlandı.`);
+    return;
+  }
+  const ilkAcik = (Object.keys(aktifKelimeListesi) as TemaKey[]).find((_k, i) => {
+    const no = i + 1;
+    const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
+    return (no <= 6 || hasDev) && (no === 1 || completedWordThemes.includes(no - 1));
+  });
+  if (ilkAcik) setTema(ilkAcik);
+}}
                 style={{ background: "#0f172a", border: "none", borderRadius: 16, padding: "13px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
                 🎯 Hemen Kelime Çalış
               </button>
