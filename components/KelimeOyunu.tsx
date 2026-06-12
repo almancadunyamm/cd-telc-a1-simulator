@@ -816,15 +816,18 @@ const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
                   {(["A1", "A2", "B1"] as const).map((level) => {
   const a1Tamamlandi = a1TamamlananTema.length >= 12;
   const a2Tamamlandi = false; // B1 için ileride eklenecek
-  const levelKilitli = (level === "A2" && !a1Tamamlandi) || (level === "B1");
+  const levelKilitli = (level === "B1");
   return (
     <button key={level} onClick={() => {
-      if (levelKilitli) {
-        if (level === "A2") alert("A2 seviyesine geçmek için önce A1'deki tüm 12 temayı tamamlamalısınız.");
-        else alert("B1 seviyesi çok yakında açılacak.");
-        return;
-      }
-      setSelectedWordLevel(level);
+      if (level === "B1") {
+  alert("B1 seviyesi çok yakında açılacak.");
+  return;
+}
+if (level === "A2" && a1TamamlananTema.length < 12) {
+  alert(`A2 seviyesine geçmek için önce A1'deki tüm 12 temayı tamamlamalısınız. Şu an ${a1TamamlananTema.length}/12 tema tamamlandı.`);
+  return;
+}
+setSelectedWordLevel(level);
     }}
       style={{ borderRadius: 99, padding: "8px 20px", fontSize: 14, fontWeight: 900, cursor: levelKilitli ? "not-allowed" : "pointer", border: "none", background: selectedWordLevel === level ? "#059669" : "#e2e8f0", color: selectedWordLevel === level ? "#fff" : "#64748b", opacity: levelKilitli ? 0.6 : 1 }}>
       {level === "A1" ? "✓ " : levelKilitli ? "🔒 " : "✓ "}{level}
