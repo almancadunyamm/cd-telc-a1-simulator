@@ -801,7 +801,24 @@ const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase" }}>🏆 Kelime Liderleri</div>
-                  <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", marginTop: 4 }}>Bu Haftanın Öne Çıkanları</div>
+                  {(["A1", "A2", "B1"] as const).map((level) => {
+  const a1Tamamlandi = completedWordThemes.filter(n => n >= 1 && n <= 12).length >= 12;
+  const a2Tamamlandi = false; // B1 için ileride eklenecek
+  const levelKilitli = (level === "A2" && !a1Tamamlandi) || (level === "B1");
+  return (
+    <button key={level} onClick={() => {
+      if (levelKilitli) {
+        if (level === "A2") alert("A2 seviyesine geçmek için önce A1'deki tüm 12 temayı tamamlamalısınız.");
+        else alert("B1 seviyesi çok yakında açılacak.");
+        return;
+      }
+      setSelectedWordLevel(level);
+    }}
+      style={{ borderRadius: 99, padding: "8px 20px", fontSize: 14, fontWeight: 900, cursor: levelKilitli ? "not-allowed" : "pointer", border: "none", background: selectedWordLevel === level ? "#059669" : "#e2e8f0", color: selectedWordLevel === level ? "#fff" : "#64748b", opacity: levelKilitli ? 0.6 : 1 }}>
+      {level === "A1" ? "✓ " : levelKilitli ? "🔒 " : "✓ "}{level}
+    </button>
+  );
+})}
                 </div>
                 <span style={{ background: "#ecfdf5", color: "#059669", borderRadius: 99, padding: "4px 12px", fontSize: 12, fontWeight: 900 }}>Canlı</span>
               </div>
