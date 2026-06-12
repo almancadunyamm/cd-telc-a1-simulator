@@ -467,16 +467,27 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [liderler, setLiderler] = useState<{display_name: string, toplam_dogru: number, streak_count: number, rozet_adi: string, rozet_icon: string, ogrenci_turu: string}[]>([]);
   const [temaDogruSayilari, setTemaDogruSayilari] = useState<Record<string, number>>({});
   const [temaLearnedWords, setTemaLearnedWords] = useState<Record<string, string[]>>({});
+  const [a1TamamlananTema, setA1TamamlananTema] = useState<number[]>([]);
 
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
     async function loadProgress() {
-      const { data } = await supabase
-        .from("word_progress")
-        .select("tema_key, tamamlandi, dogru_sayisi, learned_words")
-        .eq("user_email", currentUserEmail)
-.eq("level", selectedWordLevel);
+  const { data } = await supabase
+    .from("word_progress")
+    .select("tema_key, tamamlandi, dogru_sayisi, learned_words")
+    .eq("user_email", currentUserEmail)
+    .eq("level", selectedWordLevel);
+
+  const { data: a1Data } = await supabase
+    .from("word_progress")
+    .select("tema_key, tamamlandi")
+    .eq("user_email", currentUserEmail)
+    .eq("level", "A1");
+  if (a1Data) {
+    const a1Bitti = a1Data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
+    setA1TamamlananTema(a1Bitti);
+  }
       if (data) {
         const tamamlananlar = data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
         setCompletedWordThemes(tamamlananlar);
@@ -802,7 +813,7 @@ const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
                 <div>
                   <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase" }}>🏆 Kelime Liderleri</div>
                   {(["A1", "A2", "B1"] as const).map((level) => {
-  const a1Tamamlandi = completedWordThemes.filter(n => n >= 1 && n <= 12).length >= 12;
+  const a1Tamamlandi = a1TamamlananTema.length >= 12;
   const a2Tamamlandi = false; // B1 için ileride eklenecek
   const levelKilitli = (level === "A2" && !a1Tamamlandi) || (level === "B1");
   return (
