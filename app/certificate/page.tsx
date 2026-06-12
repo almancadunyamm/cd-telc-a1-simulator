@@ -116,6 +116,15 @@ export default function CertificatePage() {
           </div>
         </div>
       </section>
+      <div className="relative z-10 mt-6 flex justify-center gap-3 print:hidden">
+  <button
+    type="button"
+    onClick={() => window.print()}
+    className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-lg hover:bg-slate-800"
+  >
+    📥 PDF Olarak İndir
+  </button>
+</div>
     </main>
   );
 }
