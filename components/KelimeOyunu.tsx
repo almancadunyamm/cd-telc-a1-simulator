@@ -473,7 +473,8 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       const { data } = await supabase
         .from("word_progress")
         .select("tema_key, tamamlandi, dogru_sayisi")
-        .eq("user_email", currentUserEmail);
+        .eq("user_email", currentUserEmail)
+.eq("level", selectedWordLevel);
       if (data) {
         const tamamlananlar = data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
         setCompletedWordThemes(tamamlananlar);
@@ -495,7 +496,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       if (data) setLiderler(data);
     }
     loadLiderler();
-  }, [currentUserEmail]);
+  }, [currentUserEmail, selectedWordLevel]);
 
   useEffect(() => {
     if (!oyunBitti || !tema) return;
@@ -580,7 +581,10 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     const bugun = new Date().toISOString().split("T")[0];
     const { data: streakData } = await supabase
       .from("word_progress").select("last_played_date, streak_count")
-      .eq("user_email", currentUserEmail).limit(1).maybeSingle();
+      .eq("user_email", currentUserEmail)
+.eq("level", selectedWordLevel)
+.limit(1)
+.maybeSingle();
     let yeniStreak = 1;
     if (streakData?.last_played_date) {
       const dun = new Date(); dun.setDate(dun.getDate() - 1);
@@ -589,10 +593,17 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       else if (streakData.last_played_date === dunStr) yeniStreak = (streakData.streak_count || 0) + 1;
     }
     await supabase.from("word_progress").upsert({
-      user_email: currentUserEmail, tema_key: temaKey, mod: mod || "de_to_tr",
-      dogru_sayisi: yeniTemaToplamDogru, toplam_soru: toplamSoru, tamamlandi,
-      streak_count: yeniStreak, last_played_date: bugun, updated_at: new Date().toISOString(),
-    }, { onConflict: "user_email,tema_key,mod" });
+  user_email: currentUserEmail,
+  level: selectedWordLevel,
+  tema_key: temaKey,
+  mod: mod || "de_to_tr",
+  dogru_sayisi: yeniTemaToplamDogru,
+  toplam_soru: toplamSoru,
+  tamamlandi,
+  streak_count: yeniStreak,
+  last_played_date: bugun,
+  updated_at: new Date().toISOString(),
+}, { onConflict: "user_email,level,tema_key,mod" });
     const rozet = getRozet(yeniGenelToplam);
     const ogrenciTuru = hasAnyLiveCourseOrder ? "Canlı Sınıf" : "Dijital";
     await supabase.from("word_leaderboard").upsert({
