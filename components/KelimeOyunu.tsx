@@ -737,6 +737,42 @@ const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
       <br />
       Sertifikanı WhatsApp grubunda paylaşmayı unutma.
     </p>
+
+    <button
+      type="button"
+      onClick={() => window.open(sertifikaUrl, "_blank")}
+      style={{
+        marginTop: 16,
+        width: "100%",
+        border: "none",
+        borderRadius: 14,
+        padding: "12px 16px",
+        background: "linear-gradient(135deg, #facc15, #f59e0b)",
+        color: "#0f172a",
+        fontWeight: 900,
+        cursor: "pointer",
+      }}
+    >
+      📜 Sertifikanı Görüntüle
+    </button>
+
+    <button
+      type="button"
+      onClick={() => window.open(whatsappPaylasUrl, "_blank")}
+      style={{
+        marginTop: 10,
+        width: "100%",
+        border: "none",
+        borderRadius: 14,
+        padding: "12px 16px",
+        background: "#25D366",
+        color: "#fff",
+        fontWeight: 900,
+        cursor: "pointer",
+      }}
+    >
+      📲 WhatsApp'ta Paylaş
+    </button>
   </div>
 )}
             </div>
