@@ -479,15 +479,16 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     .eq("user_email", currentUserEmail)
     .eq("level", selectedWordLevel);
 
-  const { data: a1Data } = await supabase
-    .from("word_progress")
-    .select("tema_key, tamamlandi")
-    .eq("user_email", currentUserEmail)
-    .eq("level", "A1");
-  if (a1Data) {
-    const a1Bitti = a1Data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
-    setA1TamamlananTema(a1Bitti);
-  }
+      const { data: a1Data } = await supabase
+        .from("word_progress")
+        .select("tema_key, tamamlandi")
+        .eq("user_email", currentUserEmail)
+        .eq("level", "A1");
+      if (a1Data) {
+        const a1Bitti = a1Data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
+        setA1TamamlananTema(a1Bitti);
+      }
+
       if (data) {
         const tamamlananlar = data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
         setCompletedWordThemes(tamamlananlar);
