@@ -7,10 +7,22 @@ export default function CertificatePage() {
 
   const level = searchParams.get("level") || "A1";
   const name = searchParams.get("name") || "Almanca Okulum Öğrencisi";
+  const today = new Date().toLocaleDateString("tr-TR");
+const certificateNo = `AO-${level}-${Date.now().toString().slice(-6)}`;
 
   return (
     <main className="min-h-screen bg-slate-100 p-6">
-      <section className="mx-auto max-w-5xl rounded-[32px] border-8 border-yellow-400 bg-white p-10 text-center shadow-2xl">
+      <section className="relative mx-auto max-w-5xl overflow-hidden rounded-[32px] border-8 border-yellow-400 bg-white p-10 text-center shadow-2xl">
+        <div className="absolute right-8 top-8 rounded-full bg-yellow-400 px-5 py-3 text-sm font-black text-slate-900 shadow-lg">
+  🏆 ŞAMPİYON
+</div>
+
+<div className="absolute left-8 top-8 text-left">
+  <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+    Sertifika No
+  </p>
+  <p className="text-sm font-black text-slate-700">{certificateNo}</p>
+</div>
         <p className="text-sm font-black uppercase tracking-[0.4em] text-blue-600">
           Almanca Okulum
         </p>
@@ -45,6 +57,17 @@ export default function CertificatePage() {
   </p>
 </div>
 
+        <div className="mt-10 flex items-center justify-center gap-10 text-sm font-bold text-slate-500">
+  <div>
+    <p className="text-xs uppercase tracking-widest">Tarih</p>
+    <p className="mt-1 text-slate-800">{today}</p>
+  </div>
+
+  <div>
+    <p className="text-xs uppercase tracking-widest">Seviye</p>
+    <p className="mt-1 text-slate-800">Goethe {level}</p>
+  </div>
+</div>
         <div className="mt-10 border-t pt-6">
           <p className="text-lg font-black text-slate-900">
             www.almancaokulum.com
