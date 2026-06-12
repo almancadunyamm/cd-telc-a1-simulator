@@ -466,13 +466,15 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [yukluyor, setYukluyor] = useState(true);
   const [liderler, setLiderler] = useState<{display_name: string, toplam_dogru: number, streak_count: number, rozet_adi: string, rozet_icon: string, ogrenci_turu: string}[]>([]);
   const [temaDogruSayilari, setTemaDogruSayilari] = useState<Record<string, number>>({});
+  const [temaLearnedWords, setTemaLearnedWords] = useState<Record<string, string[]>>({});
+
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
     async function loadProgress() {
       const { data } = await supabase
         .from("word_progress")
-        .select("tema_key, tamamlandi, dogru_sayisi")
+        .select("tema_key, tamamlandi, dogru_sayisi, learned_words")
         .eq("user_email", currentUserEmail)
 .eq("level", selectedWordLevel);
       if (data) {
@@ -481,8 +483,13 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
         const toplam = data.reduce((acc, d) => acc + (d.dogru_sayisi || 0), 0);
         setToplamDogru(toplam);
         const sayilar: Record<string, number> = {};
-        data.forEach(d => { sayilar[d.tema_key] = (sayilar[d.tema_key] || 0) + (d.dogru_sayisi || 0); });
-        setTemaDogruSayilari(sayilar);
+const learnedMap: Record<string, string[]> = {};
+data.forEach(d => {
+  sayilar[d.tema_key] = (sayilar[d.tema_key] || 0) + (d.dogru_sayisi || 0);
+  learnedMap[d.tema_key] = d.learned_words || [];
+});
+setTemaDogruSayilari(sayilar);
+setTemaLearnedWords(learnedMap);
       }
       setYukluyor(false);
     }
@@ -501,10 +508,11 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   useEffect(() => {
     if (!oyunBitti || !tema) return;
     const mevcutTemaDogru = temaDogruSayilari[tema] || 0;
-    const yeniTemaToplamDogru = mevcutTemaDogru + dogru;
-    const toplamKelimeSayisi = aktifKelimeListesi[tema].kelimeler.length;
-    const tamamlandi = yeniTemaToplamDogru >= Math.ceil(toplamKelimeSayisi * 0.8);
-    kaydetIlerleme(tema, dogru, sorular.length, tamamlandi, yeniTemaToplamDogru);
+const yeniTemaToplamDogru = mevcutTemaDogru + dogru;
+const mevcutLearned = temaLearnedWords[tema] || [];
+const toplamKelimeSayisi = aktifKelimeListesi[tema].kelimeler.length;
+const tamamlandi = mevcutLearned.length >= toplamKelimeSayisi;
+kaydetIlerleme(tema, dogru, sorular.length, tamamlandi, yeniTemaToplamDogru, mevcutLearned);
   }, [oyunBitti]);
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
@@ -551,9 +559,16 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     setSecilenCevap(cevap);
     const mevcutSoru = sorular[suankiIndex];
     if (cevap === mevcutSoru.dogru) {
-      playSound(true);
-      setSkor((s) => s + 10); setStreak((s) => s + 1); setDogru((d) => d + 1);
-      setTimeout(() => sonrakiSoru(), 900);
+  playSound(true);
+  setSkor((s) => s + 10); setStreak((s) => s + 1); setDogru((d) => d + 1);
+  // Öğrenilen kelimeyi kaydet (Almanca kelimeyi de olarak sakla)
+  const ogrenilen = mod === "de_to_tr" ? mevcutSoru.soru : mevcutSoru.dogru;
+  setTemaLearnedWords(prev => {
+    const mevcut = prev[tema!] || [];
+    if (mevcut.includes(ogrenilen)) return prev;
+    return { ...prev, [tema!]: [...mevcut, ogrenilen] };
+  });
+  setTimeout(() => sonrakiSoru(), 900);
     } else {
       playSound(false);
       setCanlar((c) => c - 1); setStreak(0); setYanlis((y) => y + 1);
@@ -569,7 +584,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     else setSuankiIndex((i) => i + 1);
   };
 
-  const kaydetIlerleme = async (temaKey: TemaKey, dogruSayisi: number, toplamSoru: number, tamamlandi: boolean, yeniTemaToplamDogru: number) => {
+  const kaydetIlerleme = async (temaKey: TemaKey, dogruSayisi: number, toplamSoru: number, tamamlandi: boolean, yeniTemaToplamDogru: number, mevcutLearned: string[] = []) => {
     if (!currentUserEmail) return;
     const yeniGenelToplam = toplamDogru + dogruSayisi;
     setToplamDogru(yeniGenelToplam);
@@ -592,7 +607,8 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
       if (streakData.last_played_date === bugun) yeniStreak = streakData.streak_count || 1;
       else if (streakData.last_played_date === dunStr) yeniStreak = (streakData.streak_count || 0) + 1;
     }
-    await supabase.from("word_progress").upsert({
+    const yeniLearned = temaLearnedWords[temaKey] || mevcutLearned;
+await supabase.from("word_progress").upsert({
   user_email: currentUserEmail,
   level: selectedWordLevel,
   tema_key: temaKey,
@@ -600,6 +616,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   dogru_sayisi: yeniTemaToplamDogru,
   toplam_soru: toplamSoru,
   tamamlandi,
+  learned_words: yeniLearned,
   streak_count: yeniStreak,
   last_played_date: bugun,
   updated_at: new Date().toISOString(),
@@ -841,7 +858,8 @@ const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
                   const isLocked = !hasAccess || !prevDone;
                   const isCompleted = completedWordThemes.includes(temaNo);
                   const temaDogru = temaDogruSayilari[key] || 0;
-                  const temaYuzde = Math.min(100, Math.round((temaDogru / val.kelimeler.length) * 100));
+const temaLearned = temaLearnedWords[key] || [];
+const temaYuzde = Math.min(100, Math.round((temaLearned.length / val.kelimeler.length) * 100));
                   return (
                     <button key={key} onClick={() => {
                       if (!hasAccess) { alert("Bu tema Gelişim Paketi ile açılır."); return; }
@@ -863,12 +881,12 @@ const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
                       </div>
                       <div style={{ fontSize: 15, fontWeight: 900 }}>{val.ad}</div>
                       <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>{val.kelimeler.length} kelime</div>
-                      {!isLocked && temaDogru > 0 && (
+                      {!isLocked && temaLearned.length > 0 && (
                         <div style={{ marginTop: 8 }}>
                           <div style={{ height: 4, background: "#dbeafe", borderRadius: 99, overflow: "hidden" }}>
                             <div style={{ height: "100%", width: `${temaYuzde}%`, background: isCompleted ? "#16a34a" : "#2563eb", borderRadius: 99 }} />
                           </div>
-                          <div style={{ fontSize: 10, color: "#64748b", marginTop: 3, fontWeight: 700 }}>%{temaYuzde} tamamlandı</div>
+                          <div style={{ fontSize: 10, color: "#64748b", marginTop: 3, fontWeight: 700 }}>{temaLearned.length}/{val.kelimeler.length} kelime öğrenildi</div>
                         </div>
                       )}
                       <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginTop: 6, fontWeight: 800 }}>
@@ -917,9 +935,10 @@ const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
     const temaNo = Number(String(tema).replace("tema", ""));
     const toplamKelimeSayisi = aktifKelimeListesi[tema].kelimeler.length;
     const mevcutTemaDogru = temaDogruSayilari[tema] || 0;
-    const yeniTemaToplamDogru = mevcutTemaDogru + dogru;
-    const temaYuzde = Math.min(100, Math.round((yeniTemaToplamDogru / toplamKelimeSayisi) * 100));
-    const tamamlandi = yeniTemaToplamDogru >= Math.ceil(toplamKelimeSayisi * 0.8);
+const yeniTemaToplamDogru = mevcutTemaDogru + dogru;
+const mevcutLearned = temaLearnedWords[tema] || [];
+const temaYuzde = Math.min(100, Math.round((mevcutLearned.length / toplamKelimeSayisi) * 100));
+const tamamlandi = mevcutLearned.length >= toplamKelimeSayisi;
     const sonrakiTemaVar = temaNo < 12;
     playResultSound(basari);
 
