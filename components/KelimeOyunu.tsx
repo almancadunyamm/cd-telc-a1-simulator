@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { a2Kelimeler } from "@/app/data/vocabulary/a2";
 
@@ -11,6 +11,7 @@ type TemaKey =
 type Mod = "de_to_tr" | "tr_to_de";
 type Soru = { soru: string; dogru: string; secenekler: string[] };
 type KelimeTemaMap = Record<TemaKey, { ad: string; kelimeler: Kelime[] }>;
+type Ekran = "menu" | "mod" | "oyun" | "sonuc" | "seviye_tamamlandi" | "genel_sinav" | "genel_sinav_sonuc";
 
 const KELIMELER = {
   tema1: { ad: "Kendini Tanıtma", kelimeler: [
@@ -333,18 +334,18 @@ const KELIMELER = {
   ] as Kelime[]},
 };
 
-const KELIMELER_BY_LEVEL = {
+const KELIMELER_BY_LEVEL: Record<string, typeof KELIMELER> = {
   A1: KELIMELER,
-  A2: a2Kelimeler,
+  A2: a2Kelimeler as unknown as typeof KELIMELER,
   B1: KELIMELER,
 };
 
 const ROZETLER = [
-  { min: 0,   max: 49,  icon: "🌱", ad: "Kelime Yolcusu",    renk: "#6b7280" },
-  { min: 50,  max: 149, icon: "🔥", ad: "Kelime Avcısı",     renk: "#f59e0b" },
-  { min: 150, max: 299, icon: "🏅", ad: "Kelime Ustası",     renk: "#3b82f6" },
-  { min: 300, max: 449, icon: "👑", ad: "TELC Kelime Kralı", renk: "#8b5cf6" },
-  { min: 450, max: 9999,icon: "🏆", ad: "Goethe Şampiyonu",  renk: "#10b981" },
+  { min: 0,   max: 49,  icon: "🌱", ad: "Kelime Yolcusu" },
+  { min: 50,  max: 149, icon: "🔥", ad: "Kelime Avcısı" },
+  { min: 150, max: 299, icon: "🏅", ad: "Kelime Ustası" },
+  { min: 300, max: 449, icon: "👑", ad: "TELC Kelime Kralı" },
+  { min: 450, max: 9999,icon: "🏆", ad: "Goethe Şampiyonu" },
 ];
 
 function getRozet(toplam: number) {
@@ -353,76 +354,34 @@ function getRozet(toplam: number) {
 function getSonrakiRozet(toplam: number) {
   return ROZETLER.find(r => r.min > toplam) || null;
 }
-function playResultSound(basari: number) {
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const gain = ctx.createGain();
-    gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    if (basari >= 80) {
-      [[523, 0], [659, 0.15], [784, 0.3], [1047, 0.5]].forEach(([freq, time]) => {
-        const osc = ctx.createOscillator();
-        osc.connect(gain);
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
-        gain.gain.setValueAtTime(0.25, ctx.currentTime + time);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.4);
-        osc.start(ctx.currentTime + time);
-        osc.stop(ctx.currentTime + time + 0.4);
-      });
-    } else if (basari >= 60) {
-      [[440, 0], [523, 0.2]].forEach(([freq, time]) => {
-        const osc = ctx.createOscillator();
-        osc.connect(gain);
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime + time);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.35);
-        osc.start(ctx.currentTime + time);
-        osc.stop(ctx.currentTime + time + 0.35);
-      });
-    } else {
-      const osc = ctx.createOscillator();
-      osc.type = "sawtooth";
-      osc.connect(gain);
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.5);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.5);
-    }
-  } catch {}
-}
-function playSound(dogru: boolean) {
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    if (dogru) {
-      osc.frequency.setValueAtTime(520, ctx.currentTime);
-      osc.frequency.setValueAtTime(780, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.4);
-    } else {
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(220, ctx.currentTime);
-      osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.35);
-    }
-  } catch {}
-}
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 function getWrongOptions(correct: string, pool: Kelime[], count = 3): string[] {
   const others = pool.filter((k) => k.tr !== correct).map((k) => k.tr);
   return shuffle(others).slice(0, count);
+}
+function playSound(dogru: boolean) {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (dogru) {
+      osc.frequency.setValueAtTime(520, ctx.currentTime);
+      osc.frequency.setValueAtTime(780, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+    } else {
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
+    }
+  } catch {}
 }
 
 type Props = {
@@ -433,14 +392,14 @@ type Props = {
 };
 
 export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName }: Props) {
+  const [ekran, setEkran] = useState<Ekran>("menu");
   const [tema, setTema] = useState<TemaKey | null>(null);
-  const [mod, setMod] = useState<Mod | null>(null);
+  const [mod, setMod] = useState<Mod>("de_to_tr");
   const [sorular, setSorular] = useState<Soru[]>([]);
   const [suankiIndex, setSuankiIndex] = useState(0);
   const [canlar, setCanlar] = useState(3);
   const [skor, setSkor] = useState(0);
   const [secilenCevap, setSecilenCevap] = useState<string | null>(null);
-  const [oyunBitti, setOyunBitti] = useState(false);
   const [streak, setStreak] = useState(0);
   const [dogru, setDogru] = useState(0);
   const [yanlis, setYanlis] = useState(0);
@@ -451,10 +410,13 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [toplamDogru, setToplamDogru] = useState(0);
   const [yukluyor, setYukluyor] = useState(true);
   const [liderler, setLiderler] = useState<{display_name: string, toplam_dogru: number, streak_count: number, rozet_adi: string, rozet_icon: string, ogrenci_turu: string}[]>([]);
-  const [temaDogruSayilari, setTemaDogruSayilari] = useState<Record<string, number>>({});
   const [temaLearnedWords, setTemaLearnedWords] = useState<Record<string, string[]>>({});
   const [a1TamamlananTema, setA1TamamlananTema] = useState<number[]>([]);
   const [uyariMesaji, setUyariMesaji] = useState<string | null>(null);
+  const [genelSinavHak, setGenelSinavHak] = useState(2);
+  const [genelSinavYanlis, setGenelSinavYanlis] = useState(0);
+
+  const temaLearnedRef = useRef<Record<string, string[]>>({});
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
@@ -480,14 +442,10 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
         setCompletedWordThemes(tamamlananlar);
         const toplam = data.reduce((acc, d) => acc + (d.dogru_sayisi || 0), 0);
         setToplamDogru(toplam);
-        const sayilar: Record<string, number> = {};
         const learnedMap: Record<string, string[]> = {};
-        data.forEach(d => {
-          sayilar[d.tema_key] = (sayilar[d.tema_key] || 0) + (d.dogru_sayisi || 0);
-          learnedMap[d.tema_key] = d.learned_words || [];
-        });
-        setTemaDogruSayilari(sayilar);
+        data.forEach(d => { learnedMap[d.tema_key] = d.learned_words || []; });
         setTemaLearnedWords(learnedMap);
+        temaLearnedRef.current = learnedMap;
       }
       setYukluyor(false);
     }
@@ -505,448 +463,470 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
 
   const aktifKelimeListesi = KELIMELER_BY_LEVEL[selectedWordLevel] || KELIMELER;
 
-  useEffect(() => {
-    if (!oyunBitti || !tema) return;
-    const mevcutTemaDogru = temaDogruSayilari[tema] || 0;
-    const yeniTemaToplamDogru = mevcutTemaDogru + dogru;
-    const mevcutLearned = temaLearnedWords[tema] || [];
-    const toplamKelimeSayisi = aktifKelimeListesi[tema].kelimeler.length;
-    const tamamlandi = mevcutLearned.length >= toplamKelimeSayisi;
-    kaydetIlerleme(tema, dogru, sorular.length, tamamlandi, yeniTemaToplamDogru, mevcutLearned);
-  }, [oyunBitti]);
+  const tumTemalarTamamlandi = completedWordThemes.length >= 12;
+
+  // Tüm seviyenin kelimelerini döndür (genel sınav için)
+  const tumKelimeler = (): Kelime[] => {
+    return Object.values(aktifKelimeListesi).flatMap(t => t.kelimeler);
+  };
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
-    const aktifKelimeler = KELIMELER_BY_LEVEL[selectedWordLevel] || KELIMELER;
-    const kelimeHavuzu = aktifKelimeler[secilenTema].kelimeler;
-    const kelimeler: Kelime[] = shuffle(kelimeHavuzu).slice(0, 15);
-    const hazirSorular: Soru[] = kelimeler.map((k) => {
+    const kelimeHavuzu = aktifKelimeListesi[secilenTema].kelimeler;
+    const ogrenilmisler = temaLearnedRef.current[secilenTema] || [];
+    const ogrenilmemisler = kelimeHavuzu.filter(k => !ogrenilmisler.includes(k.de));
+    const havuz = ogrenilmemisler.length >= 3 ? ogrenilmemisler : kelimeHavuzu;
+    const secilen: Kelime[] = shuffle(havuz).slice(0, 15);
+
+    const hazirSorular: Soru[] = secilen.map((k) => {
       const dogruCevap = secilenMod === "de_to_tr" ? k.tr : k.de;
       const soru = secilenMod === "de_to_tr" ? k.de : k.tr;
-      const yanlislar =
-        secilenMod === "de_to_tr"
-          ? getWrongOptions(k.tr, kelimeHavuzu)
-          : shuffle(kelimeHavuzu.filter((x) => x.de !== k.de)).slice(0, 3).map((x) => x.de);
+      const yanlislar = secilenMod === "de_to_tr"
+        ? getWrongOptions(k.tr, kelimeHavuzu)
+        : shuffle(kelimeHavuzu.filter(x => x.de !== k.de)).slice(0, 3).map(x => x.de);
       return { soru, dogru: dogruCevap, secenekler: shuffle([dogruCevap, ...yanlislar]) };
     });
+
     setSorular(hazirSorular);
-    setSuankiIndex(0);
-    setCanlar(3);
-    setSkor(0);
-    setSecilenCevap(null);
-    setOyunBitti(false);
-    setStreak(0);
-    setDogru(0);
-    setYanlis(0);
-    setYanlisKelimeler([]);
-    setYanlisGoster(false);
-    setTema(secilenTema);
-    setMod(secilenMod);
-  }, [selectedWordLevel]);
+    setSuankiIndex(0); setCanlar(3); setSkor(0);
+    setSecilenCevap(null); setStreak(0); setDogru(0); setYanlis(0);
+    setYanlisKelimeler([]); setYanlisGoster(false);
+    setTema(secilenTema); setMod(secilenMod);
+    setEkran("oyun");
+  }, [aktifKelimeListesi]);
+
+  const genelSinavBaslat = () => {
+    const tumK = tumKelimeler();
+    const secilen = shuffle(tumK).slice(0, 30);
+    const hazirSorular: Soru[] = secilen.map((k) => {
+      const dogruCevap = k.tr;
+      const yanlislar = getWrongOptions(k.tr, tumK);
+      return { soru: k.de, dogru: dogruCevap, secenekler: shuffle([dogruCevap, ...yanlislar]) };
+    });
+    setSorular(hazirSorular);
+    setSuankiIndex(0); setCanlar(999); setSkor(0);
+    setSecilenCevap(null); setStreak(0); setDogru(0); setYanlis(0);
+    setYanlisKelimeler([]); setYanlisGoster(false);
+    setEkran("genel_sinav");
+  };
+
+  const seviyeSifirla = async () => {
+    if (!currentUserEmail) return;
+    await supabase.from("word_progress")
+      .delete()
+      .eq("user_email", currentUserEmail)
+      .eq("level", selectedWordLevel);
+    setCompletedWordThemes([]);
+    setTemaLearnedWords({});
+    temaLearnedRef.current = {};
+    setToplamDogru(0);
+    setGenelSinavHak(2);
+    setEkran("menu");
+  };
 
   const cevapSec = (cevap: string) => {
     if (secilenCevap) return;
     setSecilenCevap(cevap);
     const mevcutSoru = sorular[suankiIndex];
-    if (cevap === mevcutSoru.dogru) {
-      playSound(true);
-      setSkor((s) => s + 10);
-      setStreak((s) => s + 1);
-      setDogru((d) => d + 1);
-      const ogrenilen = mod === "de_to_tr" ? mevcutSoru.soru : mevcutSoru.dogru;
-      setTemaLearnedWords(prev => {
-        const mevcut = prev[tema!] || [];
-        if (mevcut.includes(ogrenilen)) return prev;
-        return { ...prev, [tema!]: [...mevcut, ogrenilen] };
-      });
-      setTimeout(() => sonrakiSoru(), 900);
+    const dogruMu = cevap === mevcutSoru.dogru;
+    playSound(dogruMu);
+
+    if (dogruMu) {
+      setSkor(s => s + 10); setStreak(s => s + 1); setDogru(d => d + 1);
+      // Normal oyunda öğrenilen kelimeyi kaydet
+      if (ekran === "oyun" && tema) {
+        const ogrenilen = mod === "de_to_tr" ? mevcutSoru.soru : mevcutSoru.dogru;
+        setTemaLearnedWords(prev => {
+          const mevcut = prev[tema] || [];
+          if (mevcut.includes(ogrenilen)) return prev;
+          const yeni = { ...prev, [tema]: [...mevcut, ogrenilen] };
+          temaLearnedRef.current = yeni;
+          return yeni;
+        });
+      }
     } else {
-      playSound(false);
-      setCanlar((c) => c - 1);
-      setStreak(0);
-      setYanlis((y) => y + 1);
+      setStreak(0); setYanlis(y => y + 1);
       setYanlisKelimeler(prev => [...prev, { soru: mevcutSoru.soru, dogru: mevcutSoru.dogru, verilen: cevap }]);
-      if (canlar - 1 <= 0) setTimeout(() => setOyunBitti(true), 900);
-      else setTimeout(() => sonrakiSoru(), 900);
+      // Normal oyunda can azalt
+      if (ekran === "oyun") {
+        setCanlar(c => {
+          if (c - 1 <= 0) { setTimeout(() => bitir(), 900); return 0; }
+          return c - 1;
+        });
+        setTimeout(() => sonrakiSoru(), 900);
+        return;
+      }
     }
+    setTimeout(() => sonrakiSoru(), 900);
   };
 
   const sonrakiSoru = () => {
     setSecilenCevap(null);
-    if (suankiIndex + 1 >= sorular.length) setOyunBitti(true);
-    else setSuankiIndex((i) => i + 1);
+    if (suankiIndex + 1 >= sorular.length) bitir();
+    else setSuankiIndex(i => i + 1);
   };
 
-  const kaydetIlerleme = async (temaKey: TemaKey, dogruSayisi: number, toplamSoru: number, tamamlandi: boolean, yeniTemaToplamDogru: number, mevcutLearned: string[] = []) => {
-    if (!currentUserEmail) return;
-    const yeniGenelToplam = toplamDogru + dogruSayisi;
-    setToplamDogru(yeniGenelToplam);
-    setTemaDogruSayilari(prev => ({ ...prev, [temaKey]: yeniTemaToplamDogru }));
-    if (tamamlandi) {
-      const temaNo = Number(String(temaKey).replace("tema", ""));
-      setCompletedWordThemes(prev => prev.includes(temaNo) ? prev : [...prev, temaNo]);
+  const bitir = () => {
+    if (ekran === "oyun") {
+      kaydetIlerleme();
+      setEkran("sonuc");
+    } else if (ekran === "genel_sinav") {
+      setGenelSinavYanlis(yanlis);
+      kaydetGenelSinav();
+      setEkran("genel_sinav_sonuc");
     }
+  };
+
+  const kaydetIlerleme = async () => {
+    if (!currentUserEmail || !tema) return;
+    const kelimeHavuzu = aktifKelimeListesi[tema].kelimeler;
+    const mevcutLearned = temaLearnedRef.current[tema] || [];
+    const tamamlandi = mevcutLearned.length >= kelimeHavuzu.length;
     const bugun = new Date().toISOString().split("T")[0];
-    const { data: streakData } = await supabase
-      .from("word_progress")
-      .select("last_played_date, streak_count")
-      .eq("user_email", currentUserEmail)
-      .eq("level", selectedWordLevel)
-      .limit(1)
-      .maybeSingle();
-    let yeniStreak = 1;
-    if (streakData?.last_played_date) {
-      const dun = new Date();
-      dun.setDate(dun.getDate() - 1);
-      const dunStr = dun.toISOString().split("T")[0];
-      if (streakData.last_played_date === bugun) yeniStreak = streakData.streak_count || 1;
-      else if (streakData.last_played_date === dunStr) yeniStreak = (streakData.streak_count || 0) + 1;
-    }
-    const yeniLearned = temaLearnedWords[temaKey] || mevcutLearned;
+
     await supabase.from("word_progress").upsert({
       user_email: currentUserEmail,
       level: selectedWordLevel,
-      tema_key: temaKey,
-      mod: mod || "de_to_tr",
-      dogru_sayisi: yeniTemaToplamDogru,
-      toplam_soru: toplamSoru,
+      tema_key: tema,
+      mod,
+      dogru_sayisi: mevcutLearned.length,
+      toplam_soru: kelimeHavuzu.length,
       tamamlandi,
-      learned_words: yeniLearned,
-      streak_count: yeniStreak,
+      learned_words: mevcutLearned,
       last_played_date: bugun,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_email,level,tema_key,mod" });
+
+    if (tamamlandi) {
+      const temaNo = Number(String(tema).replace("tema", ""));
+      setCompletedWordThemes(prev => prev.includes(temaNo) ? prev : [...prev, temaNo]);
+    }
+
+    const yeniGenelToplam = toplamDogru + dogru;
+    setToplamDogru(yeniGenelToplam);
     const rozet = getRozet(yeniGenelToplam);
     const ogrenciTuru = hasAnyLiveCourseOrder ? "Canlı Sınıf" : "Dijital";
     await supabase.from("word_leaderboard").upsert({
       user_email: currentUserEmail,
       display_name: (currentUserName && !currentUserName.includes("@") && currentUserName.trim() !== "") ? currentUserName : currentUserEmail,
       toplam_dogru: yeniGenelToplam,
-      streak_count: yeniStreak,
-      rozet_adi: rozet.ad,
-      rozet_icon: rozet.icon,
-      ogrenci_turu: ogrenciTuru,
+      rozet_adi: rozet.ad, rozet_icon: rozet.icon, ogrenci_turu: ogrenciTuru,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_email" });
   };
 
+  const kaydetGenelSinav = async () => {
+    if (!currentUserEmail) return;
+    // Genel sınav başarılı ise A2 kilidini aç (word_progress'e özel kayıt)
+    if (yanlis < 5) {
+      await supabase.from("word_progress").upsert({
+        user_email: currentUserEmail,
+        level: selectedWordLevel,
+        tema_key: "genel_sinav",
+        mod: "de_to_tr",
+        dogru_sayisi: dogru,
+        toplam_soru: 30,
+        tamamlandi: true,
+        learned_words: [],
+        last_played_date: new Date().toISOString().split("T")[0],
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_email,level,tema_key,mod" });
+    }
+  };
+
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
-  if (level === "B1") {
-    setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesi çok yakında açılacak. Gelişim ve Zirve öğrencileri ilk erişenler olacak.");
-    return;
-  }
-  if (level === "A2" && a1TamamlananTema.length < 12) {
-    setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
-    return;
-  }
-  setSelectedWordLevel(level);
-};
+    if (level === "B1") {
+      setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesi çok yakında açılacak. Gelişim ve Zirve öğrencileri ilk erişenler olacak.");
+      return;
+    }
+    if (level === "A2" && a1TamamlananTema.length < 12) {
+      setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
+      return;
+    }
+    setSelectedWordLevel(level);
+  };
+
+  const hemenBasla = () => {
+    if (selectedWordLevel === "A2" && a1TamamlananTema.length < 12) {
+      setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
+      return;
+    }
+    // Tüm temalar bittiyse seviye tamamlandı ekranına git
+    if (tumTemalarTamamlandi) { setEkran("seviye_tamamlandi"); return; }
+    // En son kaldığı temayı bul
+    const ilkAcik = (Object.keys(aktifKelimeListesi) as TemaKey[]).find((k, i) => {
+      const no = i + 1;
+      const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
+      return (no <= 6 || hasDev) && !completedWordThemes.includes(no);
+    });
+    if (ilkAcik) { setTema(ilkAcik); setEkran("mod"); }
+  };
 
   const canIkonu = (dolu: boolean) => (dolu ? "❤️" : "🖤");
   const mevcutRozet = getRozet(toplamDogru);
   const sonrakiRozet = getSonrakiRozet(toplamDogru);
-  const tumTemalarTamamlandi = completedWordThemes.length >= 12;
 
-  const sertifikaUrl = `/certificate?level=${selectedWordLevel}&name=${encodeURIComponent(
-    currentUserName || currentUserEmail || "Almanca Okulum Öğrencisi"
-  )}`;
-  const whatsappMesaji = encodeURIComponent(
-    `🏆 Goethe ${selectedWordLevel} Kelime Şampiyonu oldum!\n\nAlmanca Okulum Kelime Arenasındaki tüm temaları tamamlayarak sertifikamı almaya hak kazandım.\n\n${typeof window !== "undefined" ? window.location.origin : "https://almancaokulum.com"}${sertifikaUrl}`
-  );
+  const sertifikaUrl = `/certificate?level=${selectedWordLevel}&name=${encodeURIComponent(currentUserName || currentUserEmail || "Almanca Okulum Öğrencisi")}`;
+  const whatsappMesaji = encodeURIComponent(`🏆 Goethe ${selectedWordLevel} Kelime Şampiyonu oldum!\n\nAlmanca Okulum Kelime Arenasındaki tüm temaları tamamlayarak sertifikamı almaya hak kazandım.\n\n${typeof window !== "undefined" ? window.location.origin : "https://almancaokulum.com"}${sertifikaUrl}`);
   const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
 
+  const C: React.CSSProperties = { background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" };
+
+  // ── UYARI MODAL ────────────────────────────────────────────────────
   if (uyariMesaji) {
-  const satirlar = uyariMesaji.split("\n").filter(s => s.trim() !== "");
-  const baslik = satirlar[0];
-  const icerik = satirlar.slice(1);
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 20 }}>
-      <div style={{ background: "#ffffff", borderRadius: 24, padding: "32px 28px", maxWidth: 400, width: "100%", textAlign: "center", boxShadow: "0 24px 60px rgba(15,23,42,0.2)" }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>{baslik.split(" ")[0]}</div>
-        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", margin: "0 0 12px" }}>{baslik.split(" ").slice(1).join(" ")}</h2>
-        {icerik.map((s, i) => (
-          <p key={i} style={{ fontSize: 14, color: "#64748b", margin: "0 0 8px", lineHeight: 1.6 }}>{s}</p>
-        ))}
-        <button onClick={() => setUyariMesaji(null)}
-          style={{ marginTop: 20, width: "100%", border: "none", borderRadius: 14, padding: "14px", background: "linear-gradient(135deg, #059669, #2563eb)", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-          Anladım
-        </button>
-      </div>
-    </div>
-  );
-}
-  const C = { background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" };
-
-  // ── TEMA SEÇİM EKRANI ──────────────────────────────────────────────
-  if (!tema) {
+    const satirlar = uyariMesaji.split("\n").filter(s => s.trim() !== "");
+    const baslik = satirlar[0];
+    const icerik = satirlar.slice(1);
     return (
-      <div style={{ ...C, padding: "28px 20px" }}>
-        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+      <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 20 }}>
+        <div style={{ background: "#ffffff", borderRadius: 24, padding: "32px 28px", maxWidth: 400, width: "100%", textAlign: "center", boxShadow: "0 24px 60px rgba(15,23,42,0.2)" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>{baslik.split(" ")[0]}</div>
+          <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", margin: "0 0 12px" }}>{baslik.split(" ").slice(1).join(" ")}</h2>
+          {icerik.map((s, i) => <p key={i} style={{ fontSize: 14, color: "#64748b", margin: "0 0 8px", lineHeight: 1.6 }}>{s}</p>)}
+          <button onClick={() => setUyariMesaji(null)} style={{ marginTop: 20, width: "100%", border: "none", borderRadius: 14, padding: "14px", background: "linear-gradient(135deg, #059669, #2563eb)", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>Anladım</button>
+        </div>
+      </div>
+    );
+  }
 
-          <p style={{ color: "#059669", fontWeight: 900, letterSpacing: 2, fontSize: 12, margin: "0 0 6px", textTransform: "uppercase" }}>Kelime Arenası</p>
-          <h1 style={{ fontSize: 28, fontWeight: 900, margin: "0 0 6px" }}>TELC Almanca Kelime Arenası</h1>
-          <p style={{ color: "#64748b", fontSize: 14, margin: "0 0 20px" }}>TELC & Goethe kelimelerini tema bazlı çalış, rozet kazan.</p>
+  // ── SEVİYE TAMAMLANDI EKRANI ───────────────────────────────────────
+  if (ekran === "seviye_tamamlandi") {
+    return (
+      <div style={{ ...C, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ maxWidth: 500, width: "100%", textAlign: "center" }}>
+          <div style={{ fontSize: 64, marginBottom: 12 }}>🏆</div>
+          <p style={{ color: "#059669", fontWeight: 900, letterSpacing: 2, fontSize: 12, textTransform: "uppercase" }}>Tebrikler!</p>
+          <h2 style={{ fontSize: 26, fontWeight: 900, margin: "8px 0 8px" }}>{selectedWordLevel} Seviyesini Tamamladın!</h2>
+          <p style={{ color: "#64748b", fontSize: 14, marginBottom: 28 }}>Tüm 12 temayı başarıyla bitirdin. Şimdi ne yapmak istersin?</p>
 
-          {/* Seviye butonları */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-            {(["A1", "A2", "B1"] as const).map((level) => {
-              const kilitli = level === "B1" || (level === "A2" && a1TamamlananTema.length < 12);
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <button onClick={genelSinavBaslat}
+              style={{ background: "linear-gradient(135deg, #2563eb, #059669)", border: "none", borderRadius: 16, padding: "16px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+              📝 Genel Sınav Yap
+              <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.85, marginTop: 4 }}>Tüm kelimelerden 30 karışık soru • Başarırsan sertifika kazan</div>
+            </button>
+            <button onClick={() => {
+              if (window.confirm(`${selectedWordLevel} seviyesini sıfırlamak istediğine emin misin? Tüm ilerleme silinecek.`)) seviyeSifirla();
+            }}
+              style={{ background: "#ffffff", border: "2px solid #fca5a5", borderRadius: 16, padding: "16px 24px", color: "#dc2626", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+              🔄 {selectedWordLevel} Seviyesini Sıfırla ve Yeniden Başla
+            </button>
+            <button onClick={() => setEkran("menu")}
+              style={{ background: "none", border: "1px solid #dbeafe", borderRadius: 14, padding: "12px", color: "#64748b", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
+              ← Ana Menüye Dön
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── GENEL SINAV EKRANI ─────────────────────────────────────────────
+  if (ekran === "genel_sinav") {
+    const suankiSoru = sorular[suankiIndex];
+    const ilerleme = (suankiIndex / sorular.length) * 100;
+    return (
+      <div style={{ ...C, padding: "20px 16px" }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 900, letterSpacing: 2, textTransform: "uppercase" }}>Genel Sınav</div>
+              <div style={{ fontSize: 13, color: "#059669", fontWeight: 900 }}>{selectedWordLevel} Seviyesi • Tüm Temalar</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 13, color: "#dc2626", fontWeight: 900 }}>❌ {yanlis} yanlış</div>
+              <div style={{ fontSize: 11, color: "#64748b" }}>Max 4 yanlış</div>
+            </div>
+          </div>
+          <div style={{ height: 8, background: "#dbeafe", borderRadius: 99, marginBottom: 20, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${ilerleme}%`, background: "linear-gradient(90deg, #2563eb, #059669)", borderRadius: 99, transition: "width 0.3s" }} />
+          </div>
+          <div style={{ textAlign: "center", fontSize: 13, color: "#64748b", marginBottom: 16, fontWeight: 700 }}>
+            {suankiIndex + 1} / {sorular.length}
+          </div>
+          <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 24, padding: "36px 24px", textAlign: "center", marginBottom: 20, minHeight: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div>
+              <div style={{ fontSize: 11, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 2, fontWeight: 900 }}>Almanca</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: "#0f172a" }}>{suankiSoru.soru}</div>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {suankiSoru.secenekler.map((s, i) => {
+              let bg = "#ffffff", border = "1px solid #dbeafe", color = "#0f172a";
+              if (secilenCevap) {
+                if (s === suankiSoru.dogru) { bg = "#ecfdf5"; border = "2px solid #10b981"; color = "#065f46"; }
+                else if (s === secilenCevap) { bg = "#fef2f2"; border = "2px solid #ef4444"; color = "#991b1b"; }
+              }
               return (
-                <button key={level} onClick={() => seviyeDegistir(level)}
-                  style={{ borderRadius: 99, padding: "8px 20px", fontSize: 14, fontWeight: 900, cursor: kilitli ? "not-allowed" : "pointer", border: "none", background: selectedWordLevel === level ? "#059669" : "#e2e8f0", color: selectedWordLevel === level ? "#fff" : "#64748b", opacity: kilitli ? 0.6 : 1 }}>
-                  {kilitli ? "🔒 " : "✓ "}{level}
+                <button key={i} onClick={() => cevapSec(s)}
+                  style={{ background: bg, border, borderRadius: 16, padding: "16px 12px", color, cursor: secilenCevap ? "default" : "pointer", fontSize: 14, fontWeight: 900, lineHeight: 1.3 }}>
+                  {s}
                 </button>
               );
             })}
           </div>
-
-          {/* Aksiyon butonları */}
-          {(["A1", "A2"].includes(selectedWordLevel)) && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
-              <button onClick={() => {
-                if (selectedWordLevel === "A2" && a1TamamlananTema.length < 12) {
-                  setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
-                  return;
-                }
-                const ilkAcik = (Object.keys(aktifKelimeListesi) as TemaKey[]).find((_k, i) => {
-                  const no = i + 1;
-                  const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
-                  return (no <= 6 || hasDev) && (no === 1 || completedWordThemes.includes(no - 1));
-                });
-                if (ilkAcik) setTema(ilkAcik);
-              }}
-                style={{ background: "#0f172a", border: "none", borderRadius: 16, padding: "13px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
-                🎯 Hemen Kelime Çalış
-              </button>
-              <button onClick={() => document.getElementById("kelime-tema-listesi")?.scrollIntoView({ behavior: "smooth" })}
-                style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 16, padding: "13px 24px", color: "#059669", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
-                📚 Temaları İncele
-              </button>
-            </div>
-          )}
-
-          {/* Mevcut rozet kutusu */}
-          {!yukluyor && (
-            <div style={{ background: "linear-gradient(135deg, #fefce8, #fffbeb)", border: "1px solid #fde68a", borderRadius: 16, padding: "16px 20px", marginBottom: 24 }}>
-              <p style={{ fontSize: 11, fontWeight: 900, color: "#b45309", letterSpacing: 2, textTransform: "uppercase", margin: "0 0 4px" }}>🎖 Mevcut Rozet</p>
-              <h3 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 4px" }}>{mevcutRozet.icon} {mevcutRozet.ad}</h3>
-              <p style={{ fontSize: 13, color: "#64748b", margin: 0, fontWeight: 700 }}>
-                {tumTemalarTamamlandi
-                  ? `Tebrikler! Goethe ${selectedWordLevel} Kelime Şampiyonu oldun.`
-                  : sonrakiRozet
-                  ? `Bir sonraki rozete ${sonrakiRozet.min - toplamDogru} kelime kaldı.`
-                  : "Tebrikler! En yüksek rozeti kazandın."}
-              </p>
-              {tumTemalarTamamlandi && (
-                <div style={{ marginTop: 14, padding: 16, borderRadius: 16, background: "#f8fafc", border: "1px solid #e2e8f0", textAlign: "center" }}>
-                  <p style={{ fontWeight: 900, marginBottom: 10 }}>🏆 Başarı paylaşıldıkça büyür.</p>
-                  <p style={{ fontSize: 14, lineHeight: 1.7, color: "#475569" }}>
-                    Bugün sen başardın.<br />
-                    Yarın bir başka öğrenci senin paylaştığın sertifikadan ilham alarak başaracak.<br /><br />
-                    Sertifikanı WhatsApp grubunda paylaşmayı unutma.
-                  </p>
-                  <button type="button" onClick={() => window.open(sertifikaUrl, "_blank")}
-                    style={{ marginTop: 16, width: "100%", border: "none", borderRadius: 14, padding: "12px 16px", background: "linear-gradient(135deg, #facc15, #f59e0b)", color: "#0f172a", fontWeight: 900, cursor: "pointer" }}>
-                    📜 Sertifikanı Görüntüle
-                  </button>
-                  <button type="button" onClick={() => window.open(whatsappPaylasUrl, "_blank")}
-                    style={{ marginTop: 10, width: "100%", border: "none", borderRadius: 14, padding: "12px 16px", background: "#25D366", color: "#fff", fontWeight: 900, cursor: "pointer" }}>
-                    📲 WhatsApp'ta Paylaş
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Liderlik tablosu */}
-          {liderler.length > 0 && (
-            <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px 24px", marginBottom: 24, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase" }}>🏆 Kelime Liderleri</div>
-                  <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", marginTop: 4 }}>Tüm Seviyelerde Öne Çıkanlar</div>
-                </div>
-                <span style={{ background: "#ecfdf5", color: "#059669", borderRadius: 99, padding: "4px 12px", fontSize: 12, fontWeight: 900 }}>Canlı</span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {liderler.map((lider, index) => (
-                  <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", borderRadius: 14, padding: "12px 16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 99, background: "linear-gradient(135deg, #ecfdf5, #dbeafe)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14 }}>{index + 1}</div>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>{lider.display_name?.includes("@") ? "Almanca Okulum Öğrencisi" : lider.display_name}</div>
-                        <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{lider.rozet_icon} {lider.rozet_adi} · {lider.ogrenci_turu || "Dijital"}{lider.streak_count > 1 ? ` · 🔥 ${lider.streak_count} gün seri` : ""}</div>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 15, fontWeight: 900, color: "#059669" }}>{lider.toplam_dogru}</div>
-                      <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>kelime</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tema kartları */}
-          {selectedWordLevel === "B1" ? (
-            <div style={{ background: "linear-gradient(135deg, #fffbeb, #fff)", border: "1px solid #fde68a", borderRadius: 20, padding: "28px 24px", textAlign: "center" }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
-              <p style={{ fontSize: 11, fontWeight: 900, color: "#b45309", letterSpacing: 2, textTransform: "uppercase", margin: "0 0 8px" }}>Premium Seviye Kilitli</p>
-              <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 8px" }}>{selectedWordLevel} Kelime Arenası seni bekliyor</h2>
-              <p style={{ color: "#64748b", fontSize: 14, margin: "0 0 20px" }}>
-                {selectedWordLevel} seviyesi için kelime oyunu çok yakında açılacak. Gelişim ve Zirve öğrencileri ilk erişenler olacak.
-              </p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
-                {([{ val: "500+", label: "Yeni Kelime", color: "#059669" }, { val: "15+", label: "Yeni Tema", color: "#2563eb" }, { val: "⭐", label: "Premium Erişim", color: "#f59e0b" }] as const).map(s => (
-                  <div key={s.label} style={{ background: "#ffffff", borderRadius: 14, padding: "14px 8px", boxShadow: "0 4px 12px rgba(15,23,42,0.06)" }}>
-                    <div style={{ fontSize: 22, fontWeight: 900, color: s.color }}>{s.val}</div>
-                    <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, marginTop: 4 }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ background: "linear-gradient(135deg, #059669, #2563eb)", borderRadius: 14, padding: "12px", color: "#fff", fontSize: 13, fontWeight: 900 }}>
-                Gelişim ve Zirve öğrencileri yeni seviyelere ilk erişenler olacak.
-              </div>
-            </div>
-          ) : (
-            <>
-              <div id="kelime-tema-listesi" style={{ scrollMarginTop: 20 }} />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
-                {(Object.entries(aktifKelimeListesi) as [TemaKey, KelimeTemaMap[TemaKey]][]).map(([key, val], i) => {
-                  const temaNo = i + 1;
-                  const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
-                  const hasAccess = temaNo <= 6 || hasDev;
-                  const prevDone = temaNo === 1 || completedWordThemes.includes(temaNo - 1);
-                  const isLocked = !hasAccess || !prevDone;
-                  const isCompleted = completedWordThemes.includes(temaNo);
-                  const temaLearned = temaLearnedWords[key] || [];
-                  const temaYuzde = Math.min(100, Math.round((temaLearned.length / val.kelimeler.length) * 100));
-                  return (
-                    <button key={key} onClick={() => {
-                      if (!hasAccess) { setUyariMesaji("🔒 Bu Tema Kilitli\n\nBu temaya erişmek için Gelişim Paketi gerekiyor."); return; }
-if (!prevDone) { setUyariMesaji(`🎯 Sıradaki Tema Kilitli\n\nÖnce Tema ${temaNo - 1}'i tamamlamalısın.`); return; }
-                      setTema(key);
-                    }}
-                      style={{ background: isCompleted ? "#f0fdf4" : "#ffffff", border: isCompleted ? "1px solid #86efac" : "1px solid #dbeafe", borderRadius: 18, padding: "18px 16px", color: "#0f172a", cursor: isLocked ? "not-allowed" : "pointer", textAlign: "left", opacity: isLocked ? 0.55 : 1, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
-                      <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginBottom: 6, fontWeight: 900, letterSpacing: 1, display: "flex", alignItems: "center", gap: 5 }}>
-                        <span style={{ display: "inline-flex", alignItems: "center" }}>
-                          {isCompleted ? (
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          ) : isLocked ? (
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                          ) : (
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                          )}
-                        </span>
-                        TEMA {temaNo}
-                      </div>
-                      <div style={{ fontSize: 15, fontWeight: 900 }}>{val.ad}</div>
-                      <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>{val.kelimeler.length} kelime</div>
-                      {!isLocked && temaLearned.length > 0 && (
-                        <div style={{ marginTop: 8 }}>
-                          <div style={{ height: 4, background: "#dbeafe", borderRadius: 99, overflow: "hidden" }}>
-                            <div style={{ height: "100%", width: `${temaYuzde}%`, background: isCompleted ? "#16a34a" : "#2563eb", borderRadius: 99 }} />
-                          </div>
-                          <div style={{ fontSize: 10, color: "#64748b", marginTop: 3, fontWeight: 700 }}>{temaLearned.length}/{val.kelimeler.length} kelime öğrenildi</div>
-                        </div>
-                      )}
-                      <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginTop: 6, fontWeight: 800 }}>
-                        {isCompleted ? "Tamamlandı" : isLocked ? "Kilitli" : temaLearned.length > 0 ? "Devam et" : "Başlamaya hazır"}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ── MOD SEÇİM EKRANI ──────────────────────────────────────────────
-  if (!mod) {
-    return (
-      <div style={{ ...C, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <div style={{ maxWidth: 460, width: "100%", textAlign: "center" }}>
-          <div style={{ fontSize: 42, marginBottom: 12 }}>⚙️</div>
-          <p style={{ color: "#059669", fontWeight: 900, letterSpacing: 2, fontSize: 12, margin: 0, textTransform: "uppercase" }}>Çalışma Modu</p>
-          <h2 style={{ fontSize: 24, margin: "8px 0", fontWeight: 900 }}>{aktifKelimeListesi[tema].ad}</h2>
-          <p style={{ color: "#64748b", fontSize: 14, marginBottom: 28 }}>Hangi yönde çalışmak istersin?</p>
-          {([
-            { id: "de_to_tr" as Mod, icon: "🇩🇪→🇹🇷", label: "Almanca → Türkçe", desc: "Almanca kelimeyi gör, Türkçesini bul" },
-            { id: "tr_to_de" as Mod, icon: "🇹🇷→🇩🇪", label: "Türkçe → Almanca", desc: "Türkçe anlamı gör, Almancasını bul" },
-          ]).map((m) => (
-            <button key={m.id} onClick={() => oyunuBaslat(tema, m.id)}
-              style={{ display: "block", width: "100%", background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 18, padding: "20px 24px", color: "#0f172a", cursor: "pointer", textAlign: "left", marginBottom: 14, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
-              <div style={{ fontSize: 22, marginBottom: 6 }}>{m.icon}</div>
-              <div style={{ fontWeight: 900, fontSize: 16 }}>{m.label}</div>
-              <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{m.desc}</div>
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <button onClick={() => { setEkran("seviye_tamamlandi"); }}
+              style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 12, padding: "10px 20px", color: "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 900 }}>
+              ← Vazgeç
             </button>
-          ))}
-          <button onClick={() => setTema(null)} style={{ background: "none", border: "1px solid #dbeafe", borderRadius: 12, color: "#64748b", cursor: "pointer", fontSize: 14, padding: "10px 18px" }}>← Geri dön</button>
+          </div>
         </div>
       </div>
     );
   }
 
-  // ── OYUN BİTTİ EKRANI ─────────────────────────────────────────────
-  if (oyunBitti) {
-    const basari = Math.round((dogru / sorular.length) * 100);
-    const temaNo = Number(String(tema).replace("tema", ""));
-    const toplamKelimeSayisi = aktifKelimeListesi[tema].kelimeler.length;
-    const mevcutLearned = temaLearnedWords[tema] || [];
-    const temaYuzde = Math.min(100, Math.round((mevcutLearned.length / toplamKelimeSayisi) * 100));
-    const tamamlandi = mevcutLearned.length >= toplamKelimeSayisi;
-    const sonrakiTemaVar = temaNo < 12;
-    playResultSound(basari);
-
-    const tesvikMesaj = tamamlandi
-      ? "🎉 Bu temayı tamamladın! Sonraki temaya geçebilirsin."
-      : temaYuzde >= 60 ? `💪 Bu temanın %${temaYuzde}'ini tamamladın. Biraz daha çalış!`
-      : temaYuzde >= 30 ? `🔥 Bu temanın %${temaYuzde}'ini tamamladın. Devam et!`
-      : `🌱 Bu temanın %${temaYuzde}'ini tamamladın. Düzenli çalış!`;
-
+  // ── GENEL SINAV SONUÇ EKRANI ───────────────────────────────────────
+  if (ekran === "genel_sinav_sonuc") {
+    const basarili = genelSinavYanlis < 5;
     return (
       <div style={{ ...C, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
-          <div style={{ fontSize: 56, marginBottom: 12 }}>{basari >= 80 ? "🏆" : basari >= 60 ? "⭐" : "🔄"}</div>
-          <h2 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 16px" }}>{basari >= 80 ? "Harika!" : basari >= 60 ? "İyi iş!" : "Tekrar dene!"}</h2>
+          <div style={{ fontSize: 64, marginBottom: 12 }}>{basarili ? "🏆" : "😔"}</div>
+          <h2 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 8px" }}>
+            {basarili ? "Tebrikler! Genel Sınavı Geçtin!" : "Genel Sınav Başarısız"}
+          </h2>
 
           <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px", marginBottom: 16 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 14 }}>
-              {[{ label: "Skor", val: skor, color: "#2563eb" }, { label: "Doğru", val: dogru, color: "#059669" }, { label: "Yanlış", val: yanlis, color: "#dc2626" }].map((s) => (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+              {[{ label: "Doğru", val: dogru, color: "#059669" }, { label: "Yanlış", val: genelSinavYanlis, color: "#dc2626" }, { label: "Puan", val: `${Math.round((dogru / 30) * 100)}%`, color: "#2563eb" }].map(s => (
                 <div key={s.label}>
                   <div style={{ fontSize: 26, fontWeight: 900, color: s.color }}>{s.val}</div>
                   <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>{s.label}</div>
                 </div>
               ))}
             </div>
-            <div style={{ background: "linear-gradient(135deg, #ecfdf5, #eff6ff)", borderRadius: 12, padding: "10px", fontSize: 15, fontWeight: 900, color: "#059669" }}>Başarı: %{basari}</div>
+          </div>
+
+          {basarili ? (
+            <div style={{ background: "linear-gradient(135deg, #fefce8, #fffbeb)", border: "1px solid #fde68a", borderRadius: 16, padding: 20, marginBottom: 16 }}>
+              <p style={{ fontWeight: 900, color: "#0f172a", marginBottom: 8 }}>🎖 Sertifikana hak kazandın!</p>
+              <p style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>Başarını paylaşarak diğer öğrencilere ilham ver.</p>
+              <button onClick={() => window.open(sertifikaUrl, "_blank")}
+                style={{ width: "100%", border: "none", borderRadius: 14, padding: "12px", background: "linear-gradient(135deg, #facc15, #f59e0b)", color: "#0f172a", fontWeight: 900, cursor: "pointer", marginBottom: 8 }}>
+                📜 Sertifikamı Görüntüle
+              </button>
+              <button onClick={() => window.open(whatsappPaylasUrl, "_blank")}
+                style={{ width: "100%", border: "none", borderRadius: 14, padding: "12px", background: "#25D366", color: "#fff", fontWeight: 900, cursor: "pointer" }}>
+                📲 WhatsApp'ta Paylaş
+              </button>
+            </div>
+          ) : (
+            <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 16, padding: 20, marginBottom: 16 }}>
+              {genelSinavHak > 1 ? (
+                <>
+                  <p style={{ fontWeight: 900, color: "#dc2626", marginBottom: 8 }}>⚠️ {selectedWordLevel} kelimelerini unutmuş gibisin.</p>
+                  <p style={{ fontSize: 13, color: "#64748b", marginBottom: 0 }}>Son bir sınav hakkın var. Başaramazsan {selectedWordLevel} seviyesi sıfırlanacak.</p>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontWeight: 900, color: "#dc2626", marginBottom: 8 }}>❌ İki sınavı da geçemedin.</p>
+                  <p style={{ fontSize: 13, color: "#64748b", marginBottom: 0 }}>{selectedWordLevel} seviyesi sıfırlanıyor. Kelimeleri tekrar öğrenmeni öneririz.</p>
+                </>
+              )}
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {basarili && (
+              <button onClick={genelSinavBaslat}
+                style={{ border: "none", borderRadius: 14, padding: "13px", background: "#f1f5f9", color: "#0f172a", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
+                📝 Tekrar Genel Sınav Yap
+              </button>
+            )}
+            {!basarili && genelSinavHak > 1 && (
+              <button onClick={() => { setGenelSinavHak(1); genelSinavBaslat(); }}
+                style={{ border: "none", borderRadius: 14, padding: "13px", background: "linear-gradient(135deg, #2563eb, #059669)", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
+                🔁 Son Hakkımı Kullan
+              </button>
+            )}
+            {!basarili && genelSinavHak <= 1 && (
+              <button onClick={() => { setGenelSinavHak(2); seviyeSifirla(); }}
+                style={{ border: "none", borderRadius: 14, padding: "13px", background: "#dc2626", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
+                🔄 {selectedWordLevel} Seviyesini Sıfırla
+              </button>
+            )}
+            <button onClick={() => setEkran("seviye_tamamlandi")}
+              style={{ background: "none", border: "1px solid #dbeafe", borderRadius: 14, padding: "12px", color: "#64748b", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
+              ← Geri Dön
+            </button>
+          </div>
+
+          {yanlisKelimeler.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <button onClick={() => setYanlisGoster(!yanlisGoster)}
+                style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 12, padding: "10px 20px", color: "#dc2626", cursor: "pointer", fontSize: 13, fontWeight: 900, width: "100%" }}>
+                {yanlisGoster ? "▲ Yanlışları Gizle" : `▼ Yanlış Yaptığım ${yanlisKelimeler.length} Kelimeyi Gör`}
+              </button>
+              {yanlisGoster && (
+                <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 12, padding: "14px", marginTop: 8, textAlign: "left" }}>
+                  {yanlisKelimeler.map((k, i) => (
+                    <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: i < yanlisKelimeler.length - 1 ? "1px solid #fecaca" : "none" }}>
+                      <div style={{ fontSize: 14, fontWeight: 900 }}>❓ {k.soru}</div>
+                      <div style={{ fontSize: 13, color: "#059669", fontWeight: 700 }}>✅ {k.dogru}</div>
+                      <div style={{ fontSize: 13, color: "#dc2626", fontWeight: 700 }}>❌ {k.verilen}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── OYUN SONUÇ EKRANI ─────────────────────────────────────────────
+  if (ekran === "sonuc" && tema) {
+    const kelimeHavuzu = aktifKelimeListesi[tema].kelimeler;
+    const mevcutLearned = temaLearnedRef.current[tema] || [];
+    const temaYuzde = Math.min(100, Math.round((mevcutLearned.length / kelimeHavuzu.length) * 100));
+    const tamamlandi = mevcutLearned.length >= kelimeHavuzu.length;
+    const temaNo = Number(String(tema).replace("tema", ""));
+    const sonrakiTemaVar = temaNo < 12;
+
+    return (
+      <div style={{ ...C, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
+          <div style={{ fontSize: 56, marginBottom: 12 }}>{tamamlandi ? "🏆" : dogru >= 10 ? "⭐" : "🔄"}</div>
+          <h2 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 16px" }}>
+            {tamamlandi ? "Tema Tamamlandı!" : dogru >= 10 ? "Harika İlerleme!" : "Devam Et!"}
+          </h2>
+
+          <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px", marginBottom: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 14 }}>
+              {[{ label: "Doğru", val: dogru, color: "#059669" }, { label: "Yanlış", val: yanlis, color: "#dc2626" }, { label: "Skor", val: skor, color: "#2563eb" }].map(s => (
+                <div key={s.label}>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: s.color }}>{s.val}</div>
+                  <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 16, padding: "16px", marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#64748b", marginBottom: 8 }}>{aktifKelimeListesi[tema].ad} — Tema İlerlemesi</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#64748b", marginBottom: 8 }}>{aktifKelimeListesi[tema].ad} — İlerleme</div>
             <div style={{ height: 10, background: "#f1f5f9", borderRadius: 99, overflow: "hidden", marginBottom: 6 }}>
               <div style={{ height: "100%", width: `${temaYuzde}%`, background: tamamlandi ? "#16a34a" : "linear-gradient(90deg, #10b981, #2563eb)", borderRadius: 99, transition: "width 0.5s" }} />
             </div>
-            <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700, marginBottom: 8 }}>{mevcutLearned.length}/{toplamKelimeSayisi} kelime öğrenildi</div>
-            <div style={{ fontSize: 13, color: tamamlandi ? "#16a34a" : "#f59e0b", fontWeight: 900 }}>{tesvikMesaj}</div>
+            <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700, marginBottom: 6 }}>{mevcutLearned.length}/{kelimeHavuzu.length} kelime öğrenildi</div>
+            <div style={{ fontSize: 13, color: tamamlandi ? "#16a34a" : "#f59e0b", fontWeight: 900 }}>
+              {tamamlandi ? "🎉 Bu temayı tamamladın!" : `💪 ${kelimeHavuzu.length - mevcutLearned.length} kelime daha öğren!`}
+            </div>
           </div>
 
           {yanlisKelimeler.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <button onClick={() => setYanlisGoster(!yanlisGoster)}
                 style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 12, padding: "10px 20px", color: "#dc2626", cursor: "pointer", fontSize: 13, fontWeight: 900, width: "100%" }}>
-                {yanlisGoster ? "▲ Yanlış Kelimeleri Gizle" : `▼ Yanlış Yaptığım ${yanlisKelimeler.length} Kelimeyi Gör`}
+                {yanlisGoster ? "▲ Yanlışları Gizle" : `▼ Yanlış Yaptığım ${yanlisKelimeler.length} Kelime`}
               </button>
               {yanlisGoster && (
                 <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 12, padding: "14px", marginTop: 8, textAlign: "left" }}>
                   {yanlisKelimeler.map((k, i) => (
                     <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: i < yanlisKelimeler.length - 1 ? "1px solid #fecaca" : "none" }}>
-                      <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>❓ {k.soru}</div>
-                      <div style={{ fontSize: 13, color: "#059669", fontWeight: 700, marginTop: 2 }}>✅ Doğru: {k.dogru}</div>
-                      <div style={{ fontSize: 13, color: "#dc2626", fontWeight: 700 }}>❌ Senin: {k.verilen}</div>
+                      <div style={{ fontSize: 14, fontWeight: 900 }}>❓ {k.soru}</div>
+                      <div style={{ fontSize: 13, color: "#059669", fontWeight: 700 }}>✅ {k.dogru}</div>
+                      <div style={{ fontSize: 13, color: "#dc2626", fontWeight: 700 }}>❌ {k.verilen}</div>
                     </div>
                   ))}
                 </div>
@@ -958,18 +938,23 @@ if (!prevDone) { setUyariMesaji(`🎯 Sıradaki Tema Kilitli\n\nÖnce Tema ${tem
             {tamamlandi && sonrakiTemaVar ? (
               <button onClick={() => {
                 const sonrakiTema = `tema${temaNo + 1}` as TemaKey;
-                setTema(sonrakiTema); setMod(null); setOyunBitti(false);
+                setTema(sonrakiTema); setEkran("mod");
               }}
                 style={{ background: "linear-gradient(135deg, #10b981, #059669)", border: "none", borderRadius: 14, padding: "14px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
                 ➡️ Sonraki Temaya Geç
               </button>
+            ) : tamamlandi && !sonrakiTemaVar ? (
+              <button onClick={() => setEkran("seviye_tamamlandi")}
+                style={{ background: "linear-gradient(135deg, #facc15, #f59e0b)", border: "none", borderRadius: 14, padding: "14px 24px", color: "#0f172a", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+                🏆 Seviye Tamamlandı!
+              </button>
             ) : (
-              <button onClick={() => oyunuBaslat(tema, mod!)}
+              <button onClick={() => oyunuBaslat(tema, mod)}
                 style={{ background: "linear-gradient(135deg, #10b981, #2563eb)", border: "none", borderRadius: 14, padding: "14px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-                🔄 Tekrar Çalış
+                🔄 Devam Et
               </button>
             )}
-            <button onClick={() => { setTema(null); setMod(null); }}
+            <button onClick={() => setEkran("menu")}
               style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 14, padding: "14px 24px", color: "#0f172a", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
               🏠 Ana Menü
             </button>
@@ -979,51 +964,218 @@ if (!prevDone) { setUyariMesaji(`🎯 Sıradaki Tema Kilitli\n\nÖnce Tema ${tem
     );
   }
 
+  // ── MOD SEÇİM EKRANI ──────────────────────────────────────────────
+  if (ekran === "mod" && tema) {
+    return (
+      <div style={{ ...C, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ maxWidth: 460, width: "100%", textAlign: "center" }}>
+          <div style={{ fontSize: 42, marginBottom: 12 }}>⚙️</div>
+          <p style={{ color: "#059669", fontWeight: 900, letterSpacing: 2, fontSize: 12, margin: 0, textTransform: "uppercase" }}>Çalışma Modu</p>
+          <h2 style={{ fontSize: 24, margin: "8px 0", fontWeight: 900 }}>{aktifKelimeListesi[tema].ad}</h2>
+          <p style={{ color: "#64748b", fontSize: 14, marginBottom: 28 }}>Hangi yönde çalışmak istersin?</p>
+          {([
+            { id: "de_to_tr" as Mod, icon: "🇩🇪→🇹🇷", label: "Almanca → Türkçe", desc: "Almanca kelimeyi gör, Türkçesini bul" },
+            { id: "tr_to_de" as Mod, icon: "🇹🇷→🇩🇪", label: "Türkçe → Almanca", desc: "Türkçe anlamı gör, Almancasını bul" },
+          ]).map(m => (
+            <button key={m.id} onClick={() => oyunuBaslat(tema, m.id)}
+              style={{ display: "block", width: "100%", background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 18, padding: "20px 24px", color: "#0f172a", cursor: "pointer", textAlign: "left", marginBottom: 14, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>{m.icon}</div>
+              <div style={{ fontWeight: 900, fontSize: 16 }}>{m.label}</div>
+              <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{m.desc}</div>
+            </button>
+          ))}
+          <button onClick={() => setEkran("menu")} style={{ background: "none", border: "1px solid #dbeafe", borderRadius: 12, color: "#64748b", cursor: "pointer", fontSize: 14, padding: "10px 18px" }}>← Geri dön</button>
+        </div>
+      </div>
+    );
+  }
+
   // ── OYUN EKRANI ───────────────────────────────────────────────────
-  const suankiSoru = sorular[suankiIndex];
-  const ilerleme = (suankiIndex / sorular.length) * 100;
-  return (
-    <div style={{ ...C, padding: "20px 16px" }}>
-      <div style={{ maxWidth: 560, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <div style={{ fontSize: 13, color: "#059669", fontWeight: 900 }}>{aktifKelimeListesi[tema].ad}</div>
-          <div style={{ display: "flex", gap: 4, fontSize: 20 }}>{[1, 2, 3].map((i) => canIkonu(i <= canlar))}</div>
-          <div style={{ fontSize: 13, fontWeight: 900, color: "#2563eb" }}>{skor} puan</div>
-        </div>
-        <div style={{ height: 8, background: "#dbeafe", borderRadius: 99, marginBottom: 24, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${ilerleme}%`, background: "linear-gradient(90deg, #10b981, #2563eb)", borderRadius: 99, transition: "width 0.3s" }} />
-        </div>
-        <div style={{ textAlign: "center", fontSize: 13, color: "#64748b", marginBottom: 20, fontWeight: 700 }}>
-          {suankiIndex + 1} / {sorular.length}
-          {streak >= 3 && <span style={{ marginLeft: 12, color: "#f59e0b", fontWeight: 900 }}>🔥 {streak} seri!</span>}
-        </div>
-        <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 24, padding: "36px 24px", textAlign: "center", marginBottom: 24, minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 30px rgba(15,23,42,0.06)" }}>
-          <div>
-            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 2, fontWeight: 900 }}>{mod === "de_to_tr" ? "Almanca" : "Türkçe"}</div>
-            <div style={{ fontSize: 30, fontWeight: 900, color: "#0f172a" }}>{suankiSoru.soru}</div>
+  if (ekran === "oyun" && tema) {
+    const suankiSoru = sorular[suankiIndex];
+    const ilerleme = (suankiIndex / sorular.length) * 100;
+    return (
+      <div style={{ ...C, padding: "20px 16px" }}>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: "#059669", fontWeight: 900 }}>{aktifKelimeListesi[tema].ad}</div>
+            <div style={{ display: "flex", gap: 4, fontSize: 20 }}>{[1, 2, 3].map(i => canIkonu(i <= canlar))}</div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: "#2563eb" }}>{skor} puan</div>
+          </div>
+          <div style={{ height: 8, background: "#dbeafe", borderRadius: 99, marginBottom: 24, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${ilerleme}%`, background: "linear-gradient(90deg, #10b981, #2563eb)", borderRadius: 99, transition: "width 0.3s" }} />
+          </div>
+          <div style={{ textAlign: "center", fontSize: 13, color: "#64748b", marginBottom: 20, fontWeight: 700 }}>
+            {suankiIndex + 1} / {sorular.length}
+            {streak >= 3 && <span style={{ marginLeft: 12, color: "#f59e0b", fontWeight: 900 }}>🔥 {streak} seri!</span>}
+          </div>
+          <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 24, padding: "36px 24px", textAlign: "center", marginBottom: 24, minHeight: 120, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div>
+              <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 2, fontWeight: 900 }}>{mod === "de_to_tr" ? "Almanca" : "Türkçe"}</div>
+              <div style={{ fontSize: 30, fontWeight: 900, color: "#0f172a" }}>{suankiSoru.soru}</div>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {suankiSoru.secenekler.map((s, i) => {
+              let bg = "#ffffff", border = "1px solid #dbeafe", color = "#0f172a";
+              if (secilenCevap) {
+                if (s === suankiSoru.dogru) { bg = "#ecfdf5"; border = "2px solid #10b981"; color = "#065f46"; }
+                else if (s === secilenCevap) { bg = "#fef2f2"; border = "2px solid #ef4444"; color = "#991b1b"; }
+              }
+              return (
+                <button key={i} onClick={() => cevapSec(s)}
+                  style={{ background: bg, border, borderRadius: 16, padding: "18px 14px", color, cursor: secilenCevap ? "default" : "pointer", fontSize: 14, fontWeight: 900, transition: "all 0.2s", lineHeight: 1.3 }}>
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 18 }}>
+            <button onClick={() => setEkran("menu")}
+              style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 12, padding: "10px 22px", color: "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 900 }}>
+              ← Geri Dön
+            </button>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          {suankiSoru.secenekler.map((s, i) => {
-            let bg = "#ffffff", border = "1px solid #dbeafe", color = "#0f172a";
-            if (secilenCevap) {
-              if (s === suankiSoru.dogru) { bg = "#ecfdf5"; border = "2px solid #10b981"; color = "#065f46"; }
-              else if (s === secilenCevap) { bg = "#fef2f2"; border = "2px solid #ef4444"; color = "#991b1b"; }
-            }
+      </div>
+    );
+  }
+
+  // ── ANA MENÜ ──────────────────────────────────────────────────────
+  return (
+    <div style={{ ...C, padding: "28px 20px" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto" }}>
+        <p style={{ color: "#059669", fontWeight: 900, letterSpacing: 2, fontSize: 12, margin: "0 0 6px", textTransform: "uppercase" }}>Kelime Arenası</p>
+        <h1 style={{ fontSize: 28, fontWeight: 900, margin: "0 0 6px" }}>TELC Almanca Kelime Arenası</h1>
+        <p style={{ color: "#64748b", fontSize: 14, margin: "0 0 20px" }}>TELC & Goethe kelimelerini tema bazlı çalış, rozet kazan.</p>
+
+        {/* Seviye butonları */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+          {(["A1", "A2", "B1"] as const).map(level => {
+            const kilitli = level === "B1" || (level === "A2" && a1TamamlananTema.length < 12);
             return (
-              <button key={i} onClick={() => cevapSec(s)}
-                style={{ background: bg, border, borderRadius: 16, padding: "18px 14px", color, cursor: secilenCevap ? "default" : "pointer", fontSize: 14, fontWeight: 900, transition: "all 0.2s", lineHeight: 1.3 }}>
-                {s}
+              <button key={level} onClick={() => seviyeDegistir(level)}
+                style={{ borderRadius: 99, padding: "8px 20px", fontSize: 14, fontWeight: 900, cursor: kilitli ? "not-allowed" : "pointer", border: "none", background: selectedWordLevel === level ? "#059669" : "#e2e8f0", color: selectedWordLevel === level ? "#fff" : "#64748b", opacity: kilitli ? 0.6 : 1 }}>
+                {kilitli ? "🔒 " : "✓ "}{level}
               </button>
             );
           })}
         </div>
-        <div style={{ textAlign: "center", marginTop: 18 }}>
-          <button onClick={() => { setTema(null); setMod(null); setOyunBitti(false); }}
-            style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 12, padding: "10px 22px", color: "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 900 }}>
-            ← Geri Dön
-          </button>
-        </div>
+
+        {/* Aksiyon butonları */}
+        {selectedWordLevel !== "B1" && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
+            <button onClick={hemenBasla}
+              style={{ background: "#0f172a", border: "none", borderRadius: 16, padding: "13px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
+              {tumTemalarTamamlandi ? "🏆 Seviye Tamamlandı — Devam Et" : "🎯 Hemen Kelime Çalış"}
+            </button>
+            {tumTemalarTamamlandi && (
+              <button onClick={genelSinavBaslat}
+                style={{ background: "linear-gradient(135deg, #2563eb, #059669)", border: "none", borderRadius: 16, padding: "13px 24px", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
+                📝 Genel Sınav Yap
+              </button>
+            )}
+            <button onClick={() => document.getElementById("kelime-tema-listesi")?.scrollIntoView({ behavior: "smooth" })}
+              style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 16, padding: "13px 24px", color: "#059669", fontWeight: 900, cursor: "pointer", fontSize: 14 }}>
+              📚 Temaları İncele
+            </button>
+          </div>
+        )}
+
+        {/* Rozet kutusu */}
+        {!yukluyor && (
+          <div style={{ background: "linear-gradient(135deg, #fefce8, #fffbeb)", border: "1px solid #fde68a", borderRadius: 16, padding: "16px 20px", marginBottom: 24 }}>
+            <p style={{ fontSize: 11, fontWeight: 900, color: "#b45309", letterSpacing: 2, textTransform: "uppercase", margin: "0 0 4px" }}>🎖 Mevcut Rozet</p>
+            <h3 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 4px" }}>{mevcutRozet.icon} {mevcutRozet.ad}</h3>
+            <p style={{ fontSize: 13, color: "#64748b", margin: 0, fontWeight: 700 }}>
+              {tumTemalarTamamlandi
+                ? `Tebrikler! Goethe ${selectedWordLevel} Kelime Şampiyonu oldun.`
+                : sonrakiRozet
+                ? `Bir sonraki rozete ${sonrakiRozet.min - toplamDogru} kelime kaldı.`
+                : "Tebrikler! En yüksek rozeti kazandın."}
+            </p>
+          </div>
+        )}
+
+        {/* Liderlik tablosu */}
+        {liderler.length > 0 && (
+          <div style={{ background: "#ffffff", border: "1px solid #dbeafe", borderRadius: 20, padding: "20px 24px", marginBottom: 24, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase" }}>🏆 Kelime Liderleri</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", marginTop: 4 }}>Tüm Seviyelerde Öne Çıkanlar</div>
+              </div>
+              <span style={{ background: "#ecfdf5", color: "#059669", borderRadius: 99, padding: "4px 12px", fontSize: 12, fontWeight: 900 }}>Canlı</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {liderler.map((lider, index) => (
+                <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", borderRadius: 14, padding: "12px 16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 99, background: "linear-gradient(135deg, #ecfdf5, #dbeafe)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14 }}>{index + 1}</div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>{lider.display_name?.includes("@") ? "Almanca Okulum Öğrencisi" : lider.display_name}</div>
+                      <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{lider.rozet_icon} {lider.rozet_adi} · {lider.ogrenci_turu || "Dijital"}{lider.streak_count > 1 ? ` · 🔥 ${lider.streak_count} gün seri` : ""}</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: "#059669" }}>{lider.toplam_dogru}</div>
+                    <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>kelime</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tema kartları */}
+        {selectedWordLevel === "B1" ? (
+          <div style={{ background: "linear-gradient(135deg, #fffbeb, #fff)", border: "1px solid #fde68a", borderRadius: 20, padding: "28px 24px", textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 8px" }}>B1 Kelime Arenası çok yakında!</h2>
+            <p style={{ color: "#64748b", fontSize: 14 }}>Gelişim ve Zirve öğrencileri ilk erişenler olacak.</p>
+          </div>
+        ) : (
+          <>
+            <div id="kelime-tema-listesi" style={{ scrollMarginTop: 20 }} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+              {(Object.entries(aktifKelimeListesi) as [TemaKey, { ad: string; kelimeler: Kelime[] }][]).map(([key, val], i) => {
+                const temaNo = i + 1;
+                const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
+                const hasAccess = temaNo <= 6 || hasDev;
+                const prevDone = temaNo === 1 || completedWordThemes.includes(temaNo - 1);
+                const isLocked = !hasAccess || !prevDone;
+                const isCompleted = completedWordThemes.includes(temaNo);
+                const temaLearned = temaLearnedWords[key] || [];
+                const temaYuzde = Math.min(100, Math.round((temaLearned.length / val.kelimeler.length) * 100));
+                return (
+                  <button key={key} onClick={() => {
+                    if (!hasAccess) { setUyariMesaji("🔒 Bu Tema Kilitli\n\nBu temaya erişmek için Gelişim Paketi gerekiyor."); return; }
+                    if (!prevDone) { setUyariMesaji(`🎯 Sıradaki Tema Kilitli\n\nÖnce Tema ${temaNo - 1}'i tamamlamalısın.`); return; }
+                    setTema(key); setEkran("mod");
+                  }}
+                    style={{ background: isCompleted ? "#f0fdf4" : "#ffffff", border: isCompleted ? "1px solid #86efac" : "1px solid #dbeafe", borderRadius: 18, padding: "18px 16px", color: "#0f172a", cursor: isLocked ? "not-allowed" : "pointer", textAlign: "left", opacity: isLocked ? 0.55 : 1, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
+                    <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginBottom: 6, fontWeight: 900, letterSpacing: 1, display: "flex", alignItems: "center", gap: 5 }}>
+                      {isCompleted ? "✅" : isLocked ? "🔒" : "▶"} TEMA {temaNo}
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 900 }}>{val.ad}</div>
+                    <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>{val.kelimeler.length} kelime</div>
+                    {!isLocked && temaLearned.length > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <div style={{ height: 4, background: "#dbeafe", borderRadius: 99, overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${temaYuzde}%`, background: isCompleted ? "#16a34a" : "#2563eb", borderRadius: 99 }} />
+                        </div>
+                        <div style={{ fontSize: 10, color: "#64748b", marginTop: 3, fontWeight: 700 }}>{temaLearned.length}/{val.kelimeler.length} kelime öğrenildi</div>
+                      </div>
+                    )}
+                    <div style={{ fontSize: 11, color: isCompleted ? "#16a34a" : isLocked ? "#b45309" : "#059669", marginTop: 6, fontWeight: 800 }}>
+                      {isCompleted ? "Tamamlandı ✓" : isLocked ? "Kilitli" : temaLearned.length > 0 ? "Devam et →" : "Başlamaya hazır"}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
