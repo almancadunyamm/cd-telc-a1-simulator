@@ -454,6 +454,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [temaDogruSayilari, setTemaDogruSayilari] = useState<Record<string, number>>({});
   const [temaLearnedWords, setTemaLearnedWords] = useState<Record<string, string[]>>({});
   const [a1TamamlananTema, setA1TamamlananTema] = useState<number[]>([]);
+  const [uyariMesaji, setUyariMesaji] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
@@ -629,16 +630,16 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   };
 
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
-    if (level === "B1") {
-      alert("B1 seviyesi çok yakında açılacak.");
-      return;
-    }
-    if (level === "A2" && a1TamamlananTema.length < 12) {
-      alert(`A2 seviyesine geçmek için önce A1'deki tüm 12 temayı tamamlamalısınız. Şu an ${a1TamamlananTema.length}/12 tema tamamlandı.`);
-      return;
-    }
-    setSelectedWordLevel(level);
-  };
+  if (level === "B1") {
+    setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesi çok yakında açılacak. Gelişim ve Zirve öğrencileri ilk erişenler olacak.");
+    return;
+  }
+  if (level === "A2" && a1TamamlananTema.length < 12) {
+    setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
+    return;
+  }
+  setSelectedWordLevel(level);
+};
 
   const canIkonu = (dolu: boolean) => (dolu ? "❤️" : "🖤");
   const mevcutRozet = getRozet(toplamDogru);
@@ -653,6 +654,26 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   );
   const whatsappPaylasUrl = `https://wa.me/?text=${whatsappMesaji}`;
 
+  if (uyariMesaji) {
+  const satirlar = uyariMesaji.split("\n").filter(s => s.trim() !== "");
+  const baslik = satirlar[0];
+  const icerik = satirlar.slice(1);
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 20 }}>
+      <div style={{ background: "#ffffff", borderRadius: 24, padding: "32px 28px", maxWidth: 400, width: "100%", textAlign: "center", boxShadow: "0 24px 60px rgba(15,23,42,0.2)" }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>{baslik.split(" ")[0]}</div>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", margin: "0 0 12px" }}>{baslik.split(" ").slice(1).join(" ")}</h2>
+        {icerik.map((s, i) => (
+          <p key={i} style={{ fontSize: 14, color: "#64748b", margin: "0 0 8px", lineHeight: 1.6 }}>{s}</p>
+        ))}
+        <button onClick={() => setUyariMesaji(null)}
+          style={{ marginTop: 20, width: "100%", border: "none", borderRadius: 14, padding: "14px", background: "linear-gradient(135deg, #059669, #2563eb)", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
+          Anladım
+        </button>
+      </div>
+    </div>
+  );
+}
   const C = { background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" };
 
   // ── TEMA SEÇİM EKRANI ──────────────────────────────────────────────
@@ -683,7 +704,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
               <button onClick={() => {
                 if (selectedWordLevel === "A2" && a1TamamlananTema.length < 12) {
-                  alert(`A2 seviyesine geçmek için önce A1'deki tüm 12 temayı tamamlamalısınız. Şu an ${a1TamamlananTema.length}/12 tema tamamlandı.`);
+                  setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
                   return;
                 }
                 const ilkAcik = (Object.keys(aktifKelimeListesi) as TemaKey[]).find((_k, i) => {
@@ -802,8 +823,8 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
                   const temaYuzde = Math.min(100, Math.round((temaLearned.length / val.kelimeler.length) * 100));
                   return (
                     <button key={key} onClick={() => {
-                      if (!hasAccess) { alert("Bu tema Gelişim Paketi ile açılır."); return; }
-                      if (!prevDone) { alert(`Önce Tema ${temaNo - 1} tamamlamalısınız.`); return; }
+                      if (!hasAccess) { setUyariMesaji("🔒 Bu Tema Kilitli\n\nBu temaya erişmek için Gelişim Paketi gerekiyor."); return; }
+if (!prevDone) { setUyariMesaji(`🎯 Sıradaki Tema Kilitli\n\nÖnce Tema ${temaNo - 1}'i tamamlamalısın.`); return; }
                       setTema(key);
                     }}
                       style={{ background: isCompleted ? "#f0fdf4" : "#ffffff", border: isCompleted ? "1px solid #86efac" : "1px solid #dbeafe", borderRadius: 18, padding: "18px 16px", color: "#0f172a", cursor: isLocked ? "not-allowed" : "pointer", textAlign: "left", opacity: isLocked ? 0.55 : 1, boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}>
