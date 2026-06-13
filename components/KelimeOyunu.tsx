@@ -417,6 +417,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [genelSinavYanlis, setGenelSinavYanlis] = useState(0);
 
   const temaLearnedRef = useRef<Record<string, string[]>>({});
+  const selectedLevelRef = useRef<"A1" | "A2" | "B1">("A1");
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
@@ -425,7 +426,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
         .from("word_progress")
         .select("tema_key, tamamlandi, dogru_sayisi, learned_words")
         .eq("user_email", currentUserEmail)
-        .eq("level", selectedWordLevel);
+        .eq("level", selectedLevelRef.current);
 
       const { data: a1Data } = await supabase
         .from("word_progress")
@@ -471,6 +472,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   };
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
+    selectedLevelRef.current = selectedWordLevel;
     const kelimeHavuzu = aktifKelimeListesi[secilenTema].kelimeler;
     const ogrenilmisler = temaLearnedRef.current[secilenTema] || [];
     const ogrenilmemisler = kelimeHavuzu.filter(k => !ogrenilmisler.includes(k.de));
@@ -514,7 +516,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     await supabase.from("word_progress")
       .delete()
       .eq("user_email", currentUserEmail)
-      .eq("level", selectedWordLevel);
+      .eq("level", selectedLevelRef.current);
     setCompletedWordThemes([]);
     setTemaLearnedWords({});
     temaLearnedRef.current = {};
@@ -585,7 +587,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
 
     await supabase.from("word_progress").upsert({
       user_email: currentUserEmail,
-      level: selectedWordLevel,
+      level: selectedLevelRef.current,
       tema_key: tema,
       mod,
       dogru_sayisi: mevcutLearned.length,
@@ -620,7 +622,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     if (yanlis < 5) {
       await supabase.from("word_progress").upsert({
         user_email: currentUserEmail,
-        level: selectedWordLevel,
+        level: selectedLevelRef.current,
         tema_key: "genel_sinav",
         mod: "de_to_tr",
         dogru_sayisi: dogru,
@@ -634,6 +636,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   };
 
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
+    selectedLevelRef.current = level;
     if (level === "B1") {
       setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesi çok yakında açılacak. Gelişim ve Zirve öğrencileri ilk erişenler olacak.");
       return;
