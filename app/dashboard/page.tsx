@@ -2441,6 +2441,7 @@ async function handleSpeakingBildirim() {
 
   setSpeakingGorevBildiriliyor(false);
   setSpeakingBildirimGonderildi(true);
+completeSpeakingTask();
   setTimeout(() => setSpeakingBildirimGonderildi(false), 3000);
 }
   function SpeakingLeaderboard({ currentUsername }: { currentUsername: string }) {
@@ -3920,15 +3921,6 @@ createPendingOrder({
 ) : (
   <>
     
-    {isInDefaultClassForSelectedLevel && (
-  <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-    <p className="font-bold">⏳ Öğretmen ataması bekleniyor</p>
-    <p className="mt-1">
-      Öğretmen atandığında konuşma görevlerinizi doğrudan hocanıza
-      gönderebileceksiniz.
-    </p>
-  </div>
-)}
     <p className="text-sm font-semibold text-purple-600">
       Konuşma Pratiği
     </p>
@@ -3965,18 +3957,14 @@ createPendingOrder({
 
         completeSpeakingTask();
 
-        window.open(
-          `https://wa.me/${
-  isInDefaultClassForSelectedLevel ? "905013434419" : activeTeacherWhatsapp
-}?text=${encodeURIComponent(message)}`,
-          "_blank"
-        );
+          window.open(
+  `https://wa.me/${activeTeacherWhatsapp}?text=${encodeURIComponent(message)}`,
+  "_blank"
+);
       }}
       className="mt-5 w-full rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-3 text-sm font-bold text-white hover:from-green-600 hover:to-emerald-600"
-    >{isInDefaultClassForSelectedLevel
-  ? "📞 Destek Ekibiyle İletişime Geç"
-  : "🎤 WhatsApp’tan Gönder"}
-    </button>
+    >🎤 WhatsApp'tan Gönder
+</button>
     )}
   </>
 )}
