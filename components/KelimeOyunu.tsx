@@ -586,17 +586,16 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     const bugun = new Date().toISOString().split("T")[0];
 
     await supabase.from("word_progress").upsert({
-      user_email: currentUserEmail,
+        user_email: currentUserEmail,
       level: selectedLevelRef.current,
       tema_key: tema,
-      mod,
       dogru_sayisi: mevcutLearned.length,
       toplam_soru: kelimeHavuzu.length,
       tamamlandi,
       learned_words: mevcutLearned,
       last_played_date: bugun,
       updated_at: new Date().toISOString(),
-    }, { onConflict: "user_email,level,tema_key,mod" });
+    }, { onConflict: "user_email,level,tema_key" });
 
     if (tamamlandi) {
       const temaNo = Number(String(tema).replace("tema", ""));
@@ -631,7 +630,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
         learned_words: [],
         last_played_date: new Date().toISOString().split("T")[0],
         updated_at: new Date().toISOString(),
-      }, { onConflict: "user_email,level,tema_key,mod" });
+      }, { onConflict: "user_email,level,tema_key" });
     }
   };
 
