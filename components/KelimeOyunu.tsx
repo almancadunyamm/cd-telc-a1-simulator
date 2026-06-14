@@ -417,12 +417,6 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [genelSinavYanlis, setGenelSinavYanlis] = useState(0);
 
   const temaLearnedRef = useRef<Record<string, string[]>>({});
-const selectedLevelRef = useRef<"A1" | "A2" | "B1">("A1");
-
-// selectedWordLevel her değiştiğinde ref'i güncelle
-useEffect(() => {
-  selectedLevelRef.current = selectedWordLevel;
-}, [selectedWordLevel]);
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
@@ -431,7 +425,7 @@ useEffect(() => {
         .from("word_progress")
         .select("tema_key, tamamlandi, dogru_sayisi, learned_words")
         .eq("user_email", currentUserEmail)
-        .eq("level", selectedLevelRef.current);
+        .eq("level", selectedWordLevel);
 
       const { data: a1Data } = await supabase
         .from("word_progress")
@@ -477,7 +471,6 @@ useEffect(() => {
   };
 
   const oyunuBaslat = useCallback((secilenTema: TemaKey, secilenMod: Mod) => {
-    selectedLevelRef.current = selectedWordLevel;
     const kelimeHavuzu = aktifKelimeListesi[secilenTema].kelimeler;
     const ogrenilmisler = temaLearnedRef.current[secilenTema] || [];
     const ogrenilmemisler = kelimeHavuzu.filter(k => !ogrenilmisler.includes(k.de));
@@ -521,7 +514,7 @@ useEffect(() => {
     await supabase.from("word_progress")
       .delete()
       .eq("user_email", currentUserEmail)
-      .eq("level", selectedLevelRef.current);
+      .eq("level", selectedWordLevel);
     setCompletedWordThemes([]);
     setTemaLearnedWords({});
     temaLearnedRef.current = {};
@@ -587,12 +580,12 @@ useEffect(() => {
     if (!currentUserEmail || !tema) return;
     const kelimeHavuzu = aktifKelimeListesi[tema].kelimeler;
     const mevcutLearned = temaLearnedRef.current[tema] || [];
-    const tamamlandi = mevcutLearned.length >= kelimeHavuzu.length - 1;
+    const tamamlandi = mevcutLearned.length >= kelimeHavuzu.length;
     const bugun = new Date().toISOString().split("T")[0];
 
     await supabase.from("word_progress").upsert({
-        user_email: currentUserEmail,
-      level: selectedLevelRef.current,
+      user_email: currentUserEmail,
+      level: selectedWordLevel,
       tema_key: tema,
       dogru_sayisi: mevcutLearned.length,
       toplam_soru: kelimeHavuzu.length,
@@ -626,9 +619,8 @@ useEffect(() => {
     if (yanlis < 5) {
       await supabase.from("word_progress").upsert({
         user_email: currentUserEmail,
-        level: selectedLevelRef.current,
+        level: selectedWordLevel,
         tema_key: "genel_sinav",
-        mod: "de_to_tr",
         dogru_sayisi: dogru,
         toplam_soru: 30,
         tamamlandi: true,
@@ -640,7 +632,6 @@ useEffect(() => {
   };
 
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
-    selectedLevelRef.current = level;
     if (level === "B1") {
       setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesi çok yakında açılacak. Gelişim ve Zirve öğrencileri ilk erişenler olacak.");
       return;
@@ -887,7 +878,7 @@ useEffect(() => {
     const kelimeHavuzu = aktifKelimeListesi[tema].kelimeler;
     const mevcutLearned = temaLearnedRef.current[tema] || [];
     const temaYuzde = Math.min(100, Math.round((mevcutLearned.length / kelimeHavuzu.length) * 100));
-    const tamamlandi = mevcutLearned.length >= kelimeHavuzu.length - 1;
+    const tamamlandi = mevcutLearned.length >= kelimeHavuzu.length;
     const temaNo = Number(String(tema).replace("tema", ""));
     const sonrakiTemaVar = temaNo < 12;
 
