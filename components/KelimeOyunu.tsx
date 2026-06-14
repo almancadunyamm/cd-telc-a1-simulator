@@ -417,7 +417,12 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [genelSinavYanlis, setGenelSinavYanlis] = useState(0);
 
   const temaLearnedRef = useRef<Record<string, string[]>>({});
-  const selectedLevelRef = useRef<"A1" | "A2" | "B1">("A1");
+const selectedLevelRef = useRef<"A1" | "A2" | "B1">("A1");
+
+// selectedWordLevel her değiştiğinde ref'i güncelle
+useEffect(() => {
+  selectedLevelRef.current = selectedWordLevel;
+}, [selectedWordLevel]);
 
   useEffect(() => {
     if (!currentUserEmail) { setYukluyor(false); return; }
