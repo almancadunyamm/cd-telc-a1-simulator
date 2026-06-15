@@ -453,7 +453,8 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     async function loadLiderler() {
       const { data } = await supabase
         .from("word_leaderboard")
-        .select("display_name, toplam_dogru, streak_count, rozet_adi, rozet_icon, ogrenci_turu")
+        .select("display_name, toplam_dogru, streak_count, rozet_adi, rozet_icon, ogrenci_turu, level")
+        .eq("level", selectedWordLevel)
         .order("toplam_dogru", { ascending: false })
         .limit(8);
       if (data) setLiderler(data);
@@ -607,11 +608,12 @@ const bugun = new Date().toISOString().split("T")[0];
     const ogrenciTuru = hasAnyLiveCourseOrder ? "Canlı Sınıf" : "Dijital";
     await supabase.from("word_leaderboard").upsert({
       user_email: currentUserEmail,
+      level: selectedWordLevel,
       display_name: (currentUserName && !currentUserName.includes("@") && currentUserName.trim() !== "") ? currentUserName : currentUserEmail,
       toplam_dogru: yeniGenelToplam,
       rozet_adi: rozet.ad, rozet_icon: rozet.icon, ogrenci_turu: ogrenciTuru,
       updated_at: new Date().toISOString(),
-    }, { onConflict: "user_email" });
+    }, { onConflict: "user_email,level" });
   };
 
   const kaydetGenelSinav = async () => {
@@ -1102,7 +1104,7 @@ const temaNo = Number(String(tema).replace("tema", ""));
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div>
                 <div style={{ fontSize: 11, color: "#64748b", fontWeight: 900, letterSpacing: 1, textTransform: "uppercase" }}>🏆 Kelime Liderleri</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", marginTop: 4 }}>Tüm Seviyelerde Öne Çıkanlar</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", marginTop: 4 }}>{selectedWordLevel} Seviyesi Liderleri</div>
               </div>
               <span style={{ background: "#ecfdf5", color: "#059669", borderRadius: 99, padding: "4px 12px", fontSize: 12, fontWeight: 900 }}>Canlı</span>
             </div>
