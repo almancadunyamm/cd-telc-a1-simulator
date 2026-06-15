@@ -580,6 +580,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     if (!currentUserEmail || !tema) return;
     const kelimeHavuzu = aktifKelimeListesi[tema].kelimeler;
     const mevcutLearned = temaLearnedRef.current[tema] || [];
+    console.log("DEBUG:", { tema, mevcutLearnedCount: mevcutLearned.length, kelimeHavuzuCount: kelimeHavuzu.length, esik: Math.ceil(kelimeHavuzu.length * 0.9), tamamlandi: mevcutLearned.length >= Math.ceil(kelimeHavuzu.length * 0.9) });
     const tamamlandi = mevcutLearned.length >= Math.ceil(kelimeHavuzu.length * 0.9);
 const bugun = new Date().toISOString().split("T")[0];
 
