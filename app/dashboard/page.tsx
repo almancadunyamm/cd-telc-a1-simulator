@@ -3922,50 +3922,35 @@ createPendingOrder({
   <>
     
     <p className="text-sm font-semibold text-purple-600">
-      Konuşma Pratiği
+      Öğretmene Soru Sor
     </p>
 
     <h2 className="mt-2 text-xl font-bold">
-  {selectedLevelIsUnlocked
-    ? selectedLevel === "B1" && currentB1Task
-      ? currentB1Task.title
-      : "Bu Haftanın Görevi"
-    : `${selectedLevel} seviyesi kilitli`}
-</h2>
+      Aklında takılan bir konu mu var?
+    </h2>
 
-    {selectedLevelIsUnlocked && selectedLevel === "B1" && currentB1Task && (
-      <div className="mt-3 rounded-2xl bg-white/70 p-3 text-xs font-semibold text-slate-600">
-        <p>Tema: {currentB1Task.theme}</p>
-        <p className="mt-1">Hedef: {currentB1Task.grammar}</p>
-      </div>
-    )}
+    
 
     <p className="mt-3 text-sm leading-6 text-slate-600">
-  {selectedLevelIsUnlocked
-    ? speakingTask
-    : "Bu seviye hesabınızda açık değil. Devam etmek için paket yükseltmeniz gerekir."}
-</p>
+      Gramer soruların, kelime merakların veya sınava dair aklındaki her şeyi öğretmenine iletebilirsin.
+    </p>
 
-    {selectedLevelIsUnlocked && (
     <button
       type="button"
       onClick={() => {
-        const message = `Merhaba, konuşma görevimi göndermek istiyorum. Kullanıcı: ${
+        const message = `Merhaba, bir sorum var. Kullanıcı: ${
           JSON.parse(localStorage.getItem("mock_logged_user") || "{}")?.username ||
           "Öğrenci"
         }`;
-
-        completeSpeakingTask();
-
-          window.open(
-  `https://wa.me/${activeTeacherWhatsapp}?text=${encodeURIComponent(message)}`,
-  "_blank"
-);
+        window.open(
+          `https://wa.me/${activeTeacherWhatsapp}?text=${encodeURIComponent(message)}`,
+          "_blank"
+        );
       }}
-      className="mt-5 w-full rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-3 text-sm font-bold text-white hover:from-green-600 hover:to-emerald-600"
-    >🎤 WhatsApp'tan Gönder
-</button>
-    )}
+      className="mt-5 w-full rounded-2xl bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-3 text-sm font-bold text-white hover:from-purple-600 hover:to-blue-600"
+    >
+      💬 Öğretmene Sor
+    </button>
   </>
 )}
       </div>
