@@ -4868,22 +4868,11 @@ createPendingOrder({
                   Bu puan sistemin kalitesini artırır.
                 </p>
                 <div className="space-y-3">
-                  {speakingEslesmeler.slice(0, 3).map((eslesme, i) => (
-                    <div key={i} className="rounded-2xl bg-slate-50 p-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-black text-slate-900">{"Tema " + eslesme.tema_id}</p>
-                        <span className={"rounded-full px-3 py-1 text-xs font-black " + (eslesme.durum === "tamamlandi" ? "bg-emerald-100 text-emerald-700" : "bg-yellow-100 text-yellow-700")}>
-                          {eslesme.durum === "tamamlandi" ? "Tamamlandı" : "Devam ediyor"}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {speakingEslesmeler.length === 0 && (
-                    <p className="text-sm text-slate-400 text-center py-4">
-                      Henüz tamamlanmış görev yok.
-                    </p>
-                  )}
-                </div>
+  <p className="text-sm text-slate-500 leading-6">
+    Yıldız değerlendirme sistemi yakında aktif olacak. 
+    Şu an tamamlanan görevler Konuşma Kulübü geçmişinde kayıt altına alınıyor.
+  </p>
+</div>
               </div>
             </div>
           )}
