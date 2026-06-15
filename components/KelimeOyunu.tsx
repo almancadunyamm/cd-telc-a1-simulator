@@ -580,8 +580,8 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     if (!currentUserEmail || !tema) return;
     const kelimeHavuzu = aktifKelimeListesi[tema].kelimeler;
     const mevcutLearned = temaLearnedRef.current[tema] || [];
-    const tamamlandi = mevcutLearned.length >= kelimeHavuzu.length;
-    const bugun = new Date().toISOString().split("T")[0];
+    const tamamlandi = mevcutLearned.length >= Math.ceil(kelimeHavuzu.length * 0.9);
+const bugun = new Date().toISOString().split("T")[0];
 
     await supabase.from("word_progress").upsert({
       user_email: currentUserEmail,
@@ -878,8 +878,8 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     const kelimeHavuzu = aktifKelimeListesi[tema].kelimeler;
     const mevcutLearned = temaLearnedRef.current[tema] || [];
     const temaYuzde = Math.min(100, Math.round((mevcutLearned.length / kelimeHavuzu.length) * 100));
-    const tamamlandi = mevcutLearned.length >= kelimeHavuzu.length;
-    const temaNo = Number(String(tema).replace("tema", ""));
+    const tamamlandi = mevcutLearned.length >= Math.ceil(kelimeHavuzu.length * 0.9);
+const temaNo = Number(String(tema).replace("tema", ""));
     const sonrakiTemaVar = temaNo < 12;
 
     return (
