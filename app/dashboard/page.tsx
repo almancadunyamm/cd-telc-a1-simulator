@@ -2392,74 +2392,117 @@ async function handleSpeakingBildirim() {
   if (!currentUser || !speakingProgress) return;
   setSpeakingGorevBildiriliyor(true);
 
+  const now = new Date().toISOString();
+  const benimEmail = currentUser.username;
+  const partnerEmail = speakingProgress.partner_email || "";
+
+  // Mevcut session'ı bul
   const { data: sessions } = await supabase
     .from("speaking_sessions")
     .select("*")
-    .or(`konusan_email.eq.${currentUser.username},dinleyen_email.eq.${currentUser.username}`)
     .eq("tema_no", speakingProgress.current_tema)
     .eq("gorev_no", speakingProgress.current_gorev)
+    .eq("level", "A1")
+    .or(`kullanici1_email.eq.${benimEmail},kullanici2_email.eq.${benimEmail}`)
     .eq("onaylandi", false)
     .order("created_at", { ascending: false })
     .limit(1);
 
   const session = sessions?.[0];
-  const now = new Date().toISOString();
 
   if (session) {
-    const isKonusan = session.konusan_email === currentUser.username;
-    const updateData: any = isKonusan
-      ? { konusan_bildirdi: true, konusan_bildirim_at: now }
-      : { dinleyen_bildirdi: true, dinleyen_bildirim_at: now };
-    const digerBildirdi = isKonusan ? session.dinleyen_bildirdi : session.konusan_bildirdi;
+    // Hangi kullanıcıyım?
+    const benim1mi = session.kullanici1_email === benimEmail;
+    const updateData: any = benim1mi
+      ? { kullanici1_bildirdi: true, konusan_bildirim_at: now }
+      : { kullanici2_bildirdi: true, dinleyen_bildirim_at: now };
+
+    const digerBildirdi = benim1mi
+      ? session.kullanici2_bildirdi
+      : session.kullanici1_bildirdi;
+
     if (digerBildirdi) {
       updateData.onaylandi = true;
       updateData.onay_tarihi = now;
     }
+
     await supabase.from("speaking_sessions").update(updateData).eq("id", session.id);
+
     if (digerBildirdi) {
-  let newTema = speakingProgress.current_tema;
-  let newGorev = speakingProgress.current_gorev + 1;
-  let sinav_bekleniyor = false;
+      // İkisi de bildirdi — görevi ilerlet
+      const yeniGorev = speakingProgress.current_gorev + 1;
+      let yeniTema = speakingProgress.current_tema;
+      let sinav_bekleniyor = false;
 
-  if (newGorev > 3) {
-    newTema += 1;
-    newGorev = 1;
-    // Her 3 temada bir sınav
-    if ((newTema - 1) % 3 === 0) {
-      sinav_bekleniyor = true;
-    }
-  }
+      if (yeniGorev > 3) {
+        yeniTema = speakingProgress.current_tema + 1;
+        // Her 3 temada sınav
+        if (speakingProgress.current_tema % 3 === 0) {
+          sinav_bekleniyor = true;
+          yeniTema = speakingProgress.current_tema;
+        }
+      }
 
-  await supabase.from("speaking_progress").update({
-    current_tema: sinav_bekleniyor ? newTema - 1 : newTema,
-    current_gorev: sinav_bekleniyor ? 3 : newGorev,
-    son_bildirim_tarihi: now.slice(0, 10),
-    gorev_tarihleri: [...(speakingProgress.gorev_tarihleri || []), now.slice(0, 10)],
-    sinav_bekleniyor: sinav_bekleniyor,
-  }).eq("id", speakingProgress.id);
-    } else {
-      await supabase.from("speaking_progress").update({
+      const progressUpdate: any = {
         son_bildirim_tarihi: now.slice(0, 10),
-      }).eq("id", speakingProgress.id);
+        gorev_tarihleri: [...(speakingProgress.gorev_tarihleri || []), now.slice(0, 10)],
+        sinav_bekleniyor,
+      };
+
+      if (yeniGorev > 3 && !sinav_bekleniyor) {
+        progressUpdate.current_tema = yeniTema;
+        progressUpdate.current_gorev = 1;
+      } else if (!sinav_bekleniyor) {
+        progressUpdate.current_gorev = yeniGorev;
+      }
+
+      // İkisinin de progress'ini güncelle
+      await supabase.from("speaking_progress")
+        .update(progressUpdate)
+        .eq("id", speakingProgress.id);
+
+      // Partner'in progress'ini de güncelle
+      const { data: partnerProg } = await supabase
+        .from("speaking_progress")
+        .select("*")
+        .eq("username", partnerEmail)
+        .eq("level", "A1")
+        .maybeSingle();
+
+      if (partnerProg) {
+        await supabase.from("speaking_progress")
+          .update(progressUpdate)
+          .eq("id", partnerProg.id);
+      }
+    } else {
+      // Sadece ben bildirdim
+      await supabase.from("speaking_progress")
+        .update({ son_bildirim_tarihi: now.slice(0, 10) })
+        .eq("id", speakingProgress.id);
     }
   } else {
+    // İlk bildirim — yeni session oluştur
     await supabase.from("speaking_sessions").insert({
-      konusan_email: currentUser.username,
-      dinleyen_email: speakingProgress.partner_email || "",
+      kullanici1_email: benimEmail,
+      kullanici2_email: partnerEmail,
+      konusan_email: benimEmail,
+      dinleyen_email: partnerEmail,
       level: "A1",
       tema_no: speakingProgress.current_tema,
       gorev_no: speakingProgress.current_gorev,
+      kullanici1_bildirdi: true,
       konusan_bildirdi: true,
       konusan_bildirim_at: now,
     });
-    await supabase.from("speaking_progress").update({
-      son_bildirim_tarihi: now.slice(0, 10),
-    }).eq("id", speakingProgress.id);
+
+    await supabase.from("speaking_progress")
+      .update({ son_bildirim_tarihi: now.slice(0, 10) })
+      .eq("id", speakingProgress.id);
   }
 
   setSpeakingGorevBildiriliyor(false);
   setSpeakingBildirimGonderildi(true);
-completeSpeakingTask();
+  completeSpeakingTask();
   setTimeout(() => setSpeakingBildirimGonderildi(false), 3000);
 }
   function SpeakingLeaderboard({ currentUsername }: { currentUsername: string }) {
@@ -4592,33 +4635,20 @@ createPendingOrder({
                       </div>
                     </div>
 
-                    {/* Rol gösterimi */}
-{(() => {
-  const gorevNo = speakingProgress.current_gorev;
-  const benKonusucuyum = gorevNo % 2 === 1;
-  return (
-    <div className={"rounded-2xl border p-4 mb-5 " + (benKonusucuyum ? "bg-emerald-50 border-emerald-200" : "bg-blue-50 border-blue-200")}>
-      <p className={"text-xs font-black uppercase tracking-wider mb-2 " + (benKonusucuyum ? "text-emerald-700" : "text-blue-700")}>
-        {benKonusucuyum ? "🎤 Bu Görevde Rolün: KONUŞUCU" : "👂 Bu Görevde Rolün: DİNLEYİCİ"}
-      </p>
-      <p className="text-sm font-bold text-slate-800 mb-3">
-        {benKonusucuyum
-          ? "Partnerim Türkçe söyler → Ben Almancasını söylerim"
-          : "Ben Türkçe söylerim → Partnerim Almancasını söyler"}
-      </p>
-      <div className="space-y-2 text-sm text-slate-600">
-        <p>{"1. Partnerini ara (WhatsApp/telefon)"}</p>
-        <p>{benKonusucuyum
-          ? "2. Partnerinle kalıpları çalış, Almancasını söyle"
-          : "2. Sen Türkçe söyle, partnerinin Almancasını dinle"}</p>
-        <p>{"3. Tamamlayınca ikisi de buradan bildirim gönderir"}</p>
-        <p className="text-xs text-slate-500 mt-2">
-          {"Bir sonraki görevde roller değişir — ikisi de her iki rolü oynar."}
-        </p>
-      </div>
-    </div>
-  );
-})()}
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 mb-5">
+  <p className="text-xs font-black uppercase tracking-wider mb-2 text-emerald-700">
+    🎤 Bu Görevde İkili Çalışma
+  </p>
+  <p className="text-sm font-bold text-slate-800 mb-3">
+    İkisi de hem konuşucu hem dinleyici rolünü yapacak
+  </p>
+  <div className="space-y-2 text-sm text-slate-600">
+    <p>1. Partnerini ara</p>
+    <p>2. Önce sen dinle, partner Almancasını söylesin</p>
+    <p>3. Sonra roller değişsin, sen söyle partner dinlesin</p>
+    <p>4. Tamamlayınca ikisi de buradan bildirim gönder</p>
+  </div>
+</div>
 
                     {/* Bildirim butonu */}
                     {speakingProgress.partner_email ? (
