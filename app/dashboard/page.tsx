@@ -2346,8 +2346,10 @@ async function handleSpeakingBildirim() {
 }
   function SpeakingLeaderboard({ currentUsername }: { currentUsername: string }) {
   const [liderler, setLiderler] = useState<any[]>([]);
+  const [yuklendi, setYuklendi] = useState(false);
 
   useEffect(() => {
+    if (yuklendi) return;
     async function load() {
       const { data } = await supabase
         .from("speaking_progress")
@@ -2356,9 +2358,10 @@ async function handleSpeakingBildirim() {
         .order("current_tema", { ascending: false })
         .limit(10);
       setLiderler(data || []);
+      setYuklendi(true);
     }
     load();
-  }, []);
+  }, [yuklendi]);
 
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm">
