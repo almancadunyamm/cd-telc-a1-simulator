@@ -461,6 +461,18 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
     }
     loadLiderler();
   }, [currentUserEmail, selectedWordLevel]);
+  useEffect(() => {
+    async function loadLiderler() {
+      const { data } = await supabase
+        .from("word_leaderboard")
+        .select("display_name, toplam_dogru, streak_count, rozet_adi, rozet_icon, ogrenci_turu, level")
+        .eq("level", selectedWordLevel)
+        .order("toplam_dogru", { ascending: false })
+        .limit(8);
+      if (data) setLiderler(data);
+    }
+    loadLiderler();
+  }, [selectedWordLevel]);
 
   const aktifKelimeListesi = KELIMELER_BY_LEVEL[selectedWordLevel] || KELIMELER;
 
