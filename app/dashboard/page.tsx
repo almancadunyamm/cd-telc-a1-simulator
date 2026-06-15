@@ -2344,63 +2344,6 @@ async function handleSpeakingBildirim() {
   completeSpeakingTask();
   setTimeout(() => setSpeakingBildirimGonderildi(false), 3000);
 }
-  function SpeakingLeaderboard({ currentUsername }: { currentUsername: string }) {
-  const [liderler, setLiderler] = useState<any[]>([]);
-  const [yuklendi, setYuklendi] = useState(false);
-
-  useEffect(() => {
-    if (yuklendi) return;
-    async function load() {
-      const { data } = await supabase
-        .from("speaking_progress")
-        .select("username, current_tema, rozet, son_sinav_tema")
-        .eq("level", "A1")
-        .order("current_tema", { ascending: false })
-        .limit(10);
-      setLiderler(data || []);
-      setYuklendi(true);
-    }
-    load();
-  }, [yuklendi]);
-
-  return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-xs font-black text-slate-500 uppercase tracking-wider">Liderlik Tablosu</p>
-        <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-700">Canlı</span>
-      </div>
-      <div className="space-y-2">
-        {liderler.map((l, i) => (
-          <div
-            key={i}
-            className={
-              "flex items-center justify-between rounded-2xl px-3 py-2 " +
-              (l.username === currentUsername
-                ? "bg-emerald-50 border border-emerald-200"
-                : "bg-slate-50")
-            }
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-black text-slate-600 shadow-sm">
-                {i + 1}
-              </span>
-              <div>
-                <p className="text-xs font-black text-slate-900 max-w-[120px] truncate">
-                  {l.username === currentUsername ? "Sen" : l.username.split("@")[0]}
-                </p>
-                <p className="text-xs text-slate-500">{l.rozet || "🎤 Aday"}</p>
-              </div>
-            </div>
-            <span className="text-xs font-black text-emerald-700">{"T" + l.current_tema}</span>
-          </div>
-        ))}
-        {liderler.length === 0 && (
-          <p className="text-xs text-slate-400 text-center py-4">Henüz kayıt yok.</p>
-        )}
-      </div>
-    </div>
-  );
-}
 
 if (!currentUser) {
     return (
@@ -4943,7 +4886,7 @@ createPendingOrder({
                   </div>
                 </div>
 
-                <SpeakingLeaderboard currentUsername={currentUser?.username || ""} />
+                
 
               </div>
             </div>
