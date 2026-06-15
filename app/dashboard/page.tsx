@@ -4644,9 +4644,9 @@ createPendingOrder({
   </p>
   <div className="space-y-2 text-sm text-slate-600">
     <p>1. Partnerini ara</p>
-    <p>2. Önce sen dinle, partner Almancasını söylesin</p>
-    <p>3. Sonra roller değişsin, sen söyle partner dinlesin</p>
-    <p>4. Tamamlayınca ikisi de buradan bildirim gönder</p>
+    <p>2. Önce sen Türkçesini söyle, partner Almancasını söylesin</p>
+    <p>3. Sonra roller değişsin, partner Türkçesini söylesin sen Almancaya çevir</p>
+    <p>4. Görev bitince ikiniz de buradan bildirim atmalısınız</p>
   </div>
 </div>
 
