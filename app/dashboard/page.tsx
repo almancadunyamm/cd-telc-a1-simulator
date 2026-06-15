@@ -1925,8 +1925,6 @@ useEffect(() => {
   }
 
   loadSpeakingProgress();
-  const interval = setInterval(loadSpeakingProgress, 10000);
-  return () => clearInterval(interval);
 }, [currentUser, speakingBildirimGonderildi]);
 
   const activePackageCount = userClasses.length;
