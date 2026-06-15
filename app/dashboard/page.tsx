@@ -4860,20 +4860,6 @@ createPendingOrder({
                   </div>
                 )}
               </div>
-
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Puanlama</p>
-                <p className="text-sm text-slate-600 leading-6 mb-4">
-                  Her görev sonrası partnerine 1-5 yıldız verebilirsin.
-                  Bu puan sistemin kalitesini artırır.
-                </p>
-                <div className="space-y-3">
-  <p className="text-sm text-slate-500 leading-6">
-    Yıldız değerlendirme sistemi yakında aktif olacak. 
-    Şu an tamamlanan görevler Konuşma Kulübü geçmişinde kayıt altına alınıyor.
-  </p>
-</div>
-              </div>
             </div>
           )}
                     {/* ── SINAV TABI ──────────────────────────────────────── */}
