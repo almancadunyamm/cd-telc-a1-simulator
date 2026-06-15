@@ -331,6 +331,7 @@ const [speakingCinsiyet, setSpeakingCinsiyet] = useState("fark_etmez");
 const [speakingMusait, setSpeakingMusait] = useState("");
 const [speakingTelefon, setSpeakingTelefon] = useState("");
 const [speakingGonderildi, setSpeakingGonderildi] = useState(false);
+const [teacherWhatsapp, setTeacherWhatsapp] = useState<string>("905013434419");
 const [speakingEslesmeler, setSpeakingEslesmeler] = useState<any[]>([]);
 const [speakingYukleniyor, setSpeakingYukleniyor] = useState(false);
 const [partnerTelefon, setPartnerTelefon] = useState<string>("");
@@ -1423,6 +1424,23 @@ setStudentAccess(
       }
     : null
 );
+if (allClassIds.length > 0) {
+  const { data: classData } = await supabase
+    .from("classes")
+    .select("teacher_id")
+    .eq("id", allClassIds[0])
+    .maybeSingle();
+  if (classData?.teacher_id) {
+    const { data: teacherData } = await supabase
+      .from("users")
+      .select("whatsapp")
+      .eq("email", classData.teacher_id)
+      .maybeSingle();
+    if (teacherData?.whatsapp) {
+      setTeacherWhatsapp(teacherData.whatsapp);
+    }
+  }
+}
   }
 
   loadDashboardData();
@@ -3943,7 +3961,7 @@ createPendingOrder({
           "Öğrenci"
         }`;
         window.open(
-          `https://wa.me/${activeTeacherWhatsapp}?text=${encodeURIComponent(message)}`,
+          `https://wa.me/${teacherWhatsapp}?text=${encodeURIComponent(message)}`,
           "_blank"
         );
       }}
