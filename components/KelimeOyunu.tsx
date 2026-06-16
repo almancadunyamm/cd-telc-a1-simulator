@@ -638,10 +638,10 @@ const bugun = new Date().toISOString().split("T")[0];
   };
 
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
-    if (level === "B1") {
-      setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesi çok yakında açılacak. Gelişim ve Zirve öğrencileri ilk erişenler olacak.");
-      return;
-    }
+    if (level === "B1" && a1TamamlananTema.length < 12) {
+  setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesine geçmek için önce A1'deki tüm 12 temayı bitirmen gerekiyor.");
+  return;
+}
     if (level === "A2" && a1TamamlananTema.length < 12) {
       setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
       return;
@@ -1056,7 +1056,7 @@ const temaNo = Number(String(tema).replace("tema", ""));
         {/* Seviye butonları */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
           {(["A1", "A2", "B1"] as const).map(level => {
-            const kilitli = level === "B1" || (level === "A2" && a1TamamlananTema.length < 12);
+            const kilitli = (level === "B1" && a1TamamlananTema.length < 12) || (level === "A2" && a1TamamlananTema.length < 12);
             return (
               <button key={level} onClick={() => seviyeDegistir(level)}
                 style={{ borderRadius: 99, padding: "8px 20px", fontSize: 14, fontWeight: 900, cursor: kilitli ? "not-allowed" : "pointer", border: "none", background: selectedWordLevel === level ? "#059669" : "#e2e8f0", color: selectedWordLevel === level ? "#fff" : "#64748b", opacity: kilitli ? 0.6 : 1 }}>
