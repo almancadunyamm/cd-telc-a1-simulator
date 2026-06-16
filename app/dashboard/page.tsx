@@ -5145,6 +5145,11 @@ if (!isPreviousThemeCompleted) {
 }
 
   resetMasteryTest(theme.id);
+  setTimeout(() => {
+    document
+      .getElementById("mastery-test-area")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 100);
 }}
           className={`rounded-3xl border p-5 text-left shadow-sm transition ${
             isActive
