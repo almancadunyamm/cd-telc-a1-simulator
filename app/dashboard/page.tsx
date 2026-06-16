@@ -1638,7 +1638,7 @@ const isFutureLiveCourseLevel =
       (activeLiveOrder || isStudentActive ? "starter" : undefined);
       const hasAnyLiveCourseOrder =
   userClasses.some((classItem) => classItem.classType === "live") ||
-  !!activeLiveOrder ||
+  activeLiveCourseLevels.length > 0 ||
   localStorage.getItem("selected_product_slug")?.includes("live") ||
   localStorage.getItem("pending_payment_slug")?.includes("live");
   const profileLevel = activeAccessLevels[0] || selectedLevel;
