@@ -1142,12 +1142,8 @@ const temaNo = Number(String(tema).replace("tema", ""));
         )}
 
         {/* Tema kartları */}
-        {selectedWordLevel === "B1" ? (
-          <div style={{ background: "linear-gradient(135deg, #fffbeb, #fff)", border: "1px solid #fde68a", borderRadius: 20, padding: "28px 24px", textAlign: "center" }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
-            <h2 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 8px" }}>B1 Kelime Arenası çok yakında!</h2>
-            <p style={{ color: "#64748b", fontSize: 14 }}>Gelişim ve Zirve öğrencileri ilk erişenler olacak.</p>
-          </div>
+        {false ? (
+          <div />
         ) : (
           <>
             <div id="kelime-tema-listesi" style={{ scrollMarginTop: 20 }} />
