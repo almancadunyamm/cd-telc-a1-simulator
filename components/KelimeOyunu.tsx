@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { a2Kelimeler } from "@/app/data/vocabulary/a2";
+import { b1Kelimeler } from "@/app/data/vocabulary/b1";
 
 type Kelime = { de: string; tr: string };
 type TemaKey =
@@ -337,7 +338,7 @@ const KELIMELER = {
 const KELIMELER_BY_LEVEL: Record<string, typeof KELIMELER> = {
   A1: KELIMELER,
   A2: a2Kelimeler as unknown as typeof KELIMELER,
-  B1: KELIMELER,
+  B1: b1Kelimeler as unknown as typeof KELIMELER,
 };
 
 const ROZETLER = [
