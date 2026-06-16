@@ -413,6 +413,7 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [liderler, setLiderler] = useState<{display_name: string, toplam_dogru: number, streak_count: number, rozet_adi: string, rozet_icon: string, ogrenci_turu: string}[]>([]);
   const [temaLearnedWords, setTemaLearnedWords] = useState<Record<string, string[]>>({});
   const [a1TamamlananTema, setA1TamamlananTema] = useState<number[]>([]);
+  const [a2TamamlananTema, setA2TamamlananTema] = useState<number[]>([]);
   const [uyariMesaji, setUyariMesaji] = useState<string | null>(null);
   const [genelSinavHak, setGenelSinavHak] = useState(2);
   const [genelSinavYanlis, setGenelSinavYanlis] = useState(0);
@@ -437,6 +438,15 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
         const a1Bitti = a1Data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
         setA1TamamlananTema(a1Bitti);
       }
+      const { data: a2Data } = await supabase
+  .from("word_progress")
+  .select("tema_key, tamamlandi")
+  .eq("user_email", currentUserEmail)
+  .eq("level", "A2");
+if (a2Data) {
+  const a2Bitti = a2Data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
+  setA2TamamlananTema(a2Bitti);
+}
 
       if (data) {
         const tamamlananlar = data.filter(d => d.tamamlandi).map(d => Number(String(d.tema_key).replace("tema", "")));
@@ -638,8 +648,8 @@ const bugun = new Date().toISOString().split("T")[0];
   };
 
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
-    if (level === "B1" && a1TamamlananTema.length < 12) {
-  setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesine geçmek için önce A1'deki tüm 12 temayı bitirmen gerekiyor.");
+    if (level === "B1" && a2TamamlananTema.length < 12) {
+  setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesine geçmek için önce A2'deki tüm 12 temayı bitirmen gerekiyor.");
   return;
 }
     if (level === "A2" && a1TamamlananTema.length < 12) {
@@ -1056,7 +1066,7 @@ const temaNo = Number(String(tema).replace("tema", ""));
         {/* Seviye butonları */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
           {(["A1", "A2", "B1"] as const).map(level => {
-            const kilitli = (level === "B1" && a1TamamlananTema.length < 12) || (level === "A2" && a1TamamlananTema.length < 12);
+            const kilitli = (level === "B1" && a2TamamlananTema.length < 12) || (level === "A2" && a1TamamlananTema.length < 12);
             return (
               <button key={level} onClick={() => seviyeDegistir(level)}
                 style={{ borderRadius: 99, padding: "8px 20px", fontSize: 14, fontWeight: 900, cursor: kilitli ? "not-allowed" : "pointer", border: "none", background: selectedWordLevel === level ? "#059669" : "#e2e8f0", color: selectedWordLevel === level ? "#fff" : "#64748b", opacity: kilitli ? 0.6 : 1 }}>
