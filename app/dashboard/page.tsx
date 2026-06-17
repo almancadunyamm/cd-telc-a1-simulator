@@ -4433,23 +4433,26 @@ createPendingOrder({
                   Dinleyici Türkçe söyler → Sen Almancasını söylersin
                 </p>
                 <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
-                  {speakingPatterns
-                    .find(t => t.temaId === (speakingProgress?.current_tema || 1))
-                    ?.cumleler.map((c, i) => (
-                    <div key={i} className="rounded-2xl bg-slate-50 p-3">
-                      <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
-                      <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
-                    </div>
-                  ))}
+                  {Array.from({ length: speakingProgress?.current_tema || 1 }, (_, i) => i + 1).map((temaNo) => {
+                    const pattern = speakingPatterns.find(t => t.temaId === temaNo);
+                    if (!pattern) return null;
+                    return (
+                      <div key={temaNo}>
+                        <div className={`rounded-xl px-3 py-2 mb-2 ${temaNo === (speakingProgress?.current_tema || 1) ? "bg-emerald-100" : "bg-slate-100"}`}>
+                          <p className={`text-xs font-black uppercase tracking-wider ${temaNo === (speakingProgress?.current_tema || 1) ? "text-emerald-700" : "text-slate-500"}`}>
+                            {temaNo === (speakingProgress?.current_tema || 1) ? `🆕 Tema ${temaNo} — Yeni Sorular` : `🔁 Tema ${temaNo} — Tekrar`}
+                          </p>
+                        </div>
+                        {pattern.cumleler.map((c, i) => (
+                          <div key={i} className="rounded-2xl bg-slate-50 p-3 mb-2">
+                            <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
+                            <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </div>
-                {speakingProgress?.current_tema > 1 && (
-                  <div className="mt-4 rounded-2xl bg-slate-100 p-3">
-                    <p className="text-xs font-black text-slate-600">
-                      📌 Önceki temalardaki sorular da hızlıca sorulacak.
-                      Tema {speakingProgress.current_tema - 1} ve öncesini de gözden geçir.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
