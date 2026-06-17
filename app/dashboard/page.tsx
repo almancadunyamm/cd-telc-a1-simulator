@@ -2256,32 +2256,50 @@ async function handleSpeakingBildirim() {
   const currentTema = speakingProgress.current_tema;
   const currentGorev = speakingProgress.current_gorev;
 
-  // Mevcut session'ı bul — her iki sırayla da ara
+  // Bu tema+görev için mevcut session'ı bul
   const { data: sessions } = await supabase
     .from("speaking_sessions")
     .select("*")
     .eq("tema_no", currentTema)
     .eq("gorev_no", currentGorev)
     .eq("level", "A1")
-    .eq("onaylandi", false)
-    .order("created_at", { ascending: false })
-    .limit(10);
+    .eq("onaylandi", false);
 
-  // Bu tema+görev için ikimizden birinin olduğu session'ı bul
-  const session = sessions?.find(s =>
-    (s.kullanici1_email === benimEmail || s.kullanici2_email === benimEmail) ||
-    (s.kullanici1_email === partnerEmail || s.kullanici2_email === partnerEmail)
-  );
+  // İkimizden birinin olduğu session
+  const session = sessions?.find(s => {
+    const emailler = [
+      s.kullanici1_email, s.kullanici2_email,
+      s.konusan_email, s.dinleyen_email
+    ].filter(Boolean);
+    return emailler.includes(benimEmail) || emailler.includes(partnerEmail);
+  });
 
   if (session) {
-    const benim1mi = session.kullanici1_email === benimEmail;
-    const updateData: any = benim1mi
-      ? { kullanici1_bildirdi: true }
-      : { kullanici2_bildirdi: true };
+    // Ben zaten bildirdim mi?
+    const benBildirdim =
+      (session.kullanici1_email === benimEmail && session.kullanici1_bildirdi) ||
+      (session.kullanici2_email === benimEmail && session.kullanici2_bildirdi) ||
+      (session.konusan_email === benimEmail && session.konusan_bildirdi) ||
+      (session.dinleyen_email === benimEmail && session.dinleyen_bildirdi);
 
-    const digerBildirdi = benim1mi
-      ? session.kullanici2_bildirdi
-      : session.kullanici1_bildirdi;
+    if (benBildirdim) {
+      setSpeakingGorevBildiriliyor(false);
+      setSpeakingBildirimGonderildi(true);
+      setTimeout(() => setSpeakingBildirimGonderildi(false), 4000);
+      return;
+    }
+
+    // Hangi kullanıcıyım?
+    const benim1mi = session.kullanici1_email === benimEmail || session.konusan_email === benimEmail;
+    const updateData: any = benim1mi
+      ? { kullanici1_bildirdi: true, konusan_bildirdi: true }
+      : { kullanici2_bildirdi: true, dinleyen_bildirdi: true };
+
+    const digerBildirdi =
+      (session.kullanici1_email === partnerEmail && session.kullanici1_bildirdi) ||
+      (session.kullanici2_email === partnerEmail && session.kullanici2_bildirdi) ||
+      (session.konusan_email === partnerEmail && session.konusan_bildirdi) ||
+      (session.dinleyen_email === partnerEmail && session.dinleyen_bildirdi);
 
     if (digerBildirdi) {
       updateData.onaylandi = true;
@@ -2291,21 +2309,15 @@ async function handleSpeakingBildirim() {
     await supabase.from("speaking_sessions").update(updateData).eq("id", session.id);
 
     if (digerBildirdi) {
-      // İkisi de bildirdi — görevi ilerlet
       const yeniGorev = currentGorev + 1;
       let yeniTema = currentTema;
       let sinav_bekleniyor = false;
-      let gorevGuncelle = true;
 
       if (yeniGorev > 3) {
-        // 3 görev bitti — tema geç
         if (currentTema % 3 === 0) {
-          // Her 3 temada sınav
           sinav_bekleniyor = true;
-          gorevGuncelle = false;
         } else {
           yeniTema = currentTema + 1;
-          gorevGuncelle = true;
         }
       }
 
@@ -2325,12 +2337,10 @@ async function handleSpeakingBildirim() {
         progressUpdate.sinav_bekleniyor = false;
       }
 
-      // Benim progress'im
       await supabase.from("speaking_progress")
         .update(progressUpdate)
         .eq("id", speakingProgress.id);
 
-      // Partner'in progress'i
       const { data: partnerProg } = await supabase
         .from("speaking_progress")
         .select("*")
@@ -2344,7 +2354,6 @@ async function handleSpeakingBildirim() {
           .eq("id", partnerProg.id);
       }
 
-      // Supabase'den güncel veriyi çek
       const { data: yeniData } = await supabase
         .from("speaking_progress")
         .select("*")
@@ -2352,22 +2361,20 @@ async function handleSpeakingBildirim() {
         .single();
       if (yeniData) setSpeakingProgress(yeniData);
 
-      // Teşvik mesajı
-      if (!sinav_bekleniyor && yeniGorev <= 3) {
-        const kalanGorev = 3 - yeniGorev + 1;
-        if (kalanGorev === 1) {
-          alert("🎉 Harika! Bu temada son göreviniz kaldı. Bir görev daha yapınca yeni tema açılıyor!");
+      if (sinav_bekleniyor) {
+        alert(`🎓 Tema ${currentTema} tamamlandı! Sınav zamanı!`);
+      } else if (yeniGorev > 3) {
+        alert(`🎊 Tema ${currentTema} tamamlandı! Tema ${yeniTema} açıldı!`);
+      } else {
+        const kalanGorev = 3 - yeniGorev;
+        if (kalanGorev === 0) {
+          alert(`🎉 Son göreviniz kaldı! Bir görev daha yapınca yeni tema açılıyor!`);
         } else {
           alert(`✅ Görev onaylandı! Bu temada ${kalanGorev} göreviniz kaldı.`);
         }
-      } else if (!sinav_bekleniyor && yeniGorev > 3) {
-        alert(`🎊 Tema ${currentTema} tamamlandı! Tema ${yeniTema} açıldı!`);
-      } else {
-        alert(`🎓 Tema ${currentTema} tamamlandı! Sınav zamanı!`);
       }
 
     } else {
-      // Sadece ben bildirdim
       await supabase.from("speaking_progress")
         .update({ son_bildirim_tarihi: now.slice(0, 10) })
         .eq("id", speakingProgress.id);
@@ -2378,11 +2385,15 @@ async function handleSpeakingBildirim() {
     await supabase.from("speaking_sessions").insert({
       kullanici1_email: benimEmail,
       kullanici2_email: partnerEmail,
+      konusan_email: benimEmail,
+      dinleyen_email: partnerEmail,
       level: "A1",
       tema_no: currentTema,
       gorev_no: currentGorev,
       kullanici1_bildirdi: true,
       kullanici2_bildirdi: false,
+      konusan_bildirdi: true,
+      dinleyen_bildirdi: false,
       onaylandi: false,
     });
 
