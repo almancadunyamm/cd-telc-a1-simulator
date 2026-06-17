@@ -1902,9 +1902,28 @@ useEffect(() => {
       .eq("username", currentUser!.username)
       .eq("level", "A1")
       .maybeSingle();
-
-    if (data) {
-      setSpeakingProgress(data);
+if (data) {
+      // current_gorev 4+ ise otomatik düzelt
+      if (data.current_gorev > 3) {
+        const yeniTema = data.current_tema % 3 === 0 ? data.current_tema : data.current_tema + 1;
+        const sinav = data.current_tema % 3 === 0;
+        const duzeltilmis = {
+          ...data,
+          current_tema: sinav ? data.current_tema : yeniTema,
+          current_gorev: 1,
+          sinav_bekleniyor: sinav,
+        };
+        await supabase.from("speaking_progress")
+          .update({
+            current_tema: duzeltilmis.current_tema,
+            current_gorev: 1,
+            sinav_bekleniyor: sinav,
+          })
+          .eq("id", data.id);
+        setSpeakingProgress(duzeltilmis);
+      } else {
+        setSpeakingProgress(data);
+      }
     } else {
       setSpeakingProgress(null);
     }
@@ -2208,7 +2227,7 @@ setPaymentNoticeRefreshKey((prev) => prev + 1);
   }
 
   function getSpeakingUnlockedThemeCount(masteryCompletedCount: number): number {
-  return Math.max(0, masteryCompletedCount - 2);
+  return Math.min(12, masteryCompletedCount + 1);
 }
 function getSpeakingRozet(temaNo: number, sinavaGecildi: boolean): string {
   if (temaNo >= 12 && sinavaGecildi) return "🏆 Konuşma Şampiyonu";
