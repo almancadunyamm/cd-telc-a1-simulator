@@ -2344,8 +2344,13 @@ async function handleSpeakingBildirim() {
           .eq("id", partnerProg.id);
       }
 
-      // UI'ı güncelle
-      setSpeakingProgress({ ...speakingProgress, ...progressUpdate });
+      // Supabase'den güncel veriyi çek
+      const { data: yeniData } = await supabase
+        .from("speaking_progress")
+        .select("*")
+        .eq("id", speakingProgress.id)
+        .single();
+      if (yeniData) setSpeakingProgress(yeniData);
 
       // Teşvik mesajı
       if (!sinav_bekleniyor && yeniGorev <= 3) {
