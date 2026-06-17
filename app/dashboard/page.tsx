@@ -4827,6 +4827,8 @@ createPendingOrder({
   currentUserEmail={currentUser?.username || currentUsername || ""}
   currentUserName={currentUser?.name || ""}
   activeAccessLevels={activeAccessLevels}
+  onUpsell={() => { setUpsellPackage("practice"); setShowUpsell(true); }}
+  onB1Live={() => { const link = getShopierLink("live-b1"); if (link) window.open(link, "_blank"); }}
 />
   </section>
 )}

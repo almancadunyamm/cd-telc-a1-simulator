@@ -391,9 +391,11 @@ type Props = {
   currentUserEmail?: string;
   currentUserName?: string;
   activeAccessLevels?: string[];
+  onUpsell?: () => void;
+  onB1Live?: () => void;
 };
 
-export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [] }: Props) {
+export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [], onUpsell, onB1Live }: Props) {
   const [ekran, setEkran] = useState<Ekran>("menu");
   const [tema, setTema] = useState<TemaKey | null>(null);
   const [mod, setMod] = useState<Mod>("de_to_tr");
@@ -416,7 +418,6 @@ export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrde
   const [a1TamamlananTema, setA1TamamlananTema] = useState<number[]>([]);
   const [a2TamamlananTema, setA2TamamlananTema] = useState<number[]>([]);
   const [uyariMesaji, setUyariMesaji] = useState<string | null>(null);
-  const [b1KilitModal, setB1KilitModal] = useState(false);
   const [genelSinavHak, setGenelSinavHak] = useState(2);
   const [genelSinavYanlis, setGenelSinavYanlis] = useState(0);
 
@@ -651,7 +652,7 @@ const bugun = new Date().toISOString().split("T")[0];
 
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
     if (level === "B1" && !activeAccessLevels.includes("B1")) {
-  setB1KilitModal(true);
+  if (onUpsell) onUpsell();
   return;
 }
     if (level === "B1" && a2TamamlananTema.length < 12) {
@@ -692,33 +693,6 @@ const bugun = new Date().toISOString().split("T")[0];
   const C: React.CSSProperties = { background: "linear-gradient(135deg, #ecfdf5, #eff6ff, #ffffff)", fontFamily: "'Segoe UI', sans-serif", color: "#0f172a", borderRadius: 24, border: "1px solid #dbeafe", boxShadow: "0 20px 60px rgba(15,23,42,0.08)" };
 
   // ── UYARI MODAL ────────────────────────────────────────────────────
-  if (b1KilitModal) {
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 20 }}>
-      <div style={{ background: "#ffffff", borderRadius: 24, padding: "32px 28px", maxWidth: 420, width: "100%", textAlign: "center", boxShadow: "0 24px 60px rgba(15,23,42,0.2)" }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", margin: "0 0 12px" }}>B1 Kelime Arenası</h2>
-        <p style={{ fontSize: 14, color: "#64748b", margin: "0 0 20px", lineHeight: 1.6 }}>
-          B1 Kelime Arenasına erişmek için B1 kursuna kayıtlı olman gerekiyor. Paketi yükselt veya B1 canlı kursuna katıl.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={() => { setB1KilitModal(false); window.open("https://almancaokulum.com/paketler", "_blank"); }}
-            style={{ border: "none", borderRadius: 14, padding: "14px", background: "linear-gradient(135deg, #059669, #2563eb)", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-            🚀 Paketi Yükselt
-          </button>
-          <button onClick={() => { setB1KilitModal(false); window.open("https://almancaokulum.com/b1-canli-kurs", "_blank"); }}
-            style={{ border: "none", borderRadius: 14, padding: "14px", background: "#0f172a", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}>
-            🎓 B1 Canlı Kursunu İncele
-          </button>
-          <button onClick={() => setB1KilitModal(false)}
-            style={{ background: "none", border: "1px solid #dbeafe", borderRadius: 14, padding: "12px", color: "#64748b", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
-            Kapat
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
   if (uyariMesaji) {
     const satirlar = uyariMesaji.split("\n").filter(s => s.trim() !== "");
     const baslik = satirlar[0];
