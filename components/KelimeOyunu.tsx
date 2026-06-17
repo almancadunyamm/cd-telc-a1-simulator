@@ -390,9 +390,10 @@ type Props = {
   hasAnyLiveCourseOrder?: boolean;
   currentUserEmail?: string;
   currentUserName?: string;
+  activeAccessLevels?: string[];
 };
 
-export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName }: Props) {
+export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [] }: Props) {
   const [ekran, setEkran] = useState<Ekran>("menu");
   const [tema, setTema] = useState<TemaKey | null>(null);
   const [mod, setMod] = useState<Mod>("de_to_tr");
@@ -648,7 +649,7 @@ const bugun = new Date().toISOString().split("T")[0];
   };
 
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
-    if (level === "B1" && !hasAnyLiveCourseOrder && effectivePackageType !== "master") {
+    if (level === "B1" && !activeAccessLevels.includes("B1")) {
   setUyariMesaji("🔒 B1 Seviyesi\n\nB1 Kelime Arenasına erişmek için B1 kursuna kayıtlı olman gerekiyor.");
   return;
 }
@@ -1155,7 +1156,7 @@ const temaNo = Number(String(tema).replace("tema", ""));
               {(Object.entries(aktifKelimeListesi) as [TemaKey, { ad: string; kelimeler: Kelime[] }][]).map(([key, val], i) => {
                 const temaNo = i + 1;
                 const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
-const hasB1Access = selectedWordLevel !== "B1" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
+const hasB1Access = selectedWordLevel !== "B1" || activeAccessLevels.includes("B1");
 const hasAccess = (temaNo <= 6 || hasDev) && hasB1Access;
                 const prevDone = temaNo === 1 || completedWordThemes.includes(temaNo - 1);
                 const isLocked = !hasAccess || !prevDone;
