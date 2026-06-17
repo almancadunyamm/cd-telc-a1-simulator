@@ -648,6 +648,10 @@ const bugun = new Date().toISOString().split("T")[0];
   };
 
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
+    if (level === "B1" && !hasAnyLiveCourseOrder && effectivePackageType !== "master") {
+  setUyariMesaji("🔒 B1 Seviyesi\n\nB1 Kelime Arenasına erişmek için B1 kursuna kayıtlı olman gerekiyor.");
+  return;
+}
     if (level === "B1" && a2TamamlananTema.length < 12) {
   setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesine geçmek için önce A2'deki tüm 12 temayı bitirmen gerekiyor.");
   return;
@@ -1151,7 +1155,8 @@ const temaNo = Number(String(tema).replace("tema", ""));
               {(Object.entries(aktifKelimeListesi) as [TemaKey, { ad: string; kelimeler: Kelime[] }][]).map(([key, val], i) => {
                 const temaNo = i + 1;
                 const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
-                const hasAccess = temaNo <= 6 || hasDev;
+const hasB1Access = selectedWordLevel !== "B1" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
+const hasAccess = (temaNo <= 6 || hasDev) && hasB1Access;
                 const prevDone = temaNo === 1 || completedWordThemes.includes(temaNo - 1);
                 const isLocked = !hasAccess || !prevDone;
                 const isCompleted = completedWordThemes.includes(temaNo);
