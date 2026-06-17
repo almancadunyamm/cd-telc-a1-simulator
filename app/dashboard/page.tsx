@@ -2284,8 +2284,7 @@ async function handleSpeakingBildirim() {
 
     if (benBildirdim) {
       setSpeakingGorevBildiriliyor(false);
-      setSpeakingBildirimGonderildi(true);
-      setTimeout(() => setSpeakingBildirimGonderildi(false), 4000);
+      alert("⚠️ Bu görev için zaten bildirim gönderdin. Partnerinin bildirimi bekleniyor.");
       return;
     }
 
