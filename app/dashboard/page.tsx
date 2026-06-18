@@ -6584,12 +6584,17 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           onClick={async () => {
             if (!currentUser) return;
             setYukleniyor(true);
-            await supabase.from("speaking_sinav_talepleri").insert({
+            const { error } = await supabase.from("speaking_sinav_talepleri").insert({
               username: currentUser.username,
               level: "A1",
               sinav_tema_no: speakingProgress.current_tema,
               durum: "bekliyor",
             });
+            if (error) {
+              alert("Hata: " + error.message);
+              setYukleniyor(false);
+              return;
+            }
             setYukleniyor(false);
             setTalepGonderildi(true);
           }}
