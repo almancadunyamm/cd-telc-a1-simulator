@@ -1014,5 +1014,4 @@ export const theme10Questions = [
   ],
   difficulty: "hard",
 },
-
 ];

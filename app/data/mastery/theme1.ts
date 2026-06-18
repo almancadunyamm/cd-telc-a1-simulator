@@ -524,5 +524,85 @@ export const theme1Questions = [
       "Ich bin Lehrer."
     ],
     difficulty: "medium",
+  },
+  {
+    id: 41,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
+    tr: '"Wo?" ne anlama gelir?',
+    de: "Nerede?",
+    options: [
+      "Nerede?",
+      "Kaç yaşında?",
+      "Nasıl?",
+      "Nereden?"
+    ],
+    difficulty: "easy",
+  },
+  {
+    id: 42,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
+    tr: '"Wie?" ne anlama gelir?',
+    de: "Nasıl?",
+    options: [
+      "Nasıl?",
+      "Nerede?",
+      "Kaç yaşında?",
+      "Kim?"
+    ],
+    difficulty: "easy",
+  },
+  {
+    id: 43,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
+    tr: 'Aşağıdaki soruya uygun cevap hangisidir? "Wo wohnst du?"',
+    de: "Ich wohne in Berlin.",
+    options: [
+      "Ich wohne in Berlin.",
+      "Ich bin 25 Jahre alt.",
+      "Ich komme aus Berlin.",
+      "Ich heiße Mehmet."
+    ],
+    difficulty: "medium",
+  },
+  {
+    id: 44,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
+    tr: "Hangisi doğru soru cümlesidir?",
+    de: "Wo wohnst du?",
+    options: [
+      "Wo wohnst du?",
+      "Wo du wohnst?",
+      "Wohnst du wo?",
+      "Du wohnst wo?"
+    ],
+    difficulty: "hard",
+  },
+  {
+    id: 45,
+    themeId: 1,
+    themeTitle: "Kendini Tanıtma",
+    lessonNumber: 3,
+    lessonTitle: "Soru cümleleri (W-Fragen)",
+    tr: "Aşağıdaki eşleştirmelerden hangisi doğrudur?",
+    de: "Wie alt? → Kaç yaşında?",
+    options: [
+      "Wie alt? → Kaç yaşında?",
+      "Wie alt? → Nerede?",
+      "Wie alt? → Nasıl?",
+      "Wie alt? → Nereden?"
+    ],
+    difficulty: "medium",
   }
 ] as const;

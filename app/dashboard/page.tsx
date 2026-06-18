@@ -2253,10 +2253,23 @@ async function handleSpeakingBildirim() {
   setSpeakingGorevBildiriliyor(true);
 
   const now = new Date().toISOString();
+  const bugun = now.slice(0, 10);
   const benimEmail = currentUser.username;
   const partnerEmail = speakingProgress.partner_email || "";
   const currentTema = speakingProgress.current_tema;
   const currentGorev = speakingProgress.current_gorev;
+
+  // Sınav bekliyorsa bildirim atılamaz
+  if (speakingProgress.sinav_bekleniyor) {
+    setSpeakingGorevBildiriliyor(false);
+    setSpeakingTeşvikMesaj({
+      icon: "🎓",
+      baslik: "Önce Sınavını Geç!",
+      mesaj: "Bu temayı tamamladın. Bir sonraki temaya geçmek için sınav hocası talep et ve sınavını tamamla.",
+      renk: "from-yellow-400 to-orange-400",
+    });
+    return;
+  }
 
   // Bu tema+görev için mevcut session'ı bul
   const { data: sessions } = await supabase
@@ -2267,7 +2280,6 @@ async function handleSpeakingBildirim() {
     .eq("level", "A1")
     .eq("onaylandi", false);
 
-  // İkimizden birinin olduğu session
   const session = sessions?.find(s => {
     const emailler = [
       s.kullanici1_email, s.kullanici2_email,
@@ -2290,7 +2302,13 @@ async function handleSpeakingBildirim() {
       return;
     }
 
-    // Hangi kullanıcıyım?
+    // Bugün zaten bildirim attım mı?
+    if (speakingProgress.son_bildirim_tarihi === bugun) {
+      setSpeakingGorevBildiriliyor(false);
+      setBildirimUyariModal(true);
+      return;
+    }
+
     const benim1mi = session.kullanici1_email === benimEmail || session.konusan_email === benimEmail;
     const updateData: any = benim1mi
       ? { kullanici1_bildirdi: true, konusan_bildirdi: true }
@@ -2323,8 +2341,8 @@ async function handleSpeakingBildirim() {
       }
 
       const progressUpdate: any = {
-        son_bildirim_tarihi: now.slice(0, 10),
-        gorev_tarihleri: [...(speakingProgress.gorev_tarihleri || []), now.slice(0, 10)],
+        son_bildirim_tarihi: bugun,
+        gorev_tarihleri: [...(speakingProgress.gorev_tarihleri || []), bugun],
       };
 
       if (sinav_bekleniyor) {
@@ -2362,23 +2380,59 @@ async function handleSpeakingBildirim() {
         .single();
       if (yeniData) setSpeakingProgress(yeniData);
 
-      setSpeakingTeşvikMesaj(
-        sinav_bekleniyor
-          ? { icon: "🎓", baslik: "Sınav Zamanı!", mesaj: `Tema ${currentTema} tamamlandı! Artık sınava girebilirsin.`, renk: "from-yellow-400 to-orange-400" }
-          : yeniGorev > 3
-          ? { icon: "🎊", baslik: "Yeni Tema Açıldı!", mesaj: `Tema ${currentTema} tamamlandı! Tema ${yeniTema} seni bekliyor.`, renk: "from-emerald-500 to-teal-500" }
-          : 3 - yeniGorev === 0
-          ? { icon: "🔥", baslik: "Son Göreviniz Kaldı!", mesaj: "Bir görev daha yapınca yeni tema açılıyor. Hadi son hamle!", renk: "from-blue-500 to-indigo-500" }
-          : { icon: "✅", baslik: "Görev Onaylandı!", mesaj: `Bu temada ${3 - yeniGorev} göreviniz daha kaldı.`, renk: "from-emerald-500 to-blue-500" }
-      );
+      // Teşvik mesajı
+      if (sinav_bekleniyor) {
+        setSpeakingTeşvikMesaj({
+          icon: "🎓",
+          baslik: "Tebrikler! 3 Tema Tamamlandı!",
+          mesaj: `Harika iş çıkardınız! Tema ${currentTema} bitti. Şimdi sınav hocası talep ederek sınavını tamamla ve bir sonraki temaya geç!`,
+          renk: "from-yellow-400 to-orange-400",
+        });
+      } else if (yeniGorev > 3) {
+        setSpeakingTeşvikMesaj({
+          icon: "🎊",
+          baslik: "Tema Tamamlandı!",
+          mesaj: `Bravo! Tema ${currentTema} başarıyla bitti. Tema ${yeniTema} şimdi açıldı, devam edin!`,
+          renk: "from-emerald-500 to-teal-500",
+        });
+      } else if (yeniGorev === 3) {
+        setSpeakingTeşvikMesaj({
+          icon: "🔥",
+          baslik: "Son Görev Kaldı!",
+          mesaj: `Bu temayı bitirmek için son göreviniz kaldı. Hadi son hamle! İkisi de bildirim atınca tema tamamlanacak.`,
+          renk: "from-blue-500 to-indigo-500",
+        });
+      } else {
+        setSpeakingTeşvikMesaj({
+          icon: "✅",
+          baslik: `${currentGorev}. Görevi Tamamladınız!`,
+          mesaj: `Aynı görevi ${3 - currentGorev} kere daha yapmalısınız. Şu an ${yeniGorev}. günün görevindeydiniz.`,
+          renk: "from-emerald-500 to-blue-500",
+        });
+      }
 
     } else {
+      // Sadece ben bildirdim — partner bekleniyor
       await supabase.from("speaking_progress")
-        .update({ son_bildirim_tarihi: now.slice(0, 10) })
+        .update({ son_bildirim_tarihi: bugun })
         .eq("id", speakingProgress.id);
+
+      setSpeakingTeşvikMesaj({
+        icon: "⏳",
+        baslik: "Bildirimin Alındı!",
+        mesaj: "Partnerinin de bildirim atması bekleniyor. İkisi de atınca görev onaylanacak.",
+        renk: "from-slate-500 to-slate-700",
+      });
     }
 
   } else {
+    // Bugün zaten bildirim attım mı?
+    if (speakingProgress.son_bildirim_tarihi === bugun) {
+      setSpeakingGorevBildiriliyor(false);
+      setBildirimUyariModal(true);
+      return;
+    }
+
     // İlk bildirim — yeni session oluştur
     await supabase.from("speaking_sessions").insert({
       kullanici1_email: benimEmail,
@@ -2396,8 +2450,15 @@ async function handleSpeakingBildirim() {
     });
 
     await supabase.from("speaking_progress")
-      .update({ son_bildirim_tarihi: now.slice(0, 10) })
+      .update({ son_bildirim_tarihi: bugun })
       .eq("id", speakingProgress.id);
+
+    setSpeakingTeşvikMesaj({
+      icon: "⏳",
+      baslik: "Bildirimin Alındı!",
+      mesaj: "Partnerinin de bildirim atması bekleniyor. İkisi de atınca görev onaylanacak.",
+      renk: "from-slate-500 to-slate-700",
+    });
   }
 
   setSpeakingGorevBildiriliyor(false);
@@ -4737,6 +4798,7 @@ createPendingOrder({
                       currentUser={currentUser}
                       speakingProgress={speakingProgress}
                       setSpeakingTeşvikMesaj={setSpeakingTeşvikMesaj}
+                      temaHakkiVar={speakingProgress.current_tema % 3 === 0}
                     />
                   </div>
                 )}
@@ -6426,7 +6488,7 @@ if (!isPreviousThemeCompleted) {
 </main>
   );
 }
-function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMesaj }: any) {
+function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMesaj, temaHakkiVar }: any) {
   const [talepGonderildi, setTalepGonderildi] = React.useState(false);
   const [atananHoca, setAtananHoca] = React.useState<string | null>(null);
   const [yukleniyor, setYukleniyor] = React.useState(false);
@@ -6576,6 +6638,12 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           <div className="text-3xl mb-3">⏳</div>
           <p className="font-black text-blue-800">Sınav Hocası Bekleniyor</p>
           <p className="text-sm text-slate-500 mt-2">Talebini aldık. Admin en kısa sürede bir sınav hocası atayacak.</p>
+        </div>
+      ) : !temaHakkiVar ? (
+        <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5 text-center">
+          <div className="text-3xl mb-3">🔒</div>
+          <p className="font-black text-slate-700">Sınav Hocası Talebi Kilitli</p>
+          <p className="text-sm text-slate-500 mt-2">Her 3 temayı tamamladığında sınav hocası talep edebilirsin.</p>
         </div>
       ) : (
         <button
