@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from "@/lib/supabase";
 import { getShopierLink } from "@/lib/billing/shopier-links";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 const KelimeOyunu = dynamic(() => import("@/components/KelimeOyunu"), { ssr: false });
@@ -4733,112 +4733,11 @@ createPendingOrder({
                       </div>
                     </div>
 
-                    {partnerTelefon ? (
-                      <a
-                        href={
-                          "https://wa.me/" +
-                          partnerTelefon +
-                          "?text=" +
-                          encodeURIComponent(
-                            "Merhaba! Konuşma Kulübü Tema " +
-                            speakingProgress.current_tema +
-                            " sınavına hazırım 🎓\n\nToplam " +
-                            speakingProgress.current_tema * 15 +
-                            " soru var, sürem " +
-                            getSinavSuresiLabel(speakingProgress.current_tema) +
-                            ".\n\nGörüntülü arama açar mısın? Sen Türkçe soruları sorarsın, ben Almancasını söylerim.\n\nHazır olunca bildir! 💪"
-                          )
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block w-full rounded-2xl bg-green-600 px-4 py-4 text-center text-sm font-black text-white hover:bg-green-700"
-                      >
-                        {"📱 Partnerimi Ara — Sınavı Başlat"}
-                      </a>
-                    ) : (
-                      <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-center text-sm text-amber-800">
-                        Partner telefon bilgisi bulunamadı.
-                      </div>
-                    )}
-
-                    <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                      <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3">
-                        Dinleyici misin? Sınav Sonucunu Bildir
-                      </p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (!currentUser || !speakingProgress) return;
-                            const rozet =
-                              speakingProgress.current_tema >= 12
-                                ? "🏆 Konuşma Şampiyonu"
-                                : speakingProgress.current_tema >= 9
-                                ? "🥇 Altın Konuşmacı"
-                                : speakingProgress.current_tema >= 6
-                                ? "🥈 Gümüş Konuşmacı"
-                                : "🥉 Bronz Konuşmacı";
-
-                            await supabase.from("speaking_exams").insert({
-                              username: speakingProgress.partner_email,
-                              level: "A1",
-                              sinav_tema_no: speakingProgress.current_tema,
-                              toplam_soru: speakingProgress.current_tema * 15,
-                              sure_saniye: getSinavSuresi(speakingProgress.current_tema),
-                              gecti: true,
-                            });
-
-                            const { data: partnerProg } = await supabase
-                              .from("speaking_progress")
-                              .select("*")
-                              .eq("username", speakingProgress.partner_email)
-                              .eq("level", "A1")
-                              .maybeSingle();
-
-                            if (partnerProg) {
-                              await supabase
-                                .from("speaking_progress")
-                                .update({
-                                  current_tema: speakingProgress.current_tema + 1,
-                                  current_gorev: 1,
-                                  sinav_bekleniyor: false,
-                                  son_sinav_tema: speakingProgress.current_tema,
-                                  rozet: rozet,
-                                })
-                                .eq("id", partnerProg.id);
-                            }
-
-                            alert("Sınav geçti olarak kaydedildi! Rozet: " + rozet);
-                            setSpeakingBildirimGonderildi(true);
-                            setTimeout(() => setSpeakingBildirimGonderildi(false), 1000);
-                          }}
-                          className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700"
-                        >
-                          {"✅ Geçti"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (!currentUser || !speakingProgress) return;
-                            await supabase.from("speaking_exams").insert({
-                              username: speakingProgress.partner_email,
-                              level: "A1",
-                              sinav_tema_no: speakingProgress.current_tema,
-                              toplam_soru: speakingProgress.current_tema * 15,
-                              sure_saniye: getSinavSuresi(speakingProgress.current_tema),
-                              gecti: false,
-                            });
-                            alert("Sınav kalmadı olarak kaydedildi. Tekrar çalışıp yeniden denesin.");
-                          }}
-                          className="rounded-2xl bg-red-500 px-4 py-3 text-sm font-black text-white hover:bg-red-600"
-                        >
-                          {"❌ Kalmadı"}
-                        </button>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-2 text-center">
-                        Sadece dinleyici bu butonu kullanır.
-                      </p>
-                    </div>
+                    <SinavHocasiPanel
+                      currentUser={currentUser}
+                      speakingProgress={speakingProgress}
+                      setSpeakingTeşvikMesaj={setSpeakingTeşvikMesaj}
+                    />
                   </div>
                 )}
               </div>
@@ -6525,5 +6424,159 @@ if (!isPreviousThemeCompleted) {
 </div>
 </div>
 </main>
+  );
+}
+function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMesaj }: any) {
+  const [talepGonderildi, setTalepGonderildi] = React.useState(false);
+  const [atananHoca, setAtananHoca] = React.useState<string | null>(null);
+  const [yukleniyor, setYukleniyor] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!currentUser) return;
+    supabase
+      .from("speaking_sinav_talepleri")
+      .select("*")
+      .eq("username", currentUser.username)
+      .eq("sinav_tema_no", speakingProgress.current_tema)
+      .eq("level", "A1")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setTalepGonderildi(true);
+          if (data.atanan_hoca) setAtananHoca(data.atanan_hoca);
+        }
+      });
+  }, []);
+
+  return (
+    <div>
+      {atananHoca ? (
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center">
+          <div className="text-3xl mb-3">🎓</div>
+          <p className="font-black text-emerald-800">Sınav Hocan Atandı!</p>
+          <p className="text-sm text-slate-600 mt-2">{atananHoca}</p>
+          <p className="text-xs text-slate-500 mt-2">Sınav hocan seninle iletişime geçecek.</p>
+        </div>
+      ) : talepGonderildi ? (
+        <div className="rounded-2xl bg-blue-50 border border-blue-200 p-5 text-center">
+          <div className="text-3xl mb-3">⏳</div>
+          <p className="font-black text-blue-800">Sınav Hocası Bekleniyor</p>
+          <p className="text-sm text-slate-500 mt-2">Talebini aldık. Admin en kısa sürede bir sınav hocası atayacak.</p>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={yukleniyor}
+          onClick={async () => {
+            if (!currentUser) return;
+            setYukleniyor(true);
+            await supabase.from("speaking_sinav_talepleri").insert({
+              username: currentUser.username,
+              level: "A1",
+              sinav_tema_no: speakingProgress.current_tema,
+              durum: "bekliyor",
+            });
+            setYukleniyor(false);
+            setTalepGonderildi(true);
+          }}
+          className="w-full rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 px-4 py-4 text-sm font-black text-slate-900 hover:opacity-90 disabled:opacity-50"
+        >
+          {yukleniyor ? "Gönderiliyor..." : "🎓 Sınav Hocası Talep Et"}
+        </button>
+      )}
+
+      <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-200 p-4">
+        <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+          Sınav Hocasısın? Sonucu Bildir
+        </p>
+        <p className="text-xs text-slate-400 mb-3">Sadece atanan sınav hocası kullanır.</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={async () => {
+              if (!currentUser || !speakingProgress) return;
+              const ogrenci = speakingProgress.partner_email;
+              const rozet =
+                speakingProgress.current_tema >= 12 ? "🏆 Konuşma Şampiyonu"
+                : speakingProgress.current_tema >= 9 ? "🥇 Altın Konuşmacı"
+                : speakingProgress.current_tema >= 6 ? "🥈 Gümüş Konuşmacı"
+                : "🥉 Bronz Konuşmacı";
+
+              const { data: ogrenciProg } = await supabase
+                .from("speaking_progress")
+                .select("*")
+                .eq("username", ogrenci)
+                .eq("level", "A1")
+                .maybeSingle();
+
+              if (ogrenciProg) {
+                await supabase.from("speaking_progress")
+                  .update({
+                    current_tema: speakingProgress.current_tema + 1,
+                    current_gorev: 1,
+                    sinav_bekleniyor: false,
+                    son_sinav_tema: speakingProgress.current_tema,
+                    rozet,
+                  })
+                  .eq("id", ogrenciProg.id);
+              }
+
+              await supabase.from("speaking_sinav_talepleri")
+                .update({ durum: "tamamlandi", sonuc: "gecti" })
+                .eq("username", ogrenci)
+                .eq("sinav_tema_no", speakingProgress.current_tema);
+
+              await supabase.from("speaking_exams").insert({
+                username: ogrenci,
+                level: "A1",
+                sinav_tema_no: speakingProgress.current_tema,
+                gecti: true,
+              });
+
+              setSpeakingTeşvikMesaj({
+                icon: "🎉",
+                baslik: "Sınav Kaydedildi!",
+                mesaj: "Öğrenci geçti olarak işaretlendi. Rozet: " + rozet,
+                renk: "from-emerald-500 to-teal-500",
+              });
+            }}
+            className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700"
+          >
+            ✅ Geçti
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!currentUser || !speakingProgress) return;
+              const ogrenci = speakingProgress.partner_email;
+
+              await supabase.from("speaking_sinav_talepleri")
+                .update({ durum: "tamamlandi", sonuc: "kaldi" })
+                .eq("username", ogrenci)
+                .eq("sinav_tema_no", speakingProgress.current_tema);
+
+              await supabase.from("speaking_exams").insert({
+                username: ogrenci,
+                level: "A1",
+                sinav_tema_no: speakingProgress.current_tema,
+                gecti: false,
+              });
+
+              setSpeakingTeşvikMesaj({
+                icon: "📚",
+                baslik: "Sınav Kaydedildi",
+                mesaj: "Öğrenci kaldı olarak işaretlendi.",
+                renk: "from-red-500 to-orange-500",
+              });
+            }}
+            className="rounded-2xl bg-red-500 px-4 py-3 text-sm font-black text-white hover:bg-red-600"
+          >
+            ❌ Kalmadı
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
