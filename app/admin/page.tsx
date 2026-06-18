@@ -76,6 +76,14 @@ const adminCards = [
     accent: "#6366f1",
   },
   {
+    title: "Sınav Talepleri",
+    description: "Sınav hocası talep eden öğrencileri gör ve hoca ata.",
+    href: "/admin/sinav-talepleri",
+    icon: "🎓",
+    accent: "#f59e0b",
+    tag: "Yeni",
+  },
+  {
     title: "TELC Simülasyon",
     description: "Deneme sınavı soru setlerini ve içerikleri yönet.",
     href: "/admin/telc",
