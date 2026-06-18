@@ -324,6 +324,7 @@ export default function DashboardPage() {
 const [speakingProgress, setSpeakingProgress] = useState<any>(null);
 const [speakingProgressLoading, setSpeakingProgressLoading] = useState(true);
 const [speakingGorevBildiriliyor, setSpeakingGorevBildiriliyor] = useState(false);
+const [bildirimUyariModal, setBildirimUyariModal] = useState(false);
 const [speakingBildirimGonderildi, setSpeakingBildirimGonderildi] = useState(false);
 const [speakingRol, setSpeakingRol] = useState<"konusan" | "dinleyen">("konusan");
 const [speakingTemaId, setSpeakingTemaId] = useState(1);
@@ -2284,7 +2285,7 @@ async function handleSpeakingBildirim() {
 
     if (benBildirdim) {
       setSpeakingGorevBildiriliyor(false);
-      alert("⚠️ Bu görev için zaten bildirim gönderdin. Partnerinin bildirimi bekleniyor.");
+      setBildirimUyariModal(true);
       return;
     }
 
@@ -4031,6 +4032,31 @@ createPendingOrder({
 )}
 {activeDashboardTab === "speaking" && (
   <section className="mb-8">
+  {bildirimUyariModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-sm rounded-[2rem] bg-white p-8 shadow-2xl text-center">
+      <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 text-4xl">
+        ⏳
+      </div>
+      <h2 className="text-xl font-black text-slate-900">Partnerini Bekliyorsun</h2>
+      <p className="mt-3 text-sm leading-7 text-slate-500">
+        Bu görev için bildirimi zaten gönderdin.<br />
+        Partnerinin de bildirim atması bekleniyor.<br />
+        İkisi de atınca görev otomatik onaylanacak.
+      </p>
+      <div className="mt-4 rounded-2xl bg-slate-50 px-5 py-3 text-sm font-bold text-slate-600">
+        💡 Partnerini WhatsApp'tan haberdar et
+      </div>
+      <button
+        type="button"
+        onClick={() => setBildirimUyariModal(false)}
+        className="mt-6 w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-blue-600 px-4 py-4 text-sm font-black text-white hover:opacity-90"
+      >
+        Anladım
+      </button>
+    </div>
+  </div>
+)}
     {/* A2 / B1 seviye kilidi */}
     {selectedLevel !== "A1" ? (
       <div className="rounded-[2rem] bg-gradient-to-br from-amber-50 to-orange-50 p-8 text-center shadow-sm border border-amber-200">
