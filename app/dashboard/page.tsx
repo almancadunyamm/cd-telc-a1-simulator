@@ -6430,9 +6430,12 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
   const [talepGonderildi, setTalepGonderildi] = React.useState(false);
   const [atananHoca, setAtananHoca] = React.useState<string | null>(null);
   const [yukleniyor, setYukleniyor] = React.useState(false);
+  const [hocaOlarakAtananlar, setHocaOlarakAtananlar] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     if (!currentUser) return;
+
+    // Kendi sınav talebini kontrol et
     supabase
       .from("speaking_sinav_talepleri")
       .select("*")
@@ -6448,10 +6451,119 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           if (data.atanan_hoca) setAtananHoca(data.atanan_hoca);
         }
       });
+
+    // Hoca olarak atandığın talepleri kontrol et
+    supabase
+      .from("speaking_sinav_talepleri")
+      .select("*")
+      .eq("atanan_hoca", currentUser.username)
+      .eq("durum", "bekliyor")
+      .then(({ data }) => {
+        if (data && data.length > 0) setHocaOlarakAtananlar(data);
+      });
   }, []);
 
   return (
-    <div>
+    <div className="space-y-4">
+
+      {/* Hoca olarak atandığın sınavlar */}
+      {hocaOlarakAtananlar.length > 0 && (
+        <div className="rounded-2xl bg-yellow-50 border border-yellow-200 p-5">
+          <p className="text-xs font-black text-yellow-700 uppercase tracking-wider mb-3">
+            🎓 Sınav Yapacağın Öğrenciler
+          </p>
+          {hocaOlarakAtananlar.map((talep) => (
+            <div key={talep.id} className="rounded-2xl bg-white border border-yellow-100 p-4 mb-3">
+              <p className="font-black text-slate-900 mb-1">👤 {talep.username}</p>
+              <p className="text-xs text-slate-500 mb-3">Tema {talep.sinav_tema_no} sınavı</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const ogrenci = talep.username;
+                    const rozet =
+                      talep.sinav_tema_no >= 12 ? "🏆 Konuşma Şampiyonu"
+                      : talep.sinav_tema_no >= 9 ? "🥇 Altın Konuşmacı"
+                      : talep.sinav_tema_no >= 6 ? "🥈 Gümüş Konuşmacı"
+                      : "🥉 Bronz Konuşmacı";
+
+                    const { data: ogrenciProg } = await supabase
+                      .from("speaking_progress")
+                      .select("*")
+                      .eq("username", ogrenci)
+                      .eq("level", "A1")
+                      .maybeSingle();
+
+                    if (ogrenciProg) {
+                      await supabase.from("speaking_progress")
+                        .update({
+                          current_tema: talep.sinav_tema_no + 1,
+                          current_gorev: 1,
+                          sinav_bekleniyor: false,
+                          son_sinav_tema: talep.sinav_tema_no,
+                          rozet,
+                        })
+                        .eq("id", ogrenciProg.id);
+                    }
+
+                    await supabase.from("speaking_sinav_talepleri")
+                      .update({ durum: "tamamlandi", sonuc: "gecti" })
+                      .eq("id", talep.id);
+
+                    await supabase.from("speaking_exams").insert({
+                      username: ogrenci,
+                      level: "A1",
+                      sinav_tema_no: talep.sinav_tema_no,
+                      gecti: true,
+                    });
+
+                    setHocaOlarakAtananlar(prev => prev.filter(t => t.id !== talep.id));
+                    setSpeakingTeşvikMesaj({
+                      icon: "🎉",
+                      baslik: "Sınav Kaydedildi!",
+                      mesaj: `${ogrenci} geçti olarak işaretlendi. Rozet: ${rozet}`,
+                      renk: "from-emerald-500 to-teal-500",
+                    });
+                  }}
+                  className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700"
+                >
+                  ✅ Geçti
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const ogrenci = talep.username;
+
+                    await supabase.from("speaking_sinav_talepleri")
+                      .update({ durum: "tamamlandi", sonuc: "kaldi" })
+                      .eq("id", talep.id);
+
+                    await supabase.from("speaking_exams").insert({
+                      username: ogrenci,
+                      level: "A1",
+                      sinav_tema_no: talep.sinav_tema_no,
+                      gecti: false,
+                    });
+
+                    setHocaOlarakAtananlar(prev => prev.filter(t => t.id !== talep.id));
+                    setSpeakingTeşvikMesaj({
+                      icon: "📚",
+                      baslik: "Sınav Kaydedildi",
+                      mesaj: `${ogrenci} kaldı olarak işaretlendi.`,
+                      renk: "from-red-500 to-orange-500",
+                    });
+                  }}
+                  className="rounded-2xl bg-red-500 px-4 py-3 text-sm font-black text-white hover:bg-red-600"
+                >
+                  ❌ Kaldı
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Kendi sınav talebi */}
       {atananHoca ? (
         <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center">
           <div className="text-3xl mb-3">🎓</div>
@@ -6486,97 +6598,6 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           {yukleniyor ? "Gönderiliyor..." : "🎓 Sınav Hocası Talep Et"}
         </button>
       )}
-
-      <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-200 p-4">
-        <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
-          Sınav Hocasısın? Sonucu Bildir
-        </p>
-        <p className="text-xs text-slate-400 mb-3">Sadece atanan sınav hocası kullanır.</p>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={async () => {
-              if (!currentUser || !speakingProgress) return;
-              const ogrenci = speakingProgress.partner_email;
-              const rozet =
-                speakingProgress.current_tema >= 12 ? "🏆 Konuşma Şampiyonu"
-                : speakingProgress.current_tema >= 9 ? "🥇 Altın Konuşmacı"
-                : speakingProgress.current_tema >= 6 ? "🥈 Gümüş Konuşmacı"
-                : "🥉 Bronz Konuşmacı";
-
-              const { data: ogrenciProg } = await supabase
-                .from("speaking_progress")
-                .select("*")
-                .eq("username", ogrenci)
-                .eq("level", "A1")
-                .maybeSingle();
-
-              if (ogrenciProg) {
-                await supabase.from("speaking_progress")
-                  .update({
-                    current_tema: speakingProgress.current_tema + 1,
-                    current_gorev: 1,
-                    sinav_bekleniyor: false,
-                    son_sinav_tema: speakingProgress.current_tema,
-                    rozet,
-                  })
-                  .eq("id", ogrenciProg.id);
-              }
-
-              await supabase.from("speaking_sinav_talepleri")
-                .update({ durum: "tamamlandi", sonuc: "gecti" })
-                .eq("username", ogrenci)
-                .eq("sinav_tema_no", speakingProgress.current_tema);
-
-              await supabase.from("speaking_exams").insert({
-                username: ogrenci,
-                level: "A1",
-                sinav_tema_no: speakingProgress.current_tema,
-                gecti: true,
-              });
-
-              setSpeakingTeşvikMesaj({
-                icon: "🎉",
-                baslik: "Sınav Kaydedildi!",
-                mesaj: "Öğrenci geçti olarak işaretlendi. Rozet: " + rozet,
-                renk: "from-emerald-500 to-teal-500",
-              });
-            }}
-            className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700"
-          >
-            ✅ Geçti
-          </button>
-          <button
-            type="button"
-            onClick={async () => {
-              if (!currentUser || !speakingProgress) return;
-              const ogrenci = speakingProgress.partner_email;
-
-              await supabase.from("speaking_sinav_talepleri")
-                .update({ durum: "tamamlandi", sonuc: "kaldi" })
-                .eq("username", ogrenci)
-                .eq("sinav_tema_no", speakingProgress.current_tema);
-
-              await supabase.from("speaking_exams").insert({
-                username: ogrenci,
-                level: "A1",
-                sinav_tema_no: speakingProgress.current_tema,
-                gecti: false,
-              });
-
-              setSpeakingTeşvikMesaj({
-                icon: "📚",
-                baslik: "Sınav Kaydedildi",
-                mesaj: "Öğrenci kaldı olarak işaretlendi.",
-                renk: "from-red-500 to-orange-500",
-              });
-            }}
-            className="rounded-2xl bg-red-500 px-4 py-3 text-sm font-black text-white hover:bg-red-600"
-          >
-            ❌ Kalmadı
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
