@@ -325,6 +325,7 @@ const [speakingProgress, setSpeakingProgress] = useState<any>(null);
 const [speakingProgressLoading, setSpeakingProgressLoading] = useState(true);
 const [speakingGorevBildiriliyor, setSpeakingGorevBildiriliyor] = useState(false);
 const [bildirimUyariModal, setBildirimUyariModal] = useState(false);
+const [speakingTeşvikMesaj, setSpeakingTeşvikMesaj] = useState<{icon: string, baslik: string, mesaj: string, renk: string} | null>(null);
 const [speakingBildirimGonderildi, setSpeakingBildirimGonderildi] = useState(false);
 const [speakingRol, setSpeakingRol] = useState<"konusan" | "dinleyen">("konusan");
 const [speakingTemaId, setSpeakingTemaId] = useState(1);
@@ -2361,18 +2362,15 @@ async function handleSpeakingBildirim() {
         .single();
       if (yeniData) setSpeakingProgress(yeniData);
 
-      if (sinav_bekleniyor) {
-        alert(`🎓 Tema ${currentTema} tamamlandı! Sınav zamanı!`);
-      } else if (yeniGorev > 3) {
-        alert(`🎊 Tema ${currentTema} tamamlandı! Tema ${yeniTema} açıldı!`);
-      } else {
-        const kalanGorev = 3 - yeniGorev;
-        if (kalanGorev === 0) {
-          alert(`🎉 Son göreviniz kaldı! Bir görev daha yapınca yeni tema açılıyor!`);
-        } else {
-          alert(`✅ Görev onaylandı! Bu temada ${kalanGorev} göreviniz kaldı.`);
-        }
-      }
+      setSpeakingTeşvikMesaj(
+        sinav_bekleniyor
+          ? { icon: "🎓", baslik: "Sınav Zamanı!", mesaj: `Tema ${currentTema} tamamlandı! Artık sınava girebilirsin.`, renk: "from-yellow-400 to-orange-400" }
+          : yeniGorev > 3
+          ? { icon: "🎊", baslik: "Yeni Tema Açıldı!", mesaj: `Tema ${currentTema} tamamlandı! Tema ${yeniTema} seni bekliyor.`, renk: "from-emerald-500 to-teal-500" }
+          : 3 - yeniGorev === 0
+          ? { icon: "🔥", baslik: "Son Göreviniz Kaldı!", mesaj: "Bir görev daha yapınca yeni tema açılıyor. Hadi son hamle!", renk: "from-blue-500 to-indigo-500" }
+          : { icon: "✅", baslik: "Görev Onaylandı!", mesaj: `Bu temada ${3 - yeniGorev} göreviniz daha kaldı.`, renk: "from-emerald-500 to-blue-500" }
+      );
 
     } else {
       await supabase.from("speaking_progress")
@@ -4053,6 +4051,24 @@ createPendingOrder({
         className="mt-6 w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-blue-600 px-4 py-4 text-sm font-black text-white hover:opacity-90"
       >
         Anladım
+      </button>
+    </div>
+  </div>
+)}
+{speakingTeşvikMesaj && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-sm rounded-[2rem] bg-white p-8 shadow-2xl text-center">
+      <div className={`mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br ${speakingTeşvikMesaj.renk} text-4xl`}>
+        {speakingTeşvikMesaj.icon}
+      </div>
+      <h2 className="text-xl font-black text-slate-900">{speakingTeşvikMesaj.baslik}</h2>
+      <p className="mt-3 text-sm leading-7 text-slate-500">{speakingTeşvikMesaj.mesaj}</p>
+      <button
+        type="button"
+        onClick={() => setSpeakingTeşvikMesaj(null)}
+        className={`mt-6 w-full rounded-2xl bg-gradient-to-r ${speakingTeşvikMesaj.renk} px-4 py-4 text-sm font-black text-white hover:opacity-90`}
+      >
+        Harika! 💪
       </button>
     </div>
   </div>
