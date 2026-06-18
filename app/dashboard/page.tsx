@@ -4295,8 +4295,8 @@ createPendingOrder({
                         <p className="text-xs font-bold text-slate-500 mt-1">Aktif Tema</p>
                       </div>
                       <div className="rounded-2xl bg-blue-50 p-4 text-center">
-                        <p className="text-3xl font-black text-blue-700">{speakingProgress.current_gorev}/3</p>
-                        <p className="text-xs font-bold text-slate-500 mt-1">Görev</p>
+                        <p className="text-3xl font-black text-blue-700">{speakingProgress.current_gorev}. Gün</p>
+                        <p className="text-xs font-bold text-slate-500 mt-1">Bugünkü Görev</p>
                       </div>
                     </div>
 
@@ -4360,7 +4360,7 @@ createPendingOrder({
                     <div className="mb-4">
                       <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
                         <span>Tema {speakingProgress.current_tema} İlerlemesi</span>
-                        <span>{speakingProgress.current_gorev - 1}/3 görev</span>
+                        <span>{speakingProgress.current_gorev - 1}/3 gün tamamlandı</span>
                       </div>
                       <div className="h-2 rounded-full bg-slate-200">
                         <div
