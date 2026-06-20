@@ -37,6 +37,15 @@ import { theme9Questions } from "@/app/data/mastery/theme9";
 import { theme10Questions } from "@/app/data/mastery/theme10";
 import { theme11Questions } from "@/app/data/mastery/theme11";
 import { theme12Questions } from "@/app/data/mastery/theme12";
+import { a2Theme1Questions } from "@/app/data/mastery-a2/theme1";
+import { a2Theme2Questions } from "@/app/data/mastery-a2/theme2";
+import { a2Theme3Questions } from "@/app/data/mastery-a2/theme3";
+import { a2Theme4Questions } from "@/app/data/mastery-a2/theme4";
+import { a2Theme5Questions } from "@/app/data/mastery-a2/theme5";
+import { a2Theme6Questions } from "@/app/data/mastery-a2/theme6";
+import { a2Theme7Questions } from "@/app/data/mastery-a2/theme7";
+import { a2Theme8Questions } from "@/app/data/mastery-a2/theme8";
+import { a2Theme9Questions } from "@/app/data/mastery-a2/theme9";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
 
 type Level = "A1" | "A2" | "B1";
@@ -680,7 +689,20 @@ const earnedBadges = [
   options: string[];
   difficulty?: "easy" | "medium" | "hard";
 };
-
+const a2MasteryThemes = [
+  { id: 1, title: "Kendini Detaylı Tanıtma", germanTitle: "Sich detailliert vorstellen", lessons: [{ number: 1, title: "bei – mit – Dönüşlü Fiiller" }] },
+  { id: 2, title: "Geçmiş Hayat", germanTitle: "Vergangenes Leben", lessons: [{ number: 2, title: "Perfekt – danach – noch" }] },
+  { id: 3, title: "Sebep Söyleme", germanTitle: "Gründe nennen – weil", lessons: [{ number: 3, title: "weil – Sebep Cümleleri" }] },
+  { id: 4, title: "Günlük Rutin – Dativ", germanTitle: "Tagesablauf – Dativ", lessons: [{ number: 4, title: "Dativ – İyelik Zamirleri" }] },
+  { id: 5, title: "Tavsiye & Karşılaştırma", germanTitle: "Ratschläge & Vergleiche", lessons: [{ number: 5, title: "könnte – würde – Komparativ" }] },
+  { id: 6, title: "Planlar & Şartlar", germanTitle: "Pläne & Bedingungen – wenn", lessons: [{ number: 6, title: "wenn – Şart Cümleleri" }] },
+  { id: 7, title: "Yemekleri Karşılaştırma", germanTitle: "Essen vergleichen", lessons: [{ number: 7, title: "Komparativ – als – lieber" }] },
+  { id: 8, title: "En Sevdiğim Yemekler", germanTitle: "Lieblingsessen – Superlativ", lessons: [{ number: 8, title: "Superlativ – am besten" }] },
+  { id: 9, title: "Beim Arzt", germanTitle: "Beim Arzt – müssen", lessons: [{ number: 9, title: "müssen – Imperativ – Dativ" }] },
+  { id: 10, title: "Yakında", germanTitle: "Demnächst", lessons: [{ number: 10, title: "Yakında" }] },
+  { id: 11, title: "Yakında", germanTitle: "Demnächst", lessons: [{ number: 11, title: "Yakında" }] },
+  { id: 12, title: "Yakında", germanTitle: "Demnächst", lessons: [{ number: 12, title: "Yakında" }] },
+];
 const masteryThemes = [
   {
     id: 1,
@@ -855,6 +877,17 @@ const masteryQuestions: MasteryQuestion[] = [
   options: [...question.options],
 })),
 ];
+const a2MasteryQuestions: MasteryQuestion[] = [
+  ...a2Theme1Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme2Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme3Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme4Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme5Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme6Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme7Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme8Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme9Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
 const [selectedMasteryThemeId, setSelectedMasteryThemeId] = useState(1);
@@ -1027,9 +1060,9 @@ useEffect(() => {
 const firstIncompleteThemeId =
   masteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))
     ?.id || 1;
-const selectedMasteryTheme = masteryThemes.find(
-  (theme) => theme.id === selectedMasteryThemeId
-);
+const selectedMasteryTheme = selectedMasteryLevel === "A2"
+  ? a2MasteryThemes.find((theme) => theme.id === selectedMasteryThemeId)
+  : masteryThemes.find((theme) => theme.id === selectedMasteryThemeId);
 const getRandomMasteryQuestions = (themeId: number) => {
 
   const theme = masteryThemes.find((item) => item.id === themeId);
@@ -1065,6 +1098,17 @@ const getRandomMasteryQuestions = (themeId: number) => {
   });
 
 };
+const getRandomA2MasteryQuestions = (themeId: number) => {
+  if (themeId > 9) return [];
+  const themeQuestions = a2MasteryQuestions.filter((q) => q.themeId === themeId);
+  return [...themeQuestions]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 15)
+    .map((question) => ({
+      ...question,
+      options: [...question.options].sort(() => Math.random() - 0.5),
+    }));
+};
 const selectedMasteryQuestions =
   activeMasteryQuestions.length > 0
     ? activeMasteryQuestions
@@ -1094,7 +1138,11 @@ const isThemePassed = selectedMasteryTheme
 
 const resetMasteryTest = (themeId = selectedMasteryThemeId) => {
   setSelectedMasteryThemeId(themeId);
-  setActiveMasteryQuestions(getRandomMasteryQuestions(themeId));
+  if (selectedMasteryLevel === "A2") {
+    setActiveMasteryQuestions(getRandomA2MasteryQuestions(themeId));
+  } else {
+    setActiveMasteryQuestions(getRandomMasteryQuestions(themeId));
+  }
   setMasteryIndex(0);
   setMasteryLives(3);
   setMasteryAnswers([]);
@@ -1103,9 +1151,13 @@ const resetMasteryTest = (themeId = selectedMasteryThemeId) => {
 };
 useEffect(() => {
   if (activeDashboardTab === "vocabulary" && activeMasteryQuestions.length === 0) {
-    setActiveMasteryQuestions(getRandomMasteryQuestions(selectedMasteryThemeId));
+    if (selectedMasteryLevel === "A2") {
+      setActiveMasteryQuestions(getRandomA2MasteryQuestions(selectedMasteryThemeId));
+    } else {
+      setActiveMasteryQuestions(getRandomMasteryQuestions(selectedMasteryThemeId));
+    }
   }
-}, [activeDashboardTab, activeMasteryQuestions.length, selectedMasteryThemeId]);
+}, [activeDashboardTab, activeMasteryQuestions.length, selectedMasteryThemeId, selectedMasteryLevel]);
 
 const handleMasteryAnswer = (answer: string) => {
   if (!currentMasteryQuestion || masteryFeedback) return;
@@ -5036,7 +5088,7 @@ createPendingOrder({
 </div>
       </div>
 {activeAccessLevels.includes(selectedMasteryLevel) &&
-  selectedMasteryLevel !== "A1" && (
+  selectedMasteryLevel === "B1" && (
     <div className="mt-6 rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm">
       <p className="text-xs font-black uppercase tracking-widest text-blue-700">
         Yakında aktif olacak
@@ -5054,7 +5106,7 @@ createPendingOrder({
     </div>
   )}
       {activeAccessLevels.includes(selectedMasteryLevel) &&
-  selectedMasteryLevel === "A1" && (
+  (selectedMasteryLevel === "A1" || selectedMasteryLevel === "A2") && (
       <>
   {isTelcChampion && (
   <div className="mt-6 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-yellow-50 p-6 shadow-lg">
@@ -5174,7 +5226,7 @@ createPendingOrder({
     id="mastery-theme-cards"
     className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
   >
-    {masteryThemes.map((theme) => {
+    {(selectedMasteryLevel === "A2" ? a2MasteryThemes : masteryThemes).map((theme) => {
       const isActive = theme.id === selectedMasteryThemeId;
       const isStarterTheme = theme.id <= 6;
 const isDevelopmentTheme = theme.id >= 7 && theme.id <= 12;
