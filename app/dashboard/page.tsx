@@ -690,18 +690,45 @@ const earnedBadges = [
   difficulty?: "easy" | "medium" | "hard";
 };
 const a2MasteryThemes = [
-  { id: 1, title: "Kendini Detaylı Tanıtma", germanTitle: "Sich detailliert vorstellen", lessons: [{ number: 1, title: "bei – mit – Dönüşlü Fiiller" }] },
-  { id: 2, title: "Geçmiş Hayat", germanTitle: "Vergangenes Leben", lessons: [{ number: 2, title: "Perfekt – danach – noch" }] },
-  { id: 3, title: "Sebep Söyleme", germanTitle: "Gründe nennen – weil", lessons: [{ number: 3, title: "weil – Sebep Cümleleri" }] },
-  { id: 4, title: "Günlük Rutin – Dativ", germanTitle: "Tagesablauf – Dativ", lessons: [{ number: 4, title: "Dativ – İyelik Zamirleri" }] },
-  { id: 5, title: "Tavsiye & Karşılaştırma", germanTitle: "Ratschläge & Vergleiche", lessons: [{ number: 5, title: "könnte – würde – Komparativ" }] },
-  { id: 6, title: "Planlar & Şartlar", germanTitle: "Pläne & Bedingungen – wenn", lessons: [{ number: 6, title: "wenn – Şart Cümleleri" }] },
-  { id: 7, title: "Yemekleri Karşılaştırma", germanTitle: "Essen vergleichen", lessons: [{ number: 7, title: "Komparativ – als – lieber" }] },
-  { id: 8, title: "En Sevdiğim Yemekler", germanTitle: "Lieblingsessen – Superlativ", lessons: [{ number: 8, title: "Superlativ – am besten" }] },
-  { id: 9, title: "Beim Arzt", germanTitle: "Beim Arzt – müssen", lessons: [{ number: 9, title: "müssen – Imperativ – Dativ" }] },
-  { id: 10, title: "Yakında", germanTitle: "Demnächst", lessons: [{ number: 10, title: "Yakında" }] },
-  { id: 11, title: "Yakında", germanTitle: "Demnächst", lessons: [{ number: 11, title: "Yakında" }] },
-  { id: 12, title: "Yakında", germanTitle: "Demnächst", lessons: [{ number: 12, title: "Yakında" }] },
+  {
+    id: 1,
+    title: "Kişisel Bilgiler & Tanışma",
+    germanTitle: "Persönliche Informationen",
+    lessons: [
+      { number: 1, title: "Kendini Daha Detaylı Tanıtma" },
+      { number: 2, title: "Geçmiş Hayatımı Anlatıyorum" },
+      { number: 3, title: "Sebep Söyleme – weil" },
+    ],
+  },
+  {
+    id: 2,
+    title: "Günlük Hayat & Zaman",
+    germanTitle: "Alltag & Zeit",
+    lessons: [
+      { number: 4, title: "Günlük Rutin – Dativ" },
+      { number: 5, title: "Öneriler – könnte & würde" },
+      { number: 6, title: "Planlar & Şartlar – wenn" },
+    ],
+  },
+  {
+    id: 3,
+    title: "Yemek & Sağlık",
+    germanTitle: "Essen & Gesundheit",
+    lessons: [
+      { number: 7, title: "Yemekleri Karşılaştırma – Komparativ" },
+      { number: 8, title: "En Sevdiğim Yemekler – Superlativ" },
+      { number: 9, title: "Doktorda – müssen & Imperativ" },
+    ],
+  },
+  { id: 4, title: "Ev & Taşınma", germanTitle: "Wohnen & Umzug", lessons: [{ number: 10, title: "Yakında" }] },
+  { id: 5, title: "Alışveriş & Hizmetler", germanTitle: "Einkaufen & Dienstleistungen", lessons: [{ number: 11, title: "Yakında" }] },
+  { id: 6, title: "Ulaşım & Yolculuk", germanTitle: "Verkehr & Reisen", lessons: [{ number: 12, title: "Yakında" }] },
+  { id: 7, title: "İş Hayatı & Meslekler", germanTitle: "Berufsleben", lessons: [{ number: 13, title: "Yakında" }] },
+  { id: 8, title: "Boş Zaman & Kültür", germanTitle: "Freizeit & Kultur", lessons: [{ number: 14, title: "Yakında" }] },
+  { id: 9, title: "Hava Durumu & Çevre", germanTitle: "Wetter & Umwelt", lessons: [{ number: 15, title: "Yakında" }] },
+  { id: 10, title: "Aile & Sosyal İlişkiler", germanTitle: "Familie & Soziales", lessons: [{ number: 16, title: "Yakında" }] },
+  { id: 11, title: "Medya & Güncel Bilgi", germanTitle: "Medien & Aktuelles", lessons: [{ number: 17, title: "Yakında" }] },
+  { id: 12, title: "TELC/Goethe A2 Sınav Hazırlık", germanTitle: "Prüfungsvorbereitung A2", lessons: [{ number: 18, title: "Yakında" }] },
 ];
 const masteryThemes = [
   {
@@ -1099,15 +1126,21 @@ const getRandomMasteryQuestions = (themeId: number) => {
 
 };
 const getRandomA2MasteryQuestions = (themeId: number) => {
-  if (themeId > 9) return [];
-  const themeQuestions = a2MasteryQuestions.filter((q) => q.themeId === themeId);
-  return [...themeQuestions]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 15)
-    .map((question) => ({
-      ...question,
-      options: [...question.options].sort(() => Math.random() - 0.5),
-    }));
+  if (themeId > 3) return [];
+  const a2Theme = a2MasteryThemes.find((item) => item.id === themeId);
+  if (!a2Theme) return [];
+  return a2Theme.lessons.flatMap((lesson) => {
+    const lessonQuestions = a2MasteryQuestions.filter(
+      (q) => q.themeId === lesson.number
+    );
+    return [...lessonQuestions]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 5)
+      .map((question) => ({
+        ...question,
+        options: [...question.options].sort(() => Math.random() - 0.5),
+      }));
+  });
 };
 const selectedMasteryQuestions =
   activeMasteryQuestions.length > 0
