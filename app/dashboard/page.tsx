@@ -5085,6 +5085,36 @@ createPendingOrder({
     </button>
   </>
 )}
+{activeAccessLevels.includes(selectedMasteryLevel) &&
+  selectedMasteryLevel === "A2" && (
+  <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+    <button
+      type="button"
+      onClick={() => {
+        resetMasteryTest(1);
+        setTimeout(() => {
+          document
+            .getElementById("mastery-test-area")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }}
+      className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-lg shadow-slate-200 hover:bg-slate-800"
+    >
+      🏆 Hemen A2 Ustalık Testine Başla
+    </button>
+    <button
+      type="button"
+      onClick={() => {
+        document
+          .getElementById("mastery-theme-cards")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }}
+      className="rounded-2xl border border-emerald-200 bg-white px-6 py-3 text-sm font-black text-emerald-700 hover:bg-emerald-50"
+    >
+      📚 Temaları İncele
+    </button>
+  </div>
+)}
 </div>
       </div>
 {activeAccessLevels.includes(selectedMasteryLevel) &&
