@@ -721,7 +721,16 @@ const a2MasteryThemes = [
       { number: 9, title: "Doktorda – müssen & Imperativ" },
     ],
   },
-  { id: 4, title: "Ev & Taşınma", germanTitle: "Wohnen & Umzug", lessons: [{ number: 10, title: "Yakında" }] },
+  {
+    id: 4,
+    title: "Ev & Taşınma",
+    germanTitle: "Wohnen & Umzug",
+    lessons: [
+      { number: 10, title: "Ev Tanıtımı – Es gibt – Mobilyalar" },
+      { number: 11, title: "Wo? Wohin? – Yer Edatları" },
+      { number: 12, title: "Relativsatz" },
+    ],
+  },
   { id: 5, title: "Alışveriş & Hizmetler", germanTitle: "Einkaufen & Dienstleistungen", lessons: [{ number: 11, title: "Yakında" }] },
   { id: 6, title: "Ulaşım & Yolculuk", germanTitle: "Verkehr & Reisen", lessons: [{ number: 12, title: "Yakında" }] },
   { id: 7, title: "İş Hayatı & Meslekler", germanTitle: "Berufsleben", lessons: [{ number: 13, title: "Yakında" }] },
