@@ -46,6 +46,7 @@ import { a2Theme6Questions } from "@/app/data/mastery-a2/theme6";
 import { a2Theme7Questions } from "@/app/data/mastery-a2/theme7";
 import { a2Theme8Questions } from "@/app/data/mastery-a2/theme8";
 import { a2Theme9Questions } from "@/app/data/mastery-a2/theme9";
+import { a2Theme10Questions } from "@/app/data/mastery-a2/tema4";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
 
 type Level = "A1" | "A2" | "B1";
@@ -691,13 +692,13 @@ const earnedBadges = [
 };
 const a2MasteryThemes = [
   {
-    id: 1,
-    title: "Kişisel Bilgiler & Tanışma",
-    germanTitle: "Persönliche Informationen",
+    id: 4,
+    title: "Ev & Taşınma",
+    germanTitle: "Wohnen & Umzug",
     lessons: [
-      { number: 1, title: "Kendini Daha Detaylı Tanıtma" },
-      { number: 2, title: "Geçmiş Hayatımı Anlatıyorum" },
-      { number: 3, title: "Sebep Söyleme – weil" },
+      { number: 10, title: "Ev Tanıtımı – Es gibt – Mobilyalar" },
+      { number: 11, title: "Wo? Wohin? – Yer Edatları" },
+      { number: 12, title: "Relativsatz" },
     ],
   },
   {
@@ -905,15 +906,17 @@ const masteryQuestions: MasteryQuestion[] = [
 })),
 ];
 const a2MasteryQuestions: MasteryQuestion[] = [
-  ...a2Theme1Questions.map((question: any) => ({ ...question, options: [...question.options] })),
-  ...a2Theme2Questions.map((question: any) => ({ ...question, options: [...question.options] })),
-  ...a2Theme3Questions.map((question: any) => ({ ...question, options: [...question.options] })),
-  ...a2Theme4Questions.map((question: any) => ({ ...question, options: [...question.options] })),
-  ...a2Theme5Questions.map((question: any) => ({ ...question, options: [...question.options] })),
-  ...a2Theme6Questions.map((question: any) => ({ ...question, options: [...question.options] })),
-  ...a2Theme7Questions.map((question: any) => ({ ...question, options: [...question.options] })),
-  ...a2Theme8Questions.map((question: any) => ({ ...question, options: [...question.options] })),
-  ...a2Theme9Questions.map((question: any) => ({ ...question, options: [...question.options] })),
+  ...a2Theme1Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 1, lessonNumber: 1 })),
+  ...a2Theme2Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 1, lessonNumber: 2 })),
+  ...a2Theme3Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 1, lessonNumber: 3 })),
+  ...a2Theme4Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 2, lessonNumber: 4 })),
+  ...a2Theme5Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 2, lessonNumber: 5 })),
+  ...a2Theme6Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 2, lessonNumber: 6 })),
+  ...a2Theme7Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 3, lessonNumber: 7 })),
+  ...a2Theme8Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 3, lessonNumber: 8 })),
+  ...a2Theme9Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 3, lessonNumber: 9 })),
+...a2Theme10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 4, lessonNumber: q.lessonNumber })),
+...a2Theme10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 4, lessonNumber: q.lessonNumber })),
 ];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -1126,7 +1129,7 @@ const getRandomMasteryQuestions = (themeId: number) => {
 
 };
 const getRandomA2MasteryQuestions = (themeId: number) => {
-  if (themeId > 3) return [];
+  if (themeId > 4) return [];
   const a2Theme = a2MasteryThemes.find((item) => item.id === themeId);
   if (!a2Theme) return [];
   return a2Theme.lessons.flatMap((lesson) => {
