@@ -692,6 +692,16 @@ const earnedBadges = [
 };
 const a2MasteryThemes = [
   {
+    id: 1,
+    title: "Kişisel Bilgiler & Tanışma",
+    germanTitle: "Persönliche Informationen",
+    lessons: [
+      { number: 1, title: "Kendini Daha Detaylı Tanıtma" },
+      { number: 2, title: "Geçmiş Hayatımı Anlatıyorum" },
+      { number: 3, title: "Sebep Söyleme – weil" },
+    ],
+  },
+  {
     id: 2,
     title: "Günlük Hayat & Zaman",
     germanTitle: "Alltag & Zeit",
