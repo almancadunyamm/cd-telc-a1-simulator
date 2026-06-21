@@ -47,6 +47,7 @@ import { a2Theme7Questions } from "@/app/data/mastery-a2/theme7";
 import { a2Theme8Questions } from "@/app/data/mastery-a2/theme8";
 import { a2Theme9Questions } from "@/app/data/mastery-a2/theme9";
 import { a2Theme10Questions } from "@/app/data/mastery-a2/tema4";
+import { a2Tema5Questions } from "@/app/data/mastery-a2/tema5";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
 
 type Level = "A1" | "A2" | "B1";
@@ -731,8 +732,17 @@ const a2MasteryThemes = [
       { number: 12, title: "Relativsatz" },
     ],
   },
-  { id: 5, title: "Alışveriş & Hizmetler", germanTitle: "Einkaufen & Dienstleistungen", lessons: [{ number: 11, title: "Yakında" }] },
-  { id: 6, title: "Ulaşım & Yolculuk", germanTitle: "Verkehr & Reisen", lessons: [{ number: 12, title: "Yakında" }] },
+{
+    id: 5,
+    title: "Alışveriş & Hizmetler",
+    germanTitle: "Einkaufen & Dienstleistungen",
+    lessons: [
+      { number: 13, title: "Preisvergleich – dieser/diese/dieses" },
+      { number: 14, title: "darüber – daran – darauf – dagegen" },
+      { number: 15, title: "Könnten Sie – Konjunktiv II" },
+    ],
+  },
+    { id: 6, title: "Ulaşım & Yolculuk", germanTitle: "Verkehr & Reisen", lessons: [{ number: 12, title: "Yakında" }] },
   { id: 7, title: "İş Hayatı & Meslekler", germanTitle: "Berufsleben", lessons: [{ number: 13, title: "Yakında" }] },
   { id: 8, title: "Boş Zaman & Kültür", germanTitle: "Freizeit & Kultur", lessons: [{ number: 14, title: "Yakında" }] },
   { id: 9, title: "Hava Durumu & Çevre", germanTitle: "Wetter & Umwelt", lessons: [{ number: 15, title: "Yakında" }] },
@@ -926,6 +936,7 @@ const a2MasteryQuestions: MasteryQuestion[] = [
   ...a2Theme9Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 3, lessonNumber: 9 })),
 ...a2Theme10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 4, lessonNumber: q.lessonNumber })),
 ...a2Theme10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 4, lessonNumber: q.lessonNumber })),
+...a2Tema5Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 5, lessonNumber: q.lessonNumber })),
 ];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -1138,7 +1149,7 @@ const getRandomMasteryQuestions = (themeId: number) => {
 
 };
 const getRandomA2MasteryQuestions = (themeId: number) => {
-  if (themeId > 4) return [];
+  if (themeId > 5) return [];
   const a2Theme = a2MasteryThemes.find((item) => item.id === themeId);
   if (!a2Theme) return [];
   return a2Theme.lessons.flatMap((lesson) => {
