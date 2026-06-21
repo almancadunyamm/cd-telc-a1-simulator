@@ -692,16 +692,6 @@ const earnedBadges = [
 };
 const a2MasteryThemes = [
   {
-    id: 4,
-    title: "Ev & Taşınma",
-    germanTitle: "Wohnen & Umzug",
-    lessons: [
-      { number: 10, title: "Ev Tanıtımı – Es gibt – Mobilyalar" },
-      { number: 11, title: "Wo? Wohin? – Yer Edatları" },
-      { number: 12, title: "Relativsatz" },
-    ],
-  },
-  {
     id: 2,
     title: "Günlük Hayat & Zaman",
     germanTitle: "Alltag & Zeit",
