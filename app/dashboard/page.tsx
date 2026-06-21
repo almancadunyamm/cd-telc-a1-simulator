@@ -51,6 +51,7 @@ import { a2Tema5Questions } from "@/app/data/mastery-a2/tema5";
 import { a2Tema6Questions } from "@/app/data/mastery-a2/tema6";
 import { a2Tema7Questions } from "@/app/data/mastery-a2/tema7";
 import { a2Tema8Questions } from "@/app/data/mastery-a2/tema8";
+import { a2Tema9Questions } from "@/app/data/mastery-a2/tema9";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
 
 type Level = "A1" | "A2" | "B1";
@@ -775,7 +776,16 @@ const a2MasteryThemes = [
       { number: 24, title: "Etkinlik Anlatımı – nachdem – bevor – als" },
     ],
   },
-  { id: 9, title: "Hava Durumu & Çevre", germanTitle: "Wetter & Umwelt", lessons: [{ number: 15, title: "Yakında" }] },
+  {
+    id: 9,
+    title: "Hava Durumu & Çevre",
+    germanTitle: "Wetter & Umwelt",
+    lessons: [
+      { number: 25, title: "Hava Durumu – sonnig/regnerisch/windig" },
+      { number: 26, title: "Gelecekte Hava – Futur I" },
+      { number: 27, title: "Çevreyi Koruma – wenn + könnte/würde" },
+    ],
+  },
   { id: 10, title: "Aile & Sosyal İlişkiler", germanTitle: "Familie & Soziales", lessons: [{ number: 16, title: "Yakında" }] },
   { id: 11, title: "Medya & Güncel Bilgi", germanTitle: "Medien & Aktuelles", lessons: [{ number: 17, title: "Yakında" }] },
   { id: 12, title: "TELC/Goethe A2 Sınav Hazırlık", germanTitle: "Prüfungsvorbereitung A2", lessons: [{ number: 18, title: "Yakında" }] },
@@ -969,6 +979,7 @@ const a2MasteryQuestions: MasteryQuestion[] = [
 ...a2Tema5Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 5, lessonNumber: q.lessonNumber })),
 ...a2Tema6Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 6, lessonNumber: q.lessonNumber })),
 ...a2Tema8Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 8, lessonNumber: q.lessonNumber })),
+...a2Tema9Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 9, lessonNumber: q.lessonNumber })),
 ];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -1181,7 +1192,7 @@ const getRandomMasteryQuestions = (themeId: number) => {
 
 };
 const getRandomA2MasteryQuestions = (themeId: number) => {
-  if (themeId > 8) return [];
+  if (themeId > 9) return [];
   const a2Theme = a2MasteryThemes.find((item) => item.id === themeId);
   if (!a2Theme) return [];
   return a2Theme.lessons.flatMap((lesson) => {
