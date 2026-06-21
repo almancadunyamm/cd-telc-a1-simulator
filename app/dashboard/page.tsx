@@ -49,6 +49,7 @@ import { a2Theme9Questions } from "@/app/data/mastery-a2/theme9";
 import { a2Theme10Questions } from "@/app/data/mastery-a2/tema4";
 import { a2Tema5Questions } from "@/app/data/mastery-a2/tema5";
 import { a2Tema6Questions } from "@/app/data/mastery-a2/tema6";
+import { a2Tema7Questions } from "@/app/data/mastery-a2/tema7";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
 
 type Level = "A1" | "A2" | "B1";
@@ -753,7 +754,16 @@ const a2MasteryThemes = [
       { number: 18, title: "Yolculuk Problemleri – wenn/falls – dass" },
     ],
   },
-  { id: 7, title: "İş Hayatı & Meslekler", germanTitle: "Berufsleben", lessons: [{ number: 13, title: "Yakında" }] },
+  {
+    id: 7,
+    title: "İş Hayatı & Meslekler",
+    germanTitle: "Berufsleben",
+    lessons: [
+      { number: 19, title: "N-Deklination – Genitiv – İş Başvurusu" },
+      { number: 20, title: "weil/da – dass-Satz – Meslek Seçimi" },
+      { number: 21, title: "Resmî E-posta – Konjunktiv II – Indirekte Fragen" },
+    ],
+  },
   { id: 8, title: "Boş Zaman & Kültür", germanTitle: "Freizeit & Kultur", lessons: [{ number: 14, title: "Yakında" }] },
   { id: 9, title: "Hava Durumu & Çevre", germanTitle: "Wetter & Umwelt", lessons: [{ number: 15, title: "Yakında" }] },
   { id: 10, title: "Aile & Sosyal İlişkiler", germanTitle: "Familie & Soziales", lessons: [{ number: 16, title: "Yakında" }] },
@@ -1160,7 +1170,7 @@ const getRandomMasteryQuestions = (themeId: number) => {
 
 };
 const getRandomA2MasteryQuestions = (themeId: number) => {
-  if (themeId > 6) return [];
+  if (themeId > 7) return [];
   const a2Theme = a2MasteryThemes.find((item) => item.id === themeId);
   if (!a2Theme) return [];
   return a2Theme.lessons.flatMap((lesson) => {
