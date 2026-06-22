@@ -46,7 +46,7 @@ import { a2Theme6Questions } from "@/app/data/mastery-a2/theme6";
 import { a2Theme7Questions } from "@/app/data/mastery-a2/theme7";
 import { a2Theme8Questions } from "@/app/data/mastery-a2/theme8";
 import { a2Theme9Questions } from "@/app/data/mastery-a2/theme9";
-import { a2Theme10Questions } from "@/app/data/mastery-a2/tema4";
+import { a2Tema4Questions } from "@/app/data/mastery-a2/tema4";
 import { a2Tema5Questions } from "@/app/data/mastery-a2/tema5";
 import { a2Tema6Questions } from "@/app/data/mastery-a2/tema6";
 import { a2Tema7Questions } from "@/app/data/mastery-a2/tema7";
@@ -994,6 +994,7 @@ const masteryQuestions: MasteryQuestion[] = [
   options: [...question.options],
 })),
 ];
+
 const a2MasteryQuestions: MasteryQuestion[] = [
   ...a2Theme1Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 1, lessonNumber: 1 })),
   ...a2Theme2Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 1, lessonNumber: 2 })),
@@ -1004,17 +1005,16 @@ const a2MasteryQuestions: MasteryQuestion[] = [
   ...a2Theme7Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 3, lessonNumber: 7 })),
   ...a2Theme8Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 3, lessonNumber: 8 })),
   ...a2Theme9Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 3, lessonNumber: 9 })),
-...a2Theme10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 4, lessonNumber: q.lessonNumber })),
-...a2Theme10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 4, lessonNumber: q.lessonNumber })),
-...a2Tema5Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 5, lessonNumber: q.lessonNumber })),
-...a2Tema6Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 6, lessonNumber: q.lessonNumber })),
-...a2Tema8Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 8, lessonNumber: q.lessonNumber })),
-...a2Tema9Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 9, lessonNumber: q.lessonNumber })),
-...a2Tema10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 10, lessonNumber: q.lessonNumber })),
-...a2Tema11Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 11, lessonNumber: q.lessonNumber })),
-...a2Tema12Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 12, lessonNumber: q.lessonNumber })),
+  ...a2Tema4Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 4, lessonNumber: q.lessonNumber })),
+  ...a2Tema5Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 5, lessonNumber: q.lessonNumber })),
+  ...a2Tema6Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 6, lessonNumber: q.lessonNumber })),
+  ...a2Tema7Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 7, lessonNumber: q.lessonNumber })),
+  ...a2Tema8Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 8, lessonNumber: q.lessonNumber })),
+  ...a2Tema9Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 9, lessonNumber: q.lessonNumber })),
+  ...a2Tema10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 10, lessonNumber: q.lessonNumber })),
+  ...a2Tema11Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 11, lessonNumber: q.lessonNumber })),
+  ...a2Tema12Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 12, lessonNumber: q.lessonNumber })),
 ];
-
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
 const [selectedMasteryThemeId, setSelectedMasteryThemeId] = useState(1);
 const [masteryIndex, setMasteryIndex] = useState(0);
