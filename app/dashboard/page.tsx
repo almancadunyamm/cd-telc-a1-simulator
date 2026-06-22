@@ -1244,8 +1244,9 @@ const getRandomA2MasteryQuestions = (themeId: number) => {
 const selectedMasteryQuestions =
   activeMasteryQuestions.length > 0
     ? activeMasteryQuestions
-    : getRandomMasteryQuestions(selectedMasteryThemeId);
-
+    : selectedMasteryLevel === "A2"
+      ? getRandomA2MasteryQuestions(selectedMasteryThemeId)
+      : getRandomMasteryQuestions(selectedMasteryThemeId);
 const currentMasteryQuestion = selectedMasteryQuestions[masteryIndex];
 
 const getLessonScore = (lessonNumber: number) => {
