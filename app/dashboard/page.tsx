@@ -5094,8 +5094,8 @@ createPendingOrder({
         </p>
 
         <h2 className="mt-3 text-3xl font-black text-slate-900">
-          🏆 A1 Ustalık Yolculuğu
-        </h2>
+  🏆 {selectedMasteryLevel} Ustalık Yolculuğu
+</h2>
 
         <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
           Bir sonraki temanın kilidini açmak için Ustalık Testini geç! Her dersten 5 soru gelir.
