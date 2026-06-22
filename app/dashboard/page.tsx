@@ -5224,13 +5224,21 @@ createPendingOrder({
     <button
       type="button"
       onClick={() => {
-        resetMasteryTest(1);
-        setTimeout(() => {
-          document
-            .getElementById("mastery-test-area")
-            ?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
-      }}
+  setSelectedMasteryLevel("A2");
+  const questions = getRandomA2MasteryQuestions(1);
+  setActiveMasteryQuestions(questions);
+  setSelectedMasteryThemeId(1);
+  setMasteryIndex(0);
+  setMasteryLives(3);
+  setMasteryAnswers([]);
+  setMasteryFinished(false);
+  setMasteryFeedback(null);
+  setTimeout(() => {
+    document
+      .getElementById("mastery-test-area")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 100);
+}}
       className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white shadow-lg shadow-slate-200 hover:bg-slate-800"
     >
       🏆 Hemen A2 Ustalık Testine Başla
