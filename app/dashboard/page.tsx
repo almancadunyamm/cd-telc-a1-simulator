@@ -1154,7 +1154,7 @@ useEffect(() => {
   }
 
   loadRealMasteryLeaders();
-}, []);
+}, [selectedMasteryLevel]);
 useEffect(() => {
   async function loadMasteryProgress() {
     const username = String(currentUser?.username || currentUsername || "")
