@@ -1230,8 +1230,8 @@ const getRandomA2MasteryQuestions = (themeId: number) => {
   if (!a2Theme) return [];
   return a2Theme.lessons.flatMap((lesson) => {
     const lessonQuestions = a2MasteryQuestions.filter(
-      (q) => q.themeId === lesson.number
-    );
+  (q) => q.lessonNumber === lesson.number
+);
     return [...lessonQuestions]
       .sort(() => Math.random() - 0.5)
       .slice(0, 5)
