@@ -54,6 +54,7 @@ import { a2Tema8Questions } from "@/app/data/mastery-a2/tema8";
 import { a2Tema9Questions } from "@/app/data/mastery-a2/tema9";
 import { a2Tema10Questions } from "@/app/data/mastery-a2/tema10";
 import { a2Tema11Questions } from "@/app/data/mastery-a2/tema11";
+import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
 
 type Level = "A1" | "A2" | "B1";
@@ -808,7 +809,16 @@ const a2MasteryThemes = [
       { number: 33, title: "Passiv – werden + Partizip II" },
     ],
   },
-  { id: 12, title: "TELC/Goethe A2 Sınav Hazırlık", germanTitle: "Prüfungsvorbereitung A2", lessons: [{ number: 18, title: "Yakında" }] },
+  {
+    id: 12,
+    title: "TELC/Goethe A2 Sınav Hazırlık",
+    germanTitle: "Prüfungsvorbereitung A2",
+    lessons: [
+      { number: 34, title: "Schreiben – E-posta – Mesaj – Davet" },
+      { number: 35, title: "Sprachbausteine – Relativsatz – weil – dass – wenn" },
+      { number: 36, title: "Sprechen – Planlama – Ortak Karar Verme" },
+    ],
+  },
 ];
 const masteryThemes = [
   {
@@ -1002,6 +1012,7 @@ const a2MasteryQuestions: MasteryQuestion[] = [
 ...a2Tema9Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 9, lessonNumber: q.lessonNumber })),
 ...a2Tema10Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 10, lessonNumber: q.lessonNumber })),
 ...a2Tema11Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 11, lessonNumber: q.lessonNumber })),
+...a2Tema12Questions.map((q: any) => ({ ...q, options: [...q.options], themeId: 12, lessonNumber: q.lessonNumber })),
 ];
 
 const [selectedMasteryLevel, setSelectedMasteryLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -1214,7 +1225,7 @@ const getRandomMasteryQuestions = (themeId: number) => {
 
 };
 const getRandomA2MasteryQuestions = (themeId: number) => {
-  if (themeId > 11) return [];
+  if (themeId > 12) return [];
   const a2Theme = a2MasteryThemes.find((item) => item.id === themeId);
   if (!a2Theme) return [];
   return a2Theme.lessons.flatMap((lesson) => {
