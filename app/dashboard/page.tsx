@@ -1091,8 +1091,8 @@ useEffect(() => {
     const { data, error } = await supabase
       .from("mastery_progress")
       .select("username, theme_id, level, status")
-      .eq("level", "A1")
-      .eq("status", "completed");
+      .eq("level", selectedMasteryLevel)
+.eq("status", "completed");
 
     if (error) {
       console.log("Ustalık liderleri yüklenemedi:", error);
