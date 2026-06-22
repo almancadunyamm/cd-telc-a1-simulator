@@ -5571,7 +5571,7 @@ if (!isPreviousThemeCompleted) {
 </>
 )}
       {activeAccessLevels.includes(selectedMasteryLevel) &&
-  selectedMasteryLevel === "A1" &&
+  (selectedMasteryLevel === "A1" || selectedMasteryLevel === "A2") &&
   selectedMasteryTheme && (
   <div
   id="mastery-test-area"
