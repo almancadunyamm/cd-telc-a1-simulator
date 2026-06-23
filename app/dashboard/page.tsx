@@ -1184,8 +1184,9 @@ useEffect(() => {
 }, [currentUser, currentUsername, studentKey, selectedMasteryLevel]);
 
 const firstIncompleteThemeId =
-  masteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))
-    ?.id || 1;
+  selectedMasteryLevel === "A2"
+    ? a2MasteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))?.id || 1
+    : masteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))?.id || 1;
 const selectedMasteryTheme = selectedMasteryLevel === "A2"
   ? a2MasteryThemes.find((theme) => theme.id === selectedMasteryThemeId)
   : masteryThemes.find((theme) => theme.id === selectedMasteryThemeId);
@@ -1228,18 +1229,16 @@ const getRandomA2MasteryQuestions = (themeId: number) => {
   if (themeId > 12) return [];
   const a2Theme = a2MasteryThemes.find((item) => item.id === themeId);
   if (!a2Theme) return [];
-  return a2Theme.lessons.flatMap((lesson) => {
-    const lessonQuestions = a2MasteryQuestions.filter(
-  (q) => q.lessonNumber === lesson.number
-);
-    return [...lessonQuestions]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 5)
-      .map((question) => ({
-        ...question,
-        options: [...question.options].sort(() => Math.random() - 0.5),
-      }));
-  });
+  const allThemeQuestions = a2MasteryQuestions.filter(
+    (q) => q.themeId === themeId
+  );
+  return [...allThemeQuestions]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 15)
+    .map((question) => ({
+      ...question,
+      options: [...question.options].sort(() => Math.random() - 0.5),
+    }));
 };
 const selectedMasteryQuestions =
   activeMasteryQuestions.length > 0
@@ -5225,9 +5224,10 @@ createPendingOrder({
       type="button"
       onClick={() => {
   setSelectedMasteryLevel("A2");
-  const questions = getRandomA2MasteryQuestions(1);
+  const startTheme = a2MasteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))?.id || 1;
+  const questions = getRandomA2MasteryQuestions(startTheme);
   setActiveMasteryQuestions(questions);
-  setSelectedMasteryThemeId(1);
+  setSelectedMasteryThemeId(startTheme);
   setMasteryIndex(0);
   setMasteryLives(3);
   setMasteryAnswers([]);
