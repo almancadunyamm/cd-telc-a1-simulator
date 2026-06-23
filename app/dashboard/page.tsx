@@ -5754,7 +5754,7 @@ if (!isPreviousThemeCompleted) {
                 })}
               </div>
 
-              {isThemePassed && selectedMasteryTheme.id === 6 && (
+              {isThemePassed && selectedMasteryTheme.id === 6 && !hasAnyLiveCourseOrder && effectivePackageType !== "practice" && effectivePackageType !== "master" && (
   <div className="mx-auto mt-8 max-w-3xl rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-6 text-left shadow-sm">
     <p className="text-xs font-black uppercase tracking-widest text-amber-700">
       🎉 Başlangıç Paketi Tamamlandı
