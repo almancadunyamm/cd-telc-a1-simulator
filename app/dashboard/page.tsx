@@ -5224,9 +5224,17 @@ createPendingOrder({
   <div className="mt-5 flex flex-col gap-3 sm:flex-row">
     <button
       type="button"
-      onClick={() => {
+      onClick={async () => {
   setSelectedMasteryLevel("A2");
-  const startTheme = a2MasteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))?.id || 1;
+  const { data } = await supabase
+    .from("mastery_progress")
+    .select("theme_id")
+    .eq("student_key", studentKey)
+    .eq("level", "A2")
+    .eq("status", "completed");
+  const completedA2 = (data || []).map((item: any) => item.theme_id);
+  setCompletedMasteryThemes(completedA2);
+  const startTheme = a2MasteryThemes.find((theme) => !completedA2.includes(theme.id))?.id || 1;
   const questions = getRandomA2MasteryQuestions(startTheme);
   setActiveMasteryQuestions(questions);
   setSelectedMasteryThemeId(startTheme);
