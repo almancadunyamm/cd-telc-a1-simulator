@@ -768,6 +768,19 @@ const bugun = new Date().toISOString().split("T")[0];
             <div>
               <div style={{ fontSize: 11, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 2, fontWeight: 900 }}>Almanca</div>
               <div style={{ fontSize: 28, fontWeight: 900, color: "#0f172a" }}>{suankiSoru.soru}</div>
+              <button
+                onClick={() => {
+                  const utterance = new SpeechSynthesisUtterance(suankiSoru.soru);
+                  utterance.lang = "de-DE";
+                  utterance.rate = 0.85;
+                  window.speechSynthesis.cancel();
+                  window.speechSynthesis.speak(utterance);
+                }}
+                style={{ marginTop: 12, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "8px 16px", cursor: "pointer", fontSize: 18, color: "#2563eb" }}
+                title="Sesi Dinle"
+              >
+                🔊
+              </button>
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
