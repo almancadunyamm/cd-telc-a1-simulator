@@ -1254,9 +1254,11 @@ const getLessonScore = (lessonNumber: number) => {
   ).length;
 };
 
-const isThemePassed = selectedMasteryTheme
-  ? selectedMasteryTheme.lessons.every((lesson) => getLessonScore(lesson.number) >= 3)
-  : false;
+const isThemePassed = selectedMasteryLevel === "A2"
+  ? masteryAnswers.length >= 13
+  : selectedMasteryTheme
+    ? selectedMasteryTheme.lessons.every((lesson) => getLessonScore(lesson.number) >= 3)
+    : false;
   const getThemeProgressPercent = (themeId: number) => {
   if (completedMasteryThemes.includes(themeId)) return 100;
   if (themeId !== selectedMasteryThemeId) return 0;
