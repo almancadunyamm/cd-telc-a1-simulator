@@ -1351,6 +1351,10 @@ if (!existingMastery) {
 
   if (masterySaveError) {
     alert("Ustalık ilerlemesi kaydedilemedi: " + masterySaveError.message);
+  } else {
+    setCompletedMasteryThemes((prev) =>
+      prev.includes(selectedMasteryThemeId) ? prev : [...prev, selectedMasteryThemeId]
+    );
   }
 }
   }
