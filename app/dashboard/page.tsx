@@ -1259,11 +1259,9 @@ const getLessonScore = (lessonNumber: number) => {
   ).length;
 };
 
-const isThemePassed = selectedMasteryLevel === "A2"
-  ? masteryAnswers.length >= 13
-  : selectedMasteryTheme
-    ? selectedMasteryTheme.lessons.every((lesson) => getLessonScore(lesson.number) >= 3)
-    : false;
+const PASSING_SCORE = 11;
+
+const isThemePassed = masteryAnswers.length >= PASSING_SCORE;
   const getThemeProgressPercent = (themeId: number) => {
   if (completedMasteryThemes.includes(themeId)) return 100;
   if (themeId !== selectedMasteryThemeId) return 0;
@@ -1315,17 +1313,9 @@ const handleMasteryAnswer = (answer: string) => {
   setMasteryFinished(true);
 
   const updatedAnswers = [...masteryAnswers, currentMasteryQuestion];
-  const passedAllLessons =
-  selectedMasteryLevel === "A2"
-    ? updatedAnswers.length >= 13
-    : selectedMasteryTheme
-    ? selectedMasteryTheme.lessons.every(
-        (lesson) =>
-          updatedAnswers.filter(
-            (answer) => answer.lessonNumber === lesson.number
-          ).length >= 3
-      )
-    : false;
+  const PASSING_SCORE = 11;
+
+const passedAllLessons = updatedAnswers.length >= PASSING_SCORE;
 
   if (passedAllLessons) {
     setCompletedMasteryThemes((prev) =>
@@ -1333,10 +1323,47 @@ const handleMasteryAnswer = (answer: string) => {
     ? prev
     : [...prev, selectedMasteryThemeId]
 );
+if (passedAllLessons) {
+  const completedThemeId = selectedMasteryThemeId;
 
-const masteryUsername = String(currentUser?.username || currentUsername || "")
-  .trim()
-  .toLowerCase();
+  setCompletedMasteryThemes((prev) =>
+    prev.includes(completedThemeId)
+      ? prev
+      : [...prev, completedThemeId]
+  );
+
+  const { data: existingMastery } = await supabase
+    .from("mastery_progress")
+    .select("id")
+    .eq("student_key", studentKey)
+    .eq("level", selectedMasteryLevel)
+    .eq("theme_id", completedThemeId)
+    .maybeSingle();
+
+  if (!existingMastery) {
+    const { error: masterySaveError } = await supabase
+      .from("mastery_progress")
+      .insert({
+        student_key: studentKey,
+        username: currentUser?.name || profileName || studentKey,
+        level: selectedMasteryLevel,
+        theme_id: completedThemeId,
+        status: "completed",
+      });
+
+    if (masterySaveError) {
+      alert("Ustalık ilerlemesi kaydedilemedi: " + masterySaveError.message);
+      return;
+    }
+  }
+
+  const nextThemeId = completedThemeId + 1;
+
+  if (nextThemeId <= 12) {
+    setSelectedMasteryThemeId(nextThemeId);
+    resetMasteryTest(nextThemeId);
+  }
+}
 
 const { data: existingMastery } = await supabase
   .from("mastery_progress")
