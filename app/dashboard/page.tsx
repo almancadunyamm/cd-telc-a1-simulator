@@ -1187,7 +1187,12 @@ const firstIncompleteThemeId =
   selectedMasteryLevel === "A2"
     ? a2MasteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))?.id || 1
     : masteryThemes.find((theme) => !completedMasteryThemes.includes(theme.id))?.id || 1;
-const selectedMasteryTheme = selectedMasteryLevel === "A2"
+useEffect(() => {
+  if (completedMasteryThemes.length === 0) return;
+
+  setSelectedMasteryThemeId(firstIncompleteThemeId);
+}, [selectedMasteryLevel, firstIncompleteThemeId]);
+    const selectedMasteryTheme = selectedMasteryLevel === "A2"
   ? a2MasteryThemes.find((theme) => theme.id === selectedMasteryThemeId)
   : masteryThemes.find((theme) => theme.id === selectedMasteryThemeId);
 const getRandomMasteryQuestions = (themeId: number) => {
@@ -1310,7 +1315,10 @@ const handleMasteryAnswer = (answer: string) => {
   setMasteryFinished(true);
 
   const updatedAnswers = [...masteryAnswers, currentMasteryQuestion];
-  const passedAllLessons = selectedMasteryTheme
+  const passedAllLessons =
+  selectedMasteryLevel === "A2"
+    ? updatedAnswers.length >= 13
+    : selectedMasteryTheme
     ? selectedMasteryTheme.lessons.every(
         (lesson) =>
           updatedAnswers.filter(
