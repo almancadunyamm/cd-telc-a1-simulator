@@ -6795,6 +6795,7 @@ if (!isPreviousThemeCompleted) {
 function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMesaj, temaHakkiVar }: any) {
   const [talepGonderildi, setTalepGonderildi] = React.useState(false);
   const [atananHoca, setAtananHoca] = React.useState<string | null>(null);
+  const [hocaTelefon, setHocaTelefon] = React.useState<string>("");
   const [yukleniyor, setYukleniyor] = React.useState(false);
   const [hocaOlarakAtananlar, setHocaOlarakAtananlar] = React.useState<any[]>([]);
 
@@ -6815,6 +6816,7 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
         if (data) {
           setTalepGonderildi(true);
           if (data.atanan_hoca) setAtananHoca(data.atanan_hoca);
+          if (data.hoca_telefon) setHocaTelefon(data.hoca_telefon);
         }
       });
 
@@ -6841,7 +6843,16 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           {hocaOlarakAtananlar.map((talep) => (
             <div key={talep.id} className="rounded-2xl bg-white border border-yellow-100 p-4 mb-3">
               <p className="font-black text-slate-900 mb-1">👤 {talep.username}</p>
-              <p className="text-xs text-slate-500 mb-3">Tema {talep.sinav_tema_no} sınavı</p>
+              <p className="text-xs text-slate-500 mb-2">Tema {talep.sinav_tema_no} sınavı</p>
+              {talep.ogrenci_telefon && (
+                <button
+                  type="button"
+                  onClick={() => window.open("https://wa.me/" + talep.ogrenci_telefon.replace(/\D/g, ""), "_blank")}
+                  className="mb-3 w-full rounded-xl bg-green-500 px-4 py-2 text-sm font-black text-white"
+                >
+                  📲 Öğrenciyle WhatsApp&apos;tan İletişime Geç
+                </button>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -6936,6 +6947,15 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           <p className="font-black text-emerald-800">Sınav Hocan Atandı!</p>
           <p className="text-sm text-slate-600 mt-2">{atananHoca}</p>
           <p className="text-xs text-slate-500 mt-2">Sınav hocan seninle iletişime geçecek.</p>
+          {hocaTelefon && (
+            <button
+              type="button"
+              onClick={() => window.open("https://wa.me/" + hocaTelefon.replace(/\D/g, ""), "_blank")}
+              className="mt-3 w-full rounded-xl bg-green-500 px-4 py-2 text-sm font-black text-white"
+            >
+              📲 Hocana WhatsApp&apos;tan Yaz
+            </button>
+          )}
         </div>
       ) : talepGonderildi ? (
         <div className="rounded-2xl bg-blue-50 border border-blue-200 p-5 text-center">
@@ -6956,12 +6976,22 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           onClick={async () => {
             if (!currentUser) return;
             setYukleniyor(true);
-            const { error } = await supabase.from("speaking_sinav_talepleri").insert({
-              username: currentUser.username,
-              level: "A1",
-              sinav_tema_no: speakingProgress.current_tema,
-              durum: "bekliyor",
-            });
+            // Öğrencinin telefonunu speaking_requests'ten çek
+const { data: reqData } = await supabase
+  .from("speaking_requests")
+  .select("telefon")
+  .eq("user_email", currentUser.username)
+  .order("created_at", { ascending: false })
+  .limit(1)
+  .maybeSingle();
+
+const { error } = await supabase.from("speaking_sinav_talepleri").insert({
+  username: currentUser.username,
+  level: "A1",
+  sinav_tema_no: speakingProgress.current_tema,
+  durum: "bekliyor",
+  ogrenci_telefon: reqData?.telefon || "",
+});
             if (error) {
               alert("Hata: " + error.message);
               setYukleniyor(false);

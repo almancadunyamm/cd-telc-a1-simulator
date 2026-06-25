@@ -38,9 +38,21 @@ export default function SinavTalepleriPage() {
       return;
     }
 
+    // Hocanın telefonunu speaking_requests'ten çek
+    const { data: hocaReq } = await supabase
+      .from("speaking_requests")
+      .select("telefon")
+      .eq("user_email", hocaEmail.trim())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
     await supabase
       .from("speaking_sinav_talepleri")
-      .update({ atanan_hoca: hocaEmail.trim() })
+      .update({ 
+        atanan_hoca: hocaEmail.trim(),
+        hoca_telefon: hocaReq?.telefon || "",
+      })
       .eq("id", talepId);
 
     alert(`${ogrenciEmail} için sınav hocası atandı: ${hocaEmail}`);
