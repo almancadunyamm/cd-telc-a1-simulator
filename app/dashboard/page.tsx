@@ -353,6 +353,7 @@ const [speakingTelefon, setSpeakingTelefon] = useState("");
 const [speakingGonderildi, setSpeakingGonderildi] = useState(false);
 const [teacherWhatsapp, setTeacherWhatsapp] = useState<string>("905013434419");
 const [speakingEslesmeler, setSpeakingEslesmeler] = useState<any[]>([]);
+const [hocaAtamaBildirimi, setHocaAtamaBildirimi] = useState<any[]>([]);
 const [speakingYukleniyor, setSpeakingYukleniyor] = useState(false);
 const [partnerTelefon, setPartnerTelefon] = useState<string>("");
 const [pwaGoster, setPwaGoster] = useState(false);
@@ -2110,6 +2111,17 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
 useEffect(() => {
   if (!currentUser) return;
   async function loadEslesmeler() {
+    useEffect(() => {
+  if (!currentUser) return;
+  supabase
+    .from("speaking_sinav_talepleri")
+    .select("*")
+    .eq("atanan_hoca", currentUser.username)
+    .eq("durum", "bekliyor")
+    .then(({ data }) => {
+      if (data && data.length > 0) setHocaAtamaBildirimi(data);
+    });
+}, [currentUser]);
     const { data } = await supabase
       .from("speaking_matches")
       .select("*")
@@ -2703,6 +2715,26 @@ if (!currentUser) {
   return (
     <main className="relative min-h-screen bg-slate-100">
       
+      {hocaAtamaBildirimi.length > 0 && (
+        <div className="fixed top-4 right-4 z-50 max-w-sm rounded-2xl bg-yellow-400 p-5 shadow-2xl">
+          <p className="font-black text-slate-900">🎓 Sınav Hocası Olarak Atandınız!</p>
+          {hocaAtamaBildirimi.map((talep: any) => (
+            <div key={talep.id} className="mt-3 rounded-xl bg-white/80 p-3 text-sm text-slate-800">
+              <p className="font-bold">👤 Öğrenci: {talep.username}</p>
+              <p className="mt-1">📚 Tema {talep.sinav_tema_no} sınavını yapacaksınız</p>
+              <p className="mt-2 text-xs leading-5">Öğrenciyle görüntülü arama başlatın. Türkçe soruları sorun, öğrenci Almancaya çevirsin. Sınav sonunda Konuşma Kulübü → Sınav tabından sonucu bildirin.</p>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => { setHocaAtamaBildirimi([]); setActiveDashboardTab("speaking"); }}
+            className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-black text-white"
+          >
+            Sınav Tabına Git
+          </button>
+        </div>
+      )}
+
       {/* 🔹 ARKA DASHBOARD BLUR */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-100">
   <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[260px_1fr]">
