@@ -2143,13 +2143,70 @@ useEffect(() => {
       .eq("level", "A1")
       .maybeSingle();
 if (data) {
+      let calismaData = data;
+
+      // Küme düşme kontrolü: 3+ gün üst üste bildirim yoksa hem kendisi hem partneri bir tema geri düşer
+      if (calismaData.son_bildirim_tarihi) {
+        const son = new Date(calismaData.son_bildirim_tarihi);
+        const bugun = new Date();
+        const fark = Math.floor((bugun.getTime() - son.getTime()) / (1000 * 60 * 60 * 24));
+        if (fark >= 3 && calismaData.current_tema > 1) {
+          const yeniTema = calismaData.current_tema - 1;
+          const bugunStr = bugun.toISOString().split("T")[0];
+
+          await supabase.from("speaking_progress")
+            .update({
+              current_tema: yeniTema,
+              current_gorev: 1,
+              sinav_bekleniyor: false,
+              son_bildirim_tarihi: bugunStr,
+            })
+            .eq("id", calismaData.id);
+
+          calismaData = {
+            ...calismaData,
+            current_tema: yeniTema,
+            current_gorev: 1,
+            sinav_bekleniyor: false,
+            son_bildirim_tarihi: bugunStr,
+          };
+
+          if (calismaData.partner_email) {
+            const { data: partnerProg } = await supabase
+              .from("speaking_progress")
+              .select("*")
+              .eq("username", calismaData.partner_email)
+              .eq("level", "A1")
+              .maybeSingle();
+
+            if (partnerProg && partnerProg.current_tema > 1) {
+              await supabase.from("speaking_progress")
+                .update({
+                  current_tema: partnerProg.current_tema - 1,
+                  current_gorev: 1,
+                  sinav_bekleniyor: false,
+                  son_bildirim_tarihi: bugunStr,
+                })
+                .eq("id", partnerProg.id);
+            }
+          }
+
+          setSpeakingTeşvikMesaj({
+            icon: "📉",
+            baslik: "Tema Geri Düştü",
+            mesaj: "3 gündür bildirim atılmadığı için sen ve partnerin bir tema geri düştünüz.",
+            renk: "from-red-500 to-orange-500",
+          });
+        }
+      }
+
       // current_gorev 4+ ise otomatik düzelt
-      if (data.current_gorev > 3) {
-        const yeniTema = data.current_tema % 3 === 0 ? data.current_tema : data.current_tema + 1;
-        const sinav = data.current_tema % 3 === 0;
+      if (calismaData.current_gorev > 3) {
+        const yeniTema = calismaData.current_tema % 3 === 0 ? calismaData.current_tema : calismaData.current_tema + 1;
+        const sinav = calismaData.current_tema % 3 === 0;
         const duzeltilmis = {
-          ...data,
-          current_tema: sinav ? data.current_tema : yeniTema,
+          ...calismaData,
+          current_tema: sinav ? calismaData.current_tema : yeniTema,
           current_gorev: 1,
           sinav_bekleniyor: sinav,
         };
@@ -2159,10 +2216,10 @@ if (data) {
             current_gorev: 1,
             sinav_bekleniyor: sinav,
           })
-          .eq("id", data.id);
+          .eq("id", calismaData.id);
         setSpeakingProgress(duzeltilmis);
       } else {
-        setSpeakingProgress(data);
+        setSpeakingProgress(calismaData);
       }
     } else {
       setSpeakingProgress(null);
@@ -4599,15 +4656,15 @@ createPendingOrder({
                       const bugun = new Date();
                       const fark = Math.floor((bugun.getTime() - son.getTime()) / (1000 * 60 * 60 * 24));
                       return fark >= 1 ? (
-                        <div className={`rounded-2xl p-4 mb-4 border ${fark >= 2 ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
-                          <p className={`text-sm font-black ${fark >= 2 ? "text-red-700" : "text-amber-700"}`}>
-                            {fark >= 2
+                        <div className={`rounded-2xl p-4 mb-4 border ${fark >= 3 ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+                          <p className={`text-sm font-black ${fark >= 3 ? "text-red-700" : "text-amber-700"}`}>
+                            {fark >= 3
                               ? `⚠️ ${fark} gündür bildirim yok! Küme düşme riski!`
                               : `⏰ ${fark} gün oldu. Bugün ara!`}
                           </p>
                           <p className="text-xs text-slate-600 mt-1">
-                            {fark >= 2
-                              ? "2 gün üst üste bildirim olmadığında bir tema geri düşersin."
+                            {fark >= 3
+                              ? "3 gün üst üste bildirim olmadığında bir tema geri düşersin."
                               : "Her gün konuşman seviyeni korumanı sağlar."}
                           </p>
                         </div>
