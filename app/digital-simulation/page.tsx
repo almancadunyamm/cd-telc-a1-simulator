@@ -102,11 +102,13 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           badge: `${starterLevel} Başlangıç`,
           highlight: false,
           features: [
-            "A1 Temaları",
-            "18 ders erişimi",
+            "Tema bazlı ilerleme",
+            "18 video ders erişimi",
             "Ustalık Testleri",
-            "Çalışma sayfaları",
-            "Temel TELC hazırlık alanı"
+            "Kelime Arenası",
+            "Konuşma Klübü",
+            "Temel TELC hazırlık alanı",
+            "3 Ay erişim",
           ],
         },
         {
@@ -116,9 +118,12 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           badge: `${practiceLevel} Gelişim`,
           highlight: true,
           features: [
-            "5 TELC dijital deneme",
-            "Offline video dersler",
-            "Gelişim PDF ve çalışma sayfaları",
+            "2 adet Goethe ve TELC uyumlu dijital Deneme",
+            "Tema bazlı ilerleme",
+            "Bütün konuları içeren video dersler",
+            "Ustalık Testleri",
+            "Kelime Arenası",
+            "Konuşma Klübü",
             "6 ay erişim",
           ],
         },
@@ -131,6 +136,9 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           features: [
             "10 TELC dijital deneme",
             "Tüm video ders arşivi",
+            "Ustalık Testleri",
+            "Kelime Arenası",
+            "Konuşma Klübü",
             "Zirve materyal sistemi",
             "12 ay erişim",
           ],
@@ -280,7 +288,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
         Ana Sayfaya Dön
       </a>
     </div>
-  </div>
+  </div>  
 </section>
     </main>
   );
