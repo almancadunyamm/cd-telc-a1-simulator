@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 export default function DigitalSimulationPage() {
     const [starterLevel, setStarterLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -22,8 +22,8 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             </div>
           </a>
 
-          
-         href="/login"
+          <a
+            href="/login"
             className="rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
           >
             Giriş Yap
@@ -47,14 +47,14 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              
+              <a
                 href="#paketler"
                 className="rounded-full bg-blue-600 px-7 py-4 text-center text-sm font-black text-white shadow-xl shadow-blue-600/20 hover:bg-blue-700"
               >
                 Paketleri İncele
               </a>
 
-              
+              <a
                 href="/"
                 className="rounded-full border border-slate-200 bg-white px-7 py-4 text-center text-sm font-black text-slate-800 hover:bg-slate-50"
               >
@@ -102,7 +102,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           badge: `${starterLevel} Başlangıç`,
           highlight: false,
           features: [
-            "A1 Temalaları",
+            "A1 Temaları",
             "18 ders erişimi",
             "Ustalık Testleri",
             "Çalışma sayfaları",
@@ -221,7 +221,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             ))}
           </ul>
 
-          
+          <a
   href={
   plan.name === "Başlangıç"
     ? `/register?level=${starterLevel}&package=starter&free=true`
@@ -266,14 +266,14 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
     </p>
 
     <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-      
+      <a
         href="#paketler"
         className="rounded-full bg-blue-600 px-8 py-4 text-sm font-black text-white shadow-xl shadow-blue-600/30 hover:bg-blue-500"
       >
         Dijital Paketleri İncele
       </a>
 
-      
+      <a
         href="/"
         className="rounded-full border border-white/15 bg-white/10 px-8 py-4 text-sm font-black text-white backdrop-blur hover:bg-white/15"
       >
