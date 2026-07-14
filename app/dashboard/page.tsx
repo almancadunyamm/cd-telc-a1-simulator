@@ -2110,9 +2110,6 @@ localStorage.setItem(todayLessonKey, firstLesson.id);
 }, [visibleLessons, currentUsername, todayKey]);
 useEffect(() => {
   if (!currentUser) return;
-  async function loadEslesmeler() {
-    useEffect(() => {
-  if (!currentUser) return;
   supabase
     .from("speaking_sinav_talepleri")
     .select("*")
@@ -2122,6 +2119,10 @@ useEffect(() => {
       if (data && data.length > 0) setHocaAtamaBildirimi(data);
     });
 }, [currentUser]);
+
+useEffect(() => {
+  if (!currentUser) return;
+  async function loadEslesmeler() {
     const { data } = await supabase
       .from("speaking_matches")
       .select("*")
@@ -5051,13 +5052,15 @@ createPendingOrder({
                       </div>
                     </div>
 
-                    <SinavHocasiPanel
-                      currentUser={currentUser}
-                      speakingProgress={speakingProgress}
-                      setSpeakingTeşvikMesaj={setSpeakingTeşvikMesaj}
-                      temaHakkiVar={speakingProgress.current_tema % 3 === 0}
-                    />
-                  </div>
+                    </div>
+                )}
+                {speakingProgress && (
+                  <SinavHocasiPanel
+                    currentUser={currentUser}
+                    speakingProgress={speakingProgress}
+                    setSpeakingTeşvikMesaj={setSpeakingTeşvikMesaj}
+                    temaHakkiVar={speakingProgress.current_tema % 3 === 0}
+                  />
                 )}
               </div>
 
