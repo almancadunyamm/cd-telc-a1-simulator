@@ -22,7 +22,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             </div>
           </a>
 
-          <a
+          
             href="/login"
             className="rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
           >
@@ -47,14 +47,14 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <a
+              
                 href="#paketler"
                 className="rounded-full bg-blue-600 px-7 py-4 text-center text-sm font-black text-white shadow-xl shadow-blue-600/20 hover:bg-blue-700"
               >
                 Paketleri İncele
               </a>
 
-              <a
+              
                 href="/"
                 className="rounded-full border border-slate-200 bg-white px-7 py-4 text-center text-sm font-black text-slate-800 hover:bg-slate-50"
               >
@@ -73,186 +73,6 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           </div>
         </div>
       </section>
-
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-5 md:grid-cols-3">
-            {[
-              ["01", "Deneme çöz", "TELC formatına uygun dijital sınav pratiği yap."],
-              ["02", "Eksiklerini gör", "Performansını analiz ederek güçlü ve zayıf yönlerini fark et."],
-              ["03", "Sınava hazır gir", "Gerçek sınav ekranına ve süre baskısına önceden alış."],
-            ].map(([step, title, desc]) => (
-              <div
-                key={step}
-                className="rounded-[32px] border border-slate-200 bg-slate-50 p-6"
-              >
-                <p className="text-sm font-black tracking-[0.25em] text-blue-700">
-                  {step}
-                </p>
-                <h3 className="mt-3 text-xl font-black">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="relative overflow-hidden bg-white px-4 py-24">
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.08),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(14,165,233,0.10),transparent_28%)]" />
-
-  <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
-    <div>
-      <p className="text-xs font-black uppercase tracking-[0.25em] text-blue-700">
-        Premium dijital deneyim
-      </p>
-
-      <h2 className="mt-4 text-3xl font-black leading-tight md:text-5xl">
-        Sadece ders izlemezsin.
-        <span className="block text-blue-700">
-          Sistemin içinde ilerlersin.
-        </span>
-      </h2>
-
-      <p className="mt-5 max-w-xl text-base leading-7 text-slate-600">
-        TELC sınavına görev sistemi, konuşma çalışmaları,
-        analiz ekranları, offline videolar ve dijital denemelerle
-        adım adım hazırlan.
-      </p>
-
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {[
-          "Offline video dersler",
-          "Konuşma klübü",
-          "Kelime çalışma alanı",
-          "PDF materyal merkezi",
-          "TELC deneme simülasyonu",
-          "Başarı analiz ekranı",
-        ].map((item) => (
-          <div
-            key={item}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-bold text-slate-800"
-          >
-            ✓ {item}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <div className="relative">
-      <div className="absolute -inset-6 rounded-[3rem] bg-blue-500/15 blur-3xl" />
-
-      <img
-        src="/images/digital-dashboard-preview.png"
-        alt="TELC dashboard preview"
-        className="relative rounded-[36px] border border-slate-200 shadow-2xl"
-      />
-
-      <div className="absolute -left-6 top-10 rounded-3xl border border-white bg-white/90 p-4 shadow-2xl backdrop-blur">
-        <p className="text-xs font-black uppercase tracking-widest text-blue-700">
-          Konuşma Gelişimi
-        </p>
-
-        <p className="mt-2 text-3xl font-black text-slate-950">
-          %82
-        </p>
-      </div>
-
-      <div className="absolute -bottom-6 right-0 rounded-3xl border border-white bg-slate-950 p-5 text-white shadow-2xl">
-        <p className="text-xs font-black uppercase tracking-widest text-blue-300">
-          Aktif Görevler
-        </p>
-
-        <p className="mt-2 text-3xl font-black">
-          14 Görev
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-      <section className="bg-slate-950 px-4 py-20 text-white">
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-3xl">
-            <p className="text-xs font-black uppercase tracking-[0.25em] text-blue-300">
-              Sistem özellikleri
-            </p>
-
-            <h2 className="mt-3 text-3xl font-black md:text-5xl">
-              Sadece video değil, sınav hazırlık sistemi.
-            </h2>
-          </div>
-
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {[
-              "TELC dijital sınav simülasyonu",
-              "Video ders sistemi",
-              "Konuşma klübü ve pratikler",
-              "PDF materyal merkezi",
-              "Kelime çalışma sistemi",
-              "Performans ve gelişim analizi",
-            ].map((item) => (
-              <div
-                key={item}
-                className="rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur"
-              >
-                <p className="text-lg font-black">✓ {item}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="bg-slate-50 px-4 py-24">
-  <div className="mx-auto max-w-7xl">
-    <div className="max-w-3xl">
-      <p className="text-xs font-black uppercase tracking-[0.25em] text-blue-700">
-        Gerçek kullanım deneyimi
-      </p>
-
-      <h2 className="mt-4 text-3xl font-black leading-tight md:text-5xl">
-        TELC öğrencisinin
-        <span className="block text-blue-700">
-          bir günü nasıl geçiyor?
-        </span>
-      </h2>
-    </div>
-
-    <div className="mt-14 grid gap-6 lg:grid-cols-3">
-      {[
-        {
-          time: "09:00",
-          title: "Offline video ders",
-          desc: "Öğrenci günlük video dersini izleyerek konu tekrarını tamamlar.",
-        },
-        {
-          time: "13:30",
-          title: "Speaking görevi",
-          desc: "TELC speaking pratiği yapar ve görev sistemini tamamlar.",
-        },
-        {
-          time: "20:00",
-          title: "Dijital TELC denemesi",
-          desc: "Gerçek sınav formatında dijital simülasyon çözer.",
-        },
-      ].map((item) => (
-        <div
-          key={item.time}
-          className="rounded-[32px] border border-slate-200 bg-white p-7 shadow-xl"
-        >
-          <div className="inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-black text-blue-700">
-            {item.time}
-          </div>
-
-          <h3 className="mt-5 text-2xl font-black text-slate-950">
-            {item.title}
-          </h3>
-
-          <p className="mt-4 text-sm leading-7 text-slate-600">
-            {item.desc}
-          </p>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
 
       <section id="paketler" className="relative overflow-hidden bg-white px-4 py-24">
   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.10),transparent_35%)]" />
@@ -401,7 +221,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             ))}
           </ul>
 
-          <a
+          
   href={
   plan.name === "Başlangıç"
     ? `/register?level=${starterLevel}&package=starter&free=true`
@@ -446,14 +266,14 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
     </p>
 
     <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-      <a
+      
         href="#paketler"
         className="rounded-full bg-blue-600 px-8 py-4 text-sm font-black text-white shadow-xl shadow-blue-600/30 hover:bg-blue-500"
       >
         Dijital Paketleri İncele
       </a>
 
-      <a
+      
         href="/"
         className="rounded-full border border-white/15 bg-white/10 px-8 py-4 text-sm font-black text-white backdrop-blur hover:bg-white/15"
       >
