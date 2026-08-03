@@ -6856,6 +6856,7 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
   const [talepGonderildi, setTalepGonderildi] = React.useState(false);
   const [atananHoca, setAtananHoca] = React.useState<string | null>(null);
   const [hocaTelefon, setHocaTelefon] = React.useState<string>("");
+  const [sinavSonucu, setSinavSonucu] = React.useState<string>("");
   const [yukleniyor, setYukleniyor] = React.useState(false);
   const [hocaOlarakAtananlar, setHocaOlarakAtananlar] = React.useState<any[]>([]);
 
@@ -6877,6 +6878,8 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           setTalepGonderildi(true);
           if (data.atanan_hoca) setAtananHoca(data.atanan_hoca);
           if (data.hoca_telefon) setHocaTelefon(data.hoca_telefon);
+          if (data.sonuc === "gecti") setSinavSonucu("gecti");
+          if (data.sonuc === "kaldi") setSinavSonucu("kaldi");
         }
       });
 
@@ -6997,6 +7000,22 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Sınav sonucu bildirimi */}
+      {sinavSonucu === "gecti" && (
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center">
+          <div className="text-4xl mb-2">🎉</div>
+          <p className="font-black text-emerald-800 text-lg">Sınavı Geçtin!</p>
+          <p className="text-sm text-slate-600 mt-2">Tebrikler! Bir sonraki temaya geçebilirsin.</p>
+        </div>
+      )}
+      {sinavSonucu === "kaldi" && (
+        <div className="rounded-2xl bg-red-50 border border-red-200 p-5 text-center">
+          <div className="text-4xl mb-2">💪</div>
+          <p className="font-black text-red-800 text-lg">Bu Sefer Olmadı</p>
+          <p className="text-sm text-slate-600 mt-2">Tekrar çalışıp yeni bir sınav hocası talep edebilirsin.</p>
         </div>
       )}
 
