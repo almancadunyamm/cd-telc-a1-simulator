@@ -3256,6 +3256,7 @@ if (!currentUser) {
     allowFullScreen
   />
 </div>
+
 {todayLesson?.id === selectedLesson.id && !completedTasks.lesson && (
   <button
     type="button"
@@ -3281,9 +3282,18 @@ if (!currentUser) {
   </button>
 )}
 
-                <h3 className="mt-4 text-xl font-extrabold text-slate-900">
-                  {selectedLesson.title}
-                </h3>
+                <div className="mt-4 flex items-center justify-between gap-3">
+  <h3 className="text-xl font-extrabold text-slate-900">
+    {selectedLesson.title}
+  </h3>
+  <button
+    type="button"
+    onClick={() => window.open(selectedLesson.videoUrl, "_blank")}
+    className="shrink-0 rounded-xl bg-red-600 px-3 py-2 text-xs font-black text-white hover:bg-red-700"
+  >
+    {"▶ YouTube'da İzle"}
+  </button>
+</div>
 
                 <p className="mt-1 text-sm text-slate-500">
                   {getClassName(selectedLesson.classId)}
