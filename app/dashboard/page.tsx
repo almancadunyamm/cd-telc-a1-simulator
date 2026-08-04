@@ -3257,31 +3257,6 @@ if (!currentUser) {
   />
 </div>
 
-{todayLesson?.id === selectedLesson.id && !completedTasks.lesson && (
-  <button
-    type="button"
-    onClick={() => {
-      completeDailyTask("lesson");
-
-      const openedLessonKey = `opened_lesson_${currentUsername}_${selectedLesson.id}`;
-      localStorage.setItem(openedLessonKey, "true");
-
-      const lessonProgressKey = `lesson_progress_${currentUsername}`;
-      const currentProgress = Number(
-        localStorage.getItem(lessonProgressKey) || "0"
-      );
-
-      localStorage.setItem(lessonProgressKey, String(currentProgress + 1));
-
-      const todayLessonKey = `today_lesson_${currentUsername}_${todayKey}`;
-      localStorage.removeItem(todayLessonKey);
-    }}
-    className="mt-3 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700"
-  >
-    ✅ Dersi izledim, görevimi tamamla
-  </button>
-)}
-
                 <div className="mt-4 flex items-center justify-between gap-3">
   <h3 className="text-xl font-extrabold text-slate-900">
     {selectedLesson.title}
