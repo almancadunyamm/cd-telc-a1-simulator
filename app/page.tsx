@@ -155,21 +155,28 @@ export default function HomePage() {
   <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(250,204,21,0.25),transparent_28%),radial-gradient(circle_at_85%_20%,rgba(59,130,246,0.18),transparent_30%)]" />
 
  <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-    <div className="flex items-center gap-3">
-      <img
-  src="/images/logo.png"
-  alt="Almanca Okulum"
-  className="h-26 w-auto object-contain"
-/>
-    </div>
+  <div className="flex items-center gap-3">
+    <img
+      src="/images/logo.png"
+      alt="Almanca Okulum"
+      className="h-26 w-auto object-contain"
+    />
+  </div>
 
-    <a
-      href="/login"
-      className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-slate-800"
-    >
-      Giriş Yap
-    </a>
-  </header>
+  <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-700 md:flex">
+    <a href="#kurslar" className="hover:text-blue-600 transition">Kurslar</a>
+    <a href="#nasil-calisir" className="hover:text-blue-600 transition">Nasıl Çalışır?</a>
+    <a href="#fiyatlar" className="hover:text-blue-600 transition">Fiyatlar</a>
+    <a href="#sss" className="hover:text-blue-600 transition">SSS</a>
+  </nav>
+
+  
+  <a href="/login"
+    className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-slate-800"
+  >
+    Giriş Yap
+  </a>
+</header>
 
   <div className="relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-2">
     <div className="mx-auto -mt-2 max-w-4xl text-center">
@@ -401,3 +408,4 @@ export default function HomePage() {
     </main>
   );
 }
+
