@@ -156,26 +156,14 @@ export default function HomePage() {
 
  <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
   <div className="flex items-center gap-3">
-    <img
-      src="/images/logo.png"
-      alt="Almanca Okulum"
-      className="h-26 w-auto object-contain"
-    />
+    <img src="/images/logo.png" alt="Almanca Okulum" className="h-26 w-auto object-contain" />
   </div>
-
   <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-700 md:flex">
-    <a href="#kurslar" className="hover:text-blue-600 transition">Kurslar</a>
-    <a href="#nasil-calisir" className="hover:text-blue-600 transition">Nasıl Çalışır?</a>
-    <a href="#fiyatlar" className="hover:text-blue-600 transition">Fiyatlar</a>
-    <a href="#sss" className="hover:text-blue-600 transition">SSS</a>
+    <a href="/digital-simulation" className="hover:text-blue-600 transition">Dijital Kurs</a>
+    <a href="/academy-live" className="hover:text-blue-600 transition">{"Canlı Akademi"}</a>
+    <a href="/register" className="hover:text-blue-600 transition">Kayıt Ol</a>
   </nav>
-
-  
-  <a href="/login"
-    className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-slate-800"
-  >
-    Giriş Yap
-  </a>
+  <a href="/login" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-slate-800">Giriş Yap</a>
 </header>
 
   <div className="relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-2">
@@ -408,4 +396,3 @@ export default function HomePage() {
     </main>
   );
 }
-
