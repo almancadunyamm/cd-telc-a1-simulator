@@ -190,43 +190,20 @@ router.push("/payment/pending");
             <p className="mt-2 text-sm text-slate-500">Önce bir yol seçin, sonra seviyenizi belirleyin.</p>
           </div>
 
-          {!selectedType ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <button type="button" onClick={() => setSelectedType("live")}
-                className="rounded-3xl border-2 border-orange-200 bg-white p-6 text-left shadow-sm hover:border-orange-400 hover:shadow-md transition">
-                <div className="text-3xl mb-3">🎓</div>
-                <h2 className="text-xl font-black text-slate-900">Canlı Akademi</h2>
-                <p className="mt-2 text-sm text-slate-500">Öğretmenle canlı Zoom dersleri, konuşma kulübü ve mentor takip sistemi.</p>
-              </button>
-              <button type="button" onClick={() => setSelectedType("digital")}
-                className="rounded-3xl border-2 border-blue-200 bg-white p-6 text-left shadow-sm hover:border-blue-400 hover:shadow-md transition">
-                <div className="text-3xl mb-3">💻</div>
-                <h2 className="text-xl font-black text-slate-900">Dijital Kurs</h2>
-                <p className="mt-2 text-sm text-slate-500">Kendi hızında video dersler, TELC denemeleri ve dijital hazırlık sistemi. Başlangıç ücretsiz!</p>
-              </button>
-            </div>
-          ) : (
-            <div>
-              <button type="button" onClick={() => setSelectedType(null)} className="mb-4 text-sm text-slate-500 hover:text-slate-700">← Geri</button>
-              <h2 className="text-xl font-black text-slate-900 mb-4">Seviyenizi seçin</h2>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {(["A1", "A2", "B1"] as const).map((level) => (
-                  <button key={level} type="button"
-                    onClick={() => {
-                      const slug = selectedType === "live" ? `live-${level.toLowerCase()}` : `${level.toLowerCase()}-starter`;
-                      localStorage.setItem("selected_product_slug", slug);
-                      localStorage.setItem("pending_payment_slug", slug);
-                      setStep("form");
-                    }}
-                    className="rounded-2xl border-2 border-slate-200 bg-white p-5 text-center font-black text-slate-900 hover:border-blue-400 hover:shadow-md transition">
-                    <div className="text-2xl mb-2">{level === "A1" ? "🟡" : level === "A2" ? "🟢" : "🟣"}</div>
-                    <div className="text-lg">{level}</div>
-                    {selectedType === "digital" && <div className="text-xs text-emerald-600 mt-1">Başlangıç Ücretsiz</div>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <button type="button" onClick={() => window.location.href = "/academy-live"}
+              className="rounded-3xl border-2 border-orange-200 bg-white p-6 text-left shadow-sm hover:border-orange-400 hover:shadow-md transition">
+              <div className="text-3xl mb-3">🎓</div>
+              <h2 className="text-xl font-black text-slate-900">Canlı Akademi</h2>
+              <p className="mt-2 text-sm text-slate-500">Öğretmenle canlı Zoom dersleri, konuşma kulübü ve mentor takip sistemi.</p>
+            </button>
+            <button type="button" onClick={() => window.location.href = "/digital-simulation#paketler"}
+              className="rounded-3xl border-2 border-blue-200 bg-white p-6 text-left shadow-sm hover:border-blue-400 hover:shadow-md transition">
+              <div className="text-3xl mb-3">💻</div>
+              <h2 className="text-xl font-black text-slate-900">Dijital Kurs</h2>
+              <p className="mt-2 text-sm text-slate-500">Kendi hızında video dersler, TELC denemeleri ve dijital hazırlık sistemi. Başlangıç ücretsiz!</p>
+            </button>
+          </div>
         </div>
       </main>
     );
