@@ -163,7 +163,10 @@ export default function HomePage() {
     <a href="/academy-live" className="hover:text-blue-600 transition">{"Canlı Akademi"}</a>
     <a href="/register" className="hover:text-blue-600 transition">Kayıt Ol</a>
   </nav>
-  <a href="/login" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-slate-800">Giriş Yap</a>
+  <div className="flex items-center gap-2">
+    <a href="/register" className="hidden rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 sm:inline-flex">Kayıt Ol</a>
+    <a href="/login" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-slate-800">Giriş Yap</a>
+  </div>
 </header>
 
   <div className="relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-2">
@@ -178,6 +181,30 @@ export default function HomePage() {
     </div>
 
     <div className="relative mt-4 grid gap-6 lg:grid-cols-2 lg:items-stretch">
+  <div className="group relative overflow-hidden rounded-[40px] border border-orange-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(249,115,22,0.5)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-orange-300 hover:shadow-[0_45px_120px_-32px_rgba(249,115,22,0.7)] order-first">
+    <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 via-white to-orange-50 opacity-90" />
+    <div className="absolute bottom-0 right-10 h-40 w-40 rounded-full bg-orange-300/20 blur-3xl" />
+    <div className="relative z-10 flex h-full flex-col">
+      <img src="/images/live-mini-ui.png" alt="Canlı Almanca Akademisi" className="h-52 w-full rounded-[30px] object-cover shadow-2xl transition duration-500 group-hover:scale-[1.03]" />
+      <div className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-yellow-100 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-700">
+        <span className="h-2 w-2 rounded-full bg-yellow-500" />
+        Live Academy
+      </div>
+      <h2 className="mt-3 text-2xl font-black leading-tight text-slate-950">
+        Öğretmenle
+        <span className="block text-orange-500">canlı hazırlan</span>
+      </h2>
+      <p className="mt-2 text-sm leading-5 text-slate-600">Canlı Zoom derslerine katıl, öğretmen geri bildirimi al, speaking club ve ödev sistemiyle disiplinli ilerle.</p>
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        {["✓ Canlı Zoom", "✓ Konuşma klübü", "✓ Mentor takip", "✓ Ödev sistemi"].map((item) => (
+          <div key={item} className="rounded-full bg-orange-50/90 px-4 py-2 text-xs font-black text-orange-700 ring-1 ring-orange-100">{item}</div>
+        ))}
+      </div>
+      <a href="/academy-live" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-yellow-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:scale-[1.02] hover:bg-yellow-300">
+        {"Canlı Akademiyi İncele"}
+      </a>
+    </div>
+  </div>
   <div className="group relative overflow-hidden rounded-[40px] border border-blue-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(37,99,235,0.55)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-300 hover:shadow-[0_45px_120px_-32px_rgba(37,99,235,0.75)]">
     <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50 opacity-90" />
     <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-cyan-300/20 blur-3xl" />
@@ -222,10 +249,10 @@ export default function HomePage() {
 
       <div className="mt-6 space-y-3">
   <a
-    href="/register?level=A1&package=starter&free=true"
+    href="/digital-simulation#paketler"
     className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:scale-[1.02] hover:bg-blue-700"
   >
-    🎁 Ücretsiz Başlangıca Gir
+    {"🎁 Ücretsiz Seviye Seç ve Başla"}
   </a>
 
   <a
@@ -235,57 +262,6 @@ export default function HomePage() {
     Dijital Sistemi Detaylı İncele
   </a>
 </div>
-    </div>
-  </div>
-
-  <div className="group relative overflow-hidden rounded-[40px] border border-orange-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(249,115,22,0.5)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-orange-300 hover:shadow-[0_45px_120px_-32px_rgba(249,115,22,0.7)]">
-    <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 via-white to-orange-50 opacity-90" />
-    <div className="absolute bottom-0 right-10 h-40 w-40 rounded-full bg-orange-300/20 blur-3xl" />
-
-    <div className="relative z-10 flex h-full flex-col">
-      <img
-        src="/images/live-mini-ui.png"
-        alt="Canlı Almanca Akademisi"
-        className="h-52 w-full rounded-[30px] object-cover shadow-2xl transition duration-500 group-hover:scale-[1.03]"
-      />
-
-      <div className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-yellow-100 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-700">
-        <span className="h-2 w-2 rounded-full bg-yellow-500" />
-        Live Academy
-      </div>
-
-      <h2 className="mt-3 text-2xl font-black leading-tight text-slate-950">
-        Öğretmenle
-        <span className="block text-orange-500">canlı hazırlan</span>
-      </h2>
-
-      <p className="mt-2 text-sm leading-5 text-slate-600">
-        Canlı Zoom derslerine katıl, öğretmen geri bildirimi al, speaking club
-        ve ödev sistemiyle disiplinli ilerle.
-      </p>
-
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        {[
-  "✓ Canlı Zoom",
-  "✓ Konuşma klübü",
-  "✓ Mentor takip",
-  "✓ Ödev sistemi",
-].map((item) => (
-          <div
-            key={item}
-            className="rounded-full bg-orange-50/90 px-4 py-2 text-xs font-black text-orange-700 ring-1 ring-orange-100"
-          >
-            {item}
-          </div>
-        ))}
-      </div>
-
-      <a
-        href="/academy-live"
-       className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-yellow-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:scale-[1.02] hover:bg-yellow-300"
-      >
-        Canlı Akademiyi İncele
-      </a>
     </div>
   </div>
 </div>
