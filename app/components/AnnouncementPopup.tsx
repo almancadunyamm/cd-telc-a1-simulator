@@ -72,8 +72,6 @@ export default function AnnouncementPopup({ userEmail }: { userEmail: string }) 
       .from("announcements")
       .select("*")
       .eq("is_active", true)
-      .lte("starts_at", now)
-      .or(`ends_at.is.null,ends_at.gt.${now}`)
       .order("created_at", { ascending: false });
 
     if (!data || data.length === 0) return;
