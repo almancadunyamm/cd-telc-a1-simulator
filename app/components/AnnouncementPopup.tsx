@@ -66,12 +66,12 @@ export default function AnnouncementPopup({ userEmail }: { userEmail: string }) 
   }, [userEmail]);
 
   async function loadAnnouncements() {
-    const now = new Date().toISOString();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("announcements")
       .select("*")
       .eq("is_active", true)
       .order("created_at", { ascending: false });
+    console.log("Duyurular:", data, "Hata:", error);
 
     if (!data || data.length === 0) return;
 
