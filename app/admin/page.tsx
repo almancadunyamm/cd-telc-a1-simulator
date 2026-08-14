@@ -84,6 +84,14 @@ const adminCards = [
     tag: "Yeni",
   },
   {
+    title: "Duyurular",
+    description: "Tüm kullanıcılara gösterilecek duyuruları yönet.",
+    href: "/admin/announcements",
+    icon: "📢",
+    accent: "#8b5cf6",
+    tag: "Yeni",
+  },
+  {
     title: "TELC Simülasyon",
     description: "Deneme sınavı soru setlerini ve içerikleri yönet.",
     href: "/admin/telc",
