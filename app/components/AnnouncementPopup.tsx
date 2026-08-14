@@ -62,7 +62,6 @@ export default function AnnouncementPopup({ userEmail }: { userEmail: string }) 
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!userEmail) return;
     loadAnnouncements();
   }, [userEmail]);
 
