@@ -56,6 +56,7 @@ import { a2Tema10Questions } from "@/app/data/mastery-a2/tema10";
 import { a2Tema11Questions } from "@/app/data/mastery-a2/tema11";
 import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
+import AnnouncementPopup from "@/components/AnnouncementPopup";
 
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
