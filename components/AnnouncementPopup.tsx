@@ -62,19 +62,16 @@ export default function AnnouncementPopup({ userEmail }: { userEmail: string }) 
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!userEmail) return;
     loadAnnouncements();
   }, [userEmail]);
 
   async function loadAnnouncements() {
-    const now = new Date().toISOString();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("announcements")
       .select("*")
       .eq("is_active", true)
-      .lte("starts_at", now)
-      .or(`ends_at.is.null,ends_at.gt.${now}`)
       .order("created_at", { ascending: false });
+    console.log("Duyurular:", data, "Hata:", error);
 
     if (!data || data.length === 0) return;
 
