@@ -67,18 +67,27 @@ export default function AnnouncementPopup({ userEmail }: { userEmail: string }) 
   }, [userEmail]);
 
   async function loadAnnouncements() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("announcements")
       .select("*")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+      .eq("is_active", true);
+
+    if (error) {
+      console.error("Duyuru sorgu hatası:", error);
+      return;
+    }
+    console.log("Aktif duyurular:", data);
 
     if (!data || data.length === 0) return;
 
-    const { data: views } = await supabase
+    const { data: views, error: viewsError } = await supabase
       .from("announcement_views")
       .select("announcement_id")
       .eq("user_email", userEmail);
+
+    if (viewsError) {
+      console.error("Görüntüleme sorgu hatası:", viewsError);
+    }
 
     const viewedIds = new Set((views || []).map((v: any) => v.announcement_id));
 
