@@ -1,6 +1,6 @@
 "use client";
 import { supabase } from "@/lib/supabase";
-import { getShopierLink } from "@/lib/billing/shopier-links";
+import { getShopierLink, refreshShopierLinks } from "@/lib/billing/shopier-links";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -2774,6 +2774,7 @@ if (!currentUser) {
   return (
     <main className="relative min-h-screen bg-slate-100">
       
+      <AnnouncementPopup userEmail={currentUser?.username || ""} />
       {hocaAtamaBildirimi.length > 0 && (
         <div className="fixed top-4 right-4 z-50 max-w-sm rounded-2xl bg-yellow-400 p-5 shadow-2xl">
           <p className="font-black text-slate-900">🎓 Sınav Hocası Olarak Atandınız!</p>
@@ -3547,9 +3548,10 @@ window.open(worksheet.url, "_blank");
 
           <button
   type="button"
-  onClick={() => {
+  onClick={async () => {
     const slug = `live-${selectedLevel.toLowerCase()}`;
 
+    await refreshShopierLinks();
     const link = getShopierLink(slug);
 
     if (!link) {
