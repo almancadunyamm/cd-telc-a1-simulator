@@ -183,7 +183,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           >
             <p className="text-sm font-black">
               {plan.name === "Başlangıç"
-                ? "A1 dijital başlangıç ücretsiz"
+                ? `${starterLevel} dijital başlangıç ücretsiz`
                 : plan.name === "Gelişim"
                 ? "Video ders + deneme sistemi"
                 : "Tam dijital hazırlık"}
