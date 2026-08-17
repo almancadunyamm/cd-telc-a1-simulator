@@ -1,6 +1,6 @@
-export type ShopierLinkMap = Record<string, string>;
+import { supabase } from "@/lib/supabase";
 
-const STORAGE_KEY = "shopier_links";
+export type ShopierLinkMap = Record<string, string>;
 
 const DEFAULT_SHOPIER_LINKS: ShopierLinkMap = {
   "a1-starter": "https://www.shopier.com/almanca_okulum/46634818",
@@ -19,34 +19,56 @@ const DEFAULT_SHOPIER_LINKS: ShopierLinkMap = {
   "live-a2": "https://www.shopier.com/almanca_okulum/45617228",
   "live-b1": "https://www.shopier.com/almanca_okulum/45617308",
   "live-a1-a2": "https://www.shopier.com/almanca_okulum/45617507",
-  "live-full": "https://www.shopier.com/almanca_okulum/45617654",
+  "live-a2-b1": "https://www.shopier.com/almanca_okulum/45617507",
+  "live-a1-a2-b1": "https://www.shopier.com/almanca_okulum/45617654",
 };
 
-export function getShopierLinks(): ShopierLinkMap {
-  if (typeof window === "undefined") return DEFAULT_SHOPIER_LINKS;
+let cachedLinks: ShopierLinkMap = { ...DEFAULT_SHOPIER_LINKS };
 
-  const raw = localStorage.getItem(STORAGE_KEY);
+// Supabase'den taze veriyi çekip önbelleği günceller
+export async function refreshShopierLinks(): Promise<ShopierLinkMap> {
+  const { data, error } = await supabase
+    .from("shopier_links")
+    .select("slug, url");
 
-  if (!raw) return DEFAULT_SHOPIER_LINKS;
-
-  try {
-    return {
-      ...DEFAULT_SHOPIER_LINKS,
-      ...(JSON.parse(raw) as ShopierLinkMap),
-    };
-  } catch {
-    return DEFAULT_SHOPIER_LINKS;
+  if (error || !data) {
+    console.error("Shopier linkleri alınamadı:", error);
+    return cachedLinks;
   }
+
+  const dbLinks: ShopierLinkMap = {};
+  for (const row of data) {
+    dbLinks[row.slug] = row.url;
+  }
+
+  cachedLinks = { ...DEFAULT_SHOPIER_LINKS, ...dbLinks };
+  return cachedLinks;
 }
 
-export function saveShopierLinks(links: ShopierLinkMap) {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+// Admin panel için: async, her zaman taze veri döner
+export async function getShopierLinks(): Promise<ShopierLinkMap> {
+  return refreshShopierLinks();
 }
 
+export async function saveShopierLinks(links: ShopierLinkMap): Promise<boolean> {
+  const rows = Object.entries(links)
+    .filter(([, url]) => url && url.trim() !== "")
+    .map(([slug, url]) => ({ slug, url: url.trim() }));
+
+  const { error } = await supabase
+    .from("shopier_links")
+    .upsert(rows, { onConflict: "slug" });
+
+  if (error) {
+    console.error("Shopier linkleri kaydedilemedi:", error);
+    return false;
+  }
+
+  await refreshShopierLinks();
+  return true;
+}
+
+// Dashboard gibi senkron kullanım gereken yerler için: önbellekten okur
 export function getShopierLink(slug: string): string | null {
-  const links = getShopierLinks();
-
-  return links[slug] || null;
+  return cachedLinks[slug] || null;
 }

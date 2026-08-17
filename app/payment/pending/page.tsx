@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getShopierLink } from "@/lib/billing/shopier-links";
+import { getShopierLink, refreshShopierLinks } from "@/lib/billing/shopier-links";
 
 export default function PaymentPendingPage() {
   const router = useRouter();
@@ -33,6 +33,7 @@ export default function PaymentPendingPage() {
     return;
   }
 
+  await refreshShopierLinks();
   const link = getShopierLink(slug);
 
   if (!link) {

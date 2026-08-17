@@ -26,7 +26,7 @@ const products = [
   { slug: "live-b1", label: "B1 Canlı Kurs" },
   { slug: "live-a1-a2", label: "A1 + A2 Canlı Kurs" },
   { slug: "live-a2-b1", label: "A2 + B1 Canlı Kurs" },
-  { slug: "live-full", label: "A1 + A2 + B1 Canlı Kurs" },
+  { slug: "live-a1-a2-b1", label: "A1 + A2 + B1 Canlı Kurs" },
 ];
 
 export default function ShopierLinksPage() {
@@ -35,7 +35,7 @@ export default function ShopierLinksPage() {
   const [links, setLinks] = useState<ShopierLinkMap>({});
 
   useEffect(() => {
-    setLinks(getShopierLinks());
+    getShopierLinks().then(setLinks);
   }, []);
 
   useEffect(() => {
@@ -72,9 +72,13 @@ if (!allowed) {
     }));
   }
 
-  function handleSave() {
-    saveShopierLinks(links);
-    alert("Shopier linkleri kaydedildi.");
+  async function handleSave() {
+    const success = await saveShopierLinks(links);
+    if (success) {
+      alert("Shopier linkleri kaydedildi.");
+    } else {
+      alert("Kaydedilirken hata oluştu. Konsolu kontrol edin.");
+    }
   }
 
   return (
