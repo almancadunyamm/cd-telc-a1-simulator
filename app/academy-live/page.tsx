@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function LiveAcademyPage() {
-  const [selectedSingleLevel, setSelectedSingleLevel] = useState<"A1" | "A2" | "B1">("A1");
+  const searchParams = useSearchParams();
+  const levelParam = searchParams.get("level");
+  const initialSingleLevel: "A1" | "A2" | "B1" =
+    levelParam === "A2" || levelParam === "B1" ? levelParam : "A1";
+
+  const [selectedSingleLevel, setSelectedSingleLevel] = useState<"A1" | "A2" | "B1">(initialSingleLevel);
   const [selectedDoubleLevel, setSelectedDoubleLevel] = useState<"A1+A2" | "A2+B1">("A1+A2");
 
   return (

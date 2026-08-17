@@ -205,14 +205,9 @@ export default function LevelTestPage() {
     }
 
     const level = scoring?.resultLevel || "A1";
-    const slugLevel = level === "B2" ? "b1" : level.toLowerCase();
-    const slug = `${slugLevel}-practice`;
+    const targetLevel = level === "B2" ? "B1" : level;
 
-    localStorage.setItem("selected_product_slug", slug);
-    localStorage.setItem("selectedProductSlug", slug);
-    localStorage.setItem("pending_payment_slug", slug);
-
-    window.location.href = "/register";
+    window.location.href = `/academy-live?level=${targetLevel}#kayit`;
   }
 
   async function handleWhatsappClick() {
