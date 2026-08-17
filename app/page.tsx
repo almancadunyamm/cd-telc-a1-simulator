@@ -203,6 +203,9 @@ export default function HomePage() {
       <a href="/academy-live" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-yellow-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:scale-[1.02] hover:bg-yellow-300">
         {"Canlı Akademiyi İncele"}
       </a>
+      <a href="/almanca-seviye-tespit-sinavi" className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-orange-200 bg-white/80 px-5 py-3 text-sm font-black text-orange-700 transition hover:bg-orange-50">
+        {"🎯 Seviyemi Öğren"}
+      </a>
     </div>
   </div>
   <div className="group relative overflow-hidden rounded-[40px] border border-blue-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(37,99,235,0.55)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-300 hover:shadow-[0_45px_120px_-32px_rgba(37,99,235,0.75)]">
