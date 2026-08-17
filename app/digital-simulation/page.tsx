@@ -114,7 +114,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
         {
           name: "Gelişim",
           slug: `${practiceLevel.toLowerCase()}-practice`,
-          price: "₺1.490",
+          price: "₺1.890",
           badge: `${practiceLevel} Gelişim`,
           highlight: true,
           features: [
@@ -130,7 +130,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
         {
           name: "Zirve",
           slug: `${masterLevel.toLowerCase()}-master`,
-          price: "₺1.990",
+          price: "₺2.490",
           badge: `${masterLevel} Zirve`,
           highlight: false,
           features: [
