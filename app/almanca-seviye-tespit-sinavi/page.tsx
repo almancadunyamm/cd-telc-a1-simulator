@@ -14,6 +14,9 @@ type Question = {
   correct_answer: "a" | "b" | "c" | "d";
   cefr_level: CefrLevel;
   weight: number;
+  passage_id: string | null;
+  passage_text?: string | null;
+  passage_title?: string | null;
 };
 
 type Stage = "intro" | "quiz" | "lead" | "result";
@@ -60,7 +63,9 @@ export default function LevelTestPage() {
 
     const { data, error } = await supabase
       .from("level_test_questions")
-      .select("id, question_text, option_a, option_b, option_c, option_d, correct_answer, cefr_level, weight")
+      .select(
+        "id, question_text, option_a, option_b, option_c, option_d, correct_answer, cefr_level, weight, passage_id, level_test_passages(title, passage_text)"
+      )
       .eq("is_active", true);
 
     if (error || !data || data.length === 0) {
@@ -69,9 +74,15 @@ export default function LevelTestPage() {
       return;
     }
 
+    const normalized: Question[] = (data as any[]).map((q) => ({
+      ...q,
+      passage_title: q.level_test_passages?.title ?? null,
+      passage_text: q.level_test_passages?.passage_text ?? null,
+    }));
+
     let selected: Question[] = [];
     for (const level of LEVEL_ORDER) {
-      const pool = shuffle(data.filter((q) => q.cefr_level === level) as Question[]);
+      const pool = shuffle(normalized.filter((q) => q.cefr_level === level));
       const target = LEVEL_TARGETS[level];
       selected = selected.concat(pool.slice(0, target));
     }
@@ -298,6 +309,19 @@ export default function LevelTestPage() {
               <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
             </div>
           </div>
+
+          {q.passage_text && (
+            <div className="mb-4 rounded-3xl border border-blue-100 bg-blue-50 p-6">
+              {q.passage_title && (
+                <p className="mb-2 text-xs font-black uppercase tracking-widest text-blue-700">
+                  {q.passage_title}
+                </p>
+              )}
+              <p className="text-sm leading-7 text-slate-700 whitespace-pre-line">
+                {q.passage_text}
+              </p>
+            </div>
+          )}
 
           <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-xl">
             <h2 className="text-xl font-black leading-relaxed text-slate-950">
