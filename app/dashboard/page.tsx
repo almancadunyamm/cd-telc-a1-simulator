@@ -2201,25 +2201,30 @@ if (data) {
         }
       }
 
-      // current_gorev 4+ ise otomatik düzelt
       if (calismaData.current_gorev > 3) {
-        const yeniTema = calismaData.current_tema % 3 === 0 ? calismaData.current_tema : calismaData.current_tema + 1;
-        const sinav = calismaData.current_tema % 3 === 0;
+        const finalTemaTamamlandi = calismaData.current_tema >= 12;
+        const yeniTema = finalTemaTamamlandi ? 12 : calismaData.current_tema + 1;
         const duzeltilmis = {
           ...calismaData,
-          current_tema: sinav ? calismaData.current_tema : yeniTema,
-          current_gorev: 1,
-          sinav_bekleniyor: sinav,
+          current_tema: yeniTema,
+          current_gorev: finalTemaTamamlandi ? 4 : 1,
+          sinav_bekleniyor: false,
         };
         await supabase.from("speaking_progress")
           .update({
             current_tema: duzeltilmis.current_tema,
-            current_gorev: 1,
-            sinav_bekleniyor: sinav,
+            current_gorev: duzeltilmis.current_gorev,
+            sinav_bekleniyor: false,
           })
           .eq("id", calismaData.id);
         setSpeakingProgress(duzeltilmis);
       } else {
+        if (calismaData.sinav_bekleniyor && calismaData.current_tema < 12) {
+          await supabase.from("speaking_progress")
+            .update({ sinav_bekleniyor: false })
+            .eq("id", calismaData.id);
+          calismaData = { ...calismaData, sinav_bekleniyor: false };
+        }
         setSpeakingProgress(calismaData);
       }
     } else {
@@ -2555,18 +2560,6 @@ async function handleSpeakingBildirim() {
   const currentTema = speakingProgress.current_tema;
   const currentGorev = speakingProgress.current_gorev;
 
-  // Sınav bekliyorsa bildirim atılamaz
-  if (speakingProgress.sinav_bekleniyor) {
-    setSpeakingGorevBildiriliyor(false);
-    setSpeakingTeşvikMesaj({
-      icon: "🎓",
-      baslik: "Önce Sınavını Geç!",
-      mesaj: "Bu temayı tamamladın. Bir sonraki temaya geçmek için sınav hocası talep et ve sınavını tamamla.",
-      renk: "from-yellow-400 to-orange-400",
-    });
-    return;
-  }
-
   // Bu tema+görev için mevcut session'ı bul
   const { data: sessions } = await supabase
     .from("speaking_sessions")
@@ -2625,32 +2618,19 @@ async function handleSpeakingBildirim() {
 
     if (digerBildirdi) {
       const yeniGorev = currentGorev + 1;
-      let yeniTema = currentTema;
-      let sinav_bekleniyor = false;
-
-      if (yeniGorev > 3) {
-        if (currentTema % 3 === 0) {
-          sinav_bekleniyor = true;
-        } else {
-          yeniTema = currentTema + 1;
-        }
-      }
+      const temaTamamlandi = yeniGorev > 3;
+      const finalTemaTamamlandi = temaTamamlandi && currentTema >= 12;
+      const yeniTema = finalTemaTamamlandi ? 12 : temaTamamlandi ? currentTema + 1 : currentTema;
+      const sonrakiGorev = finalTemaTamamlandi ? 4 : temaTamamlandi ? 1 : yeniGorev;
 
       const progressUpdate: any = {
         son_bildirim_tarihi: bugun,
         gorev_tarihleri: [...(speakingProgress.gorev_tarihleri || []), bugun],
       };
 
-      if (sinav_bekleniyor) {
-        progressUpdate.sinav_bekleniyor = true;
-      } else if (yeniGorev > 3) {
-        progressUpdate.current_tema = yeniTema;
-        progressUpdate.current_gorev = 1;
-        progressUpdate.sinav_bekleniyor = false;
-      } else {
-        progressUpdate.current_gorev = yeniGorev;
-        progressUpdate.sinav_bekleniyor = false;
-      }
+      progressUpdate.current_tema = yeniTema;
+      progressUpdate.current_gorev = sonrakiGorev;
+      progressUpdate.sinav_bekleniyor = false;
 
       await supabase.from("speaking_progress")
         .update(progressUpdate)
@@ -2677,11 +2657,11 @@ async function handleSpeakingBildirim() {
       if (yeniData) setSpeakingProgress(yeniData);
 
       // Teşvik mesajı
-      if (sinav_bekleniyor) {
+      if (finalTemaTamamlandi) {
         setSpeakingTeşvikMesaj({
           icon: "🎓",
-          baslik: "Tebrikler! 3 Tema Tamamlandı!",
-          mesaj: `Harika iş çıkardınız! Tema ${currentTema} bitti. Şimdi sınav hocası talep ederek sınavını tamamla ve bir sonraki temaya geç!`,
+          baslik: "Tüm Temalar Tamamlandı!",
+          mesaj: "Harika iş çıkardınız! Final sınavı için şimdi sınav hocası talep edebilirsin.",
           renk: "from-yellow-400 to-orange-400",
         });
       } else if (yeniGorev > 3) {
@@ -4492,8 +4472,8 @@ createPendingOrder({
             ["durum", "📊 Durumum"],
             ["gorev", "🎯 Görev"],
             ["partner", "🤝 Partner"],
-            ["sinav", "🎓 Sınav" + (speakingProgress?.sinav_bekleniyor ? " 🔴" : "")],
-          ] as const).map(([key, label]) => (
+            ["sinav", "🎓 Final Sınavı"],
+          ] as const).filter(([key]) => key !== "sinav" || (speakingProgress?.current_tema >= 12 && speakingProgress?.current_gorev > 3)).map(([key, label]) => (
             <button
               key={key}
               type="button"
@@ -4598,8 +4578,8 @@ createPendingOrder({
                         <p className="text-xs font-bold text-slate-500 mt-1">Aktif Tema</p>
                       </div>
                       <div className="rounded-2xl bg-blue-50 p-4 text-center">
-                        <p className="text-3xl font-black text-blue-700">{speakingProgress.current_gorev}/3</p>
-                        <p className="text-xs font-bold text-slate-500 mt-1">Bugünkü Görev</p>
+                        <p className="text-3xl font-black text-blue-700">{Math.min(speakingProgress.current_gorev, 3)}/3</p>
+                        <p className="text-xs font-bold text-slate-500 mt-1">{speakingProgress.current_gorev > 3 ? "Tema Tamamlandı" : "Bugünkü Görev"}</p>
                       </div>
                     </div>
 
@@ -4620,24 +4600,6 @@ createPendingOrder({
                       </p>
                     </div>
 
-                    {/* Sınav uyarısı */}
-{speakingProgress.sinav_bekleniyor && (
-  <div className="rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 p-4 mb-4">
-    <p className="text-sm font-black text-slate-900">
-      {"🎓 SINAV ZAMANI! Tema " + speakingProgress.current_tema + " tamamlandı!"}
-    </p>
-    <p className="text-xs text-slate-800 mt-1">
-      {"Toplam " + (speakingProgress.current_tema * 15) + " soru · " + getSinavSuresiLabel(speakingProgress.current_tema) + " · Görüntülü arama ile sınav yap"}
-    </p>
-    <button
-      type="button"
-      onClick={() => setSpeakingTab("sinav" as any)}
-      className="mt-3 w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-black text-white hover:bg-slate-800"
-    >
-      {"📋 Sınav Detaylarına Git"}
-    </button>
-  </div>
-)}
                     {/* Küme düşme uyarısı */}
                     {speakingProgress.son_bildirim_tarihi && (() => {
                       const son = new Date(speakingProgress.son_bildirim_tarihi);
@@ -4663,7 +4625,7 @@ createPendingOrder({
                     <div className="mb-4">
                       <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
                         <span>Tema {speakingProgress.current_tema} İlerlemesi</span>
-                        <span>{speakingProgress.current_gorev - 1}/3 görev tamamlandı · {speakingProgress.current_gorev}. görev devam ediyor</span>
+                        <span>{Math.min(speakingProgress.current_gorev - 1, 3)}/3 görev tamamlandı{speakingProgress.current_gorev <= 3 ? ` · ${speakingProgress.current_gorev}. görev devam ediyor` : ""}</span>
                       </div>
                       <div className="h-2 rounded-full bg-slate-200">
                         <div
@@ -5036,12 +4998,12 @@ createPendingOrder({
               <div className="rounded-2xl bg-white p-6 shadow-sm">
                 {!speakingProgress ? (
                   <p className="text-sm text-slate-500">Önce Konuşma Kulübünü başlat.</p>
-                ) : !speakingProgress.sinav_bekleniyor ? (
+                ) : !(speakingProgress.current_tema >= 12 && speakingProgress.current_gorev > 3) ? (
                   <div className="text-center py-8">
                     <div className="text-4xl mb-3">{"📚"}</div>
                     <h3 className="font-black text-slate-900">Sınav henüz yok</h3>
                     <p className="text-sm text-slate-500 mt-2 leading-6">
-                      {"Her 3 temayı tamamladığında sınav açılır. Şu an Tema " + speakingProgress.current_tema + " üzerindesin."}
+                      {"Ara temalarda sınav yok. Şu an Tema " + speakingProgress.current_tema + " üzerindesin."}
                     </p>
                     <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-left space-y-2 text-sm text-slate-600">
                       <p>{"🥉 Tema 3 → Bronz Konuşmacı"}</p>
@@ -5099,12 +5061,11 @@ createPendingOrder({
 
                     </div>
                 )}
-                {speakingProgress && (
+                {speakingProgress && speakingProgress.current_tema >= 12 && speakingProgress.current_gorev > 3 && (
                   <SinavHocasiPanel
                     currentUser={currentUser}
                     speakingProgress={speakingProgress}
                     setSpeakingTeşvikMesaj={setSpeakingTeşvikMesaj}
-                    temaHakkiVar={speakingProgress.current_tema % 3 === 0}
                   />
                 )}
               </div>
@@ -6840,7 +6801,7 @@ if (!isPreviousThemeCompleted) {
 </main>
   );
 }
-function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMesaj, temaHakkiVar }: any) {
+function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMesaj }: any) {
   const [talepGonderildi, setTalepGonderildi] = React.useState(false);
   const [atananHoca, setAtananHoca] = React.useState<string | null>(null);
   const [hocaTelefon, setHocaTelefon] = React.useState<string>("");
@@ -7029,12 +6990,6 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           <div className="text-3xl mb-3">⏳</div>
           <p className="font-black text-blue-800">Sınav Hocası Bekleniyor</p>
           <p className="text-sm text-slate-500 mt-2">Talebini aldık. Admin en kısa sürede bir sınav hocası atayacak.</p>
-        </div>
-      ) : !temaHakkiVar ? (
-        <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5 text-center">
-          <div className="text-3xl mb-3">🔒</div>
-          <p className="font-black text-slate-700">Sınav Hocası Talebi Kilitli</p>
-          <p className="text-sm text-slate-500 mt-2">Her 3 temayı tamamladığında sınav hocası talep edebilirsin.</p>
         </div>
       ) : (
         <button
