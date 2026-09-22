@@ -26,6 +26,7 @@ function getOrderType(slug: string): "live" | "digital" {
 
 function getPackageLabel(slug: string): string {
   const s = String(slug || "").toLowerCase();
+  if (s.startsWith("konusma-")) return "Konuşma Kulübü";
   if (s.includes("master") || s.includes("zirve")) return "Zirve";
   if (s.includes("practice") || s.includes("gelisim")) return "Gelişim";
   if (s.includes("starter") || s.includes("baslangic")) return "Başlangıç";

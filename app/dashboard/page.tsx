@@ -337,6 +337,110 @@ const speakingTasksB1 = [
     grammar: "Reflexive Verben / wenn-Sätze / Konjunktiv II",
   },
 ];
+
+// ── Konuşma Kulübü — seviye erişim mantığı ──────────────────────────────
+const SPEAKING_LEVEL_ORDER: Level[] = ["A1", "A2", "B1"];
+const SPEAKING_LEVEL_SENTENCE_TARGET: Record<Level, number> = {
+  A1: 180,
+  A2: 180,
+  B1: 400,
+};
+const SPEAKING_CLUB_TOTAL_SENTENCES = 760;
+
+type SpeakingAccessStatus = "open" | "purchase" | "sequence" | "soon";
+
+function SpeakingClubAccessCard({
+  status,
+  level,
+  blockingLevel,
+  onRegister,
+  onGoToLevel,
+}: {
+  status: Exclude<SpeakingAccessStatus, "open">;
+  level: Level;
+  blockingLevel?: Level | null;
+  onRegister: () => void;
+  onGoToLevel: (level: Level) => void;
+}) {
+  if (status === "sequence" && blockingLevel) {
+    return (
+      <div className="rounded-[2rem] bg-gradient-to-br from-amber-50 to-orange-50 p-8 text-center shadow-sm border border-amber-200">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-4xl">🔒</div>
+        <h2 className="mt-5 text-2xl font-black text-slate-900">{level} Konuşma Kulübü</h2>
+        <p className="mt-3 text-sm leading-7 text-slate-600 max-w-md mx-auto">
+          {level} Konuşma Kulübüne başlayabilmen için önce <strong>{blockingLevel} Konuşma Kulübünü</strong> tamamlaman
+          gerekiyor. Kademeli ilerleme, her seviyede gerçekten akıcı konuşmanı sağlıyor.
+        </p>
+        <button
+          type="button"
+          onClick={() => onGoToLevel(blockingLevel)}
+          className="mt-6 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white hover:bg-slate-800"
+        >
+          {blockingLevel} Konuşma Kulübüne Geç
+        </button>
+      </div>
+    );
+  }
+
+  if (status === "soon") {
+    return (
+      <div className="rounded-[2rem] bg-gradient-to-br from-slate-50 to-slate-100 p-8 text-center shadow-sm border border-slate-200">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-200 text-4xl">🛠️</div>
+        <h2 className="mt-5 text-2xl font-black text-slate-900">{level} Konuşma Kulübü</h2>
+        <p className="mt-3 text-sm leading-7 text-slate-600 max-w-md mx-auto">
+          {level} seviyesi için erişimin açık — içerik ekibimiz bu seviyenin konuşma görevlerini hazırlıyor.
+          Çok yakında burada da her gün konuşarak ilerleyebileceksin.
+        </p>
+      </div>
+    );
+  }
+
+  // status === "purchase" — dijital öğrenci için özendirici kayıt ekranı
+  const target = SPEAKING_LEVEL_SENTENCE_TARGET[level];
+
+  return (
+    <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 text-white shadow-2xl">
+      <div className="px-8 pt-10 pb-8 text-center">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 text-4xl">🎙️</div>
+        <p className="mt-5 text-xs font-black uppercase tracking-widest text-emerald-400">{level} Konuşma Kulübü</p>
+        <h2 className="mt-2 text-3xl font-black">Almanca Konuşmayı Gerçekten Öğren</h2>
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300">
+          Konuşma Kulübü, Başlangıç ve Gelişim paketlerinden bağımsız, ayrı bir bölümdür. Kayıt olduğunda sistem
+          sana bir <strong className="text-white">konuşma partneri</strong> atar; öğretmen rehberliğinde,
+          basit cümlelerden başlayıp adım adım gelişmiş cümlelere ilerlersiniz. Bol tekrar esasıyla{" "}
+          <strong className="text-white">{level} seviyesinde {target} cümleyi akıcı bir şekilde</strong> söyleyebilecek
+          konuma gelirsin.
+        </p>
+        <div className="mx-auto mt-6 grid max-w-xl gap-3 sm:grid-cols-3">
+          {(["A1", "A2", "B1"] as Level[]).map((lvl) => (
+            <div
+              key={lvl}
+              className={`rounded-2xl p-4 ${lvl === level ? "bg-emerald-500/20 border border-emerald-400/40" : "bg-white/5 border border-white/10"}`}
+            >
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400">{lvl}</p>
+              <p className="mt-1 text-xl font-black">{SPEAKING_LEVEL_SENTENCE_TARGET[lvl]} cümle</p>
+            </div>
+          ))}
+        </div>
+        <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-300">
+          Bütün seviyeleri tamamlayan bir öğrenci, en çok konuşulan{" "}
+          <strong className="text-white">{SPEAKING_CLUB_TOTAL_SENTENCES} Almanca cümle kalıbını</strong> akıcı bir
+          şekilde söyleyebilir hâle gelir. Bu kalıpları benzer cümlelere uyarlayarak konuşabilen bir öğrenci,
+          artık orta seviyede bir konuşma becerisine sahip demektir.
+        </p>
+        <button
+          type="button"
+          onClick={onRegister}
+          className="mt-8 rounded-2xl bg-emerald-500 px-8 py-4 text-sm font-black text-slate-950 shadow-lg shadow-emerald-500/30 hover:bg-emerald-400"
+        >
+          🎙️ {level} Konuşma Kulübüne Kayıt Ol
+        </button>
+        <p className="mt-3 text-xs text-slate-500">Shopier üzerinden güvenli ödeme · Kayıt sonrası admin onayıyla aktif olur</p>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [pwaPrompt, setPwaPrompt] = useState<any>(null);
   const [speakingTab, setSpeakingTab] = useState<"durum" | "gorev" | "partner" | "talep">("durum");
@@ -354,6 +458,7 @@ const [speakingTelefon, setSpeakingTelefon] = useState("");
 const [speakingGonderildi, setSpeakingGonderildi] = useState(false);
 const [teacherWhatsapp, setTeacherWhatsapp] = useState<string>("905013434419");
 const [speakingEslesmeler, setSpeakingEslesmeler] = useState<any[]>([]);
+const [allSpeakingProgress, setAllSpeakingProgress] = useState<any[]>([]);
 const [hocaAtamaBildirimi, setHocaAtamaBildirimi] = useState<any[]>([]);
 const [speakingYukleniyor, setSpeakingYukleniyor] = useState(false);
 const [partnerTelefon, setPartnerTelefon] = useState<string>("");
@@ -1692,6 +1797,88 @@ if (allClassIds.length > 0) {
   const userClasses = useMemo(() => {
     return classes.filter((item) => accessibleClassIds.includes(item.id));
   }, [classes, accessibleClassIds]);
+
+  // ── Konuşma Kulübü erişim hesaplaması ─────────────────────────────────
+  // Canlı öğrenci: en yüksek canlı seviyesine kadar tüm kulüplere otomatik hak kazanır.
+  const speakingLiveEntitledLevels = useMemo(() => {
+    const liveLevels = new Set(
+      userClasses
+        .filter((item) => item.classType === "live")
+        .map((item) => item.level)
+    );
+    let highestIdx = -1;
+    SPEAKING_LEVEL_ORDER.forEach((lvl, idx) => {
+      if (liveLevels.has(lvl)) highestIdx = Math.max(highestIdx, idx);
+    });
+    return highestIdx === -1 ? [] : SPEAKING_LEVEL_ORDER.slice(0, highestIdx + 1);
+  }, [userClasses]);
+
+  // Dijital öğrenci: sadece "konusma-a1/a2/b1" siparişi aktifse o seviyeye hak kazanır.
+  const speakingPurchasedLevels = useMemo(() => {
+    if (!currentUser) return [];
+    const uname = String(currentUser.username || "").trim().toLowerCase();
+    return SPEAKING_LEVEL_ORDER.filter((lvl) =>
+      dbActiveOrders.some(
+        (order: any) =>
+          String(order.username || "").trim().toLowerCase() === uname &&
+          ["completed", "active"].includes(order.status) &&
+          String(order.product_slug || order.productSlug || "").toLowerCase() ===
+            `konusma-${lvl.toLowerCase()}`
+      )
+    );
+  }, [currentUser, dbActiveOrders]);
+
+  const speakingEntitledLevels = useMemo(
+    () => Array.from(new Set([...speakingLiveEntitledLevels, ...speakingPurchasedLevels])),
+    [speakingLiveEntitledLevels, speakingPurchasedLevels]
+  );
+
+  function isSpeakingLevelCompleted(lvl: Level) {
+    const prog = allSpeakingProgress.find((p: any) => p.level === lvl);
+    if (!prog) return false;
+    const maxTema = 12;
+    return prog.current_tema > maxTema || (prog.current_tema === maxTema && prog.current_gorev > 3);
+  }
+
+  const speakingAccessStatus: SpeakingAccessStatus = useMemo(() => {
+    if (!speakingEntitledLevels.includes(selectedLevel)) return "purchase";
+    const idx = SPEAKING_LEVEL_ORDER.indexOf(selectedLevel);
+    for (let i = 0; i < idx; i++) {
+      if (!isSpeakingLevelCompleted(SPEAKING_LEVEL_ORDER[i])) return "sequence";
+    }
+    return selectedLevel === "A1" ? "open" : "soon";
+  }, [speakingEntitledLevels, selectedLevel, allSpeakingProgress]);
+
+  const speakingBlockingLevel: Level | null = useMemo(() => {
+    const idx = SPEAKING_LEVEL_ORDER.indexOf(selectedLevel);
+    for (let i = 0; i < idx; i++) {
+      if (!isSpeakingLevelCompleted(SPEAKING_LEVEL_ORDER[i])) return SPEAKING_LEVEL_ORDER[i];
+    }
+    return null;
+  }, [selectedLevel, allSpeakingProgress]);
+
+  async function handleSpeakingClubRegister() {
+    if (!currentUser) return;
+    const slug = `konusma-${selectedLevel.toLowerCase()}`;
+    await refreshShopierLinks();
+    const link = getShopierLink(slug);
+
+    if (!link) {
+      alert(`${selectedLevel} Konuşma Kulübü için Shopier linki henüz eklenmemiş.`);
+      return;
+    }
+
+    const normalizedUsername = String(currentUser.username || "").trim().toLowerCase();
+
+    await supabase.from("orders").insert({
+      username: normalizedUsername,
+      product_slug: slug,
+      level: selectedLevel,
+      status: "paid_waiting_activation",
+    });
+
+    window.open(link, "_blank");
+  }
   const activeTeacherWhatsapp = useMemo(() => {
   const defaultWhatsapp = "905013434419";
 
@@ -2133,6 +2320,16 @@ useEffect(() => {
   }
   loadEslesmeler();
 }, [currentUser]);
+useEffect(() => {
+  if (!currentUser) return;
+  supabase
+    .from("speaking_progress")
+    .select("*")
+    .eq("username", currentUser.username)
+    .then(({ data }) => {
+      if (data) setAllSpeakingProgress(data);
+    });
+}, [currentUser, speakingBildirimGonderildi]);
 useEffect(() => {
   if (!currentUser) return;
   async function loadSpeakingProgress() {
@@ -4417,23 +4614,15 @@ createPendingOrder({
     </div>
   </div>
 )}
-    {/* A2 / B1 seviye kilidi */}
-    {selectedLevel !== "A1" ? (
-      <div className="rounded-[2rem] bg-gradient-to-br from-amber-50 to-orange-50 p-8 text-center shadow-sm border border-amber-200">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-4xl">🔒</div>
-        <h2 className="mt-5 text-2xl font-black text-slate-900">{selectedLevel} Konuşma Kulübü</h2>
-        <p className="mt-3 text-sm leading-7 text-slate-600 max-w-md mx-auto">
-          {selectedLevel} Konuşma Kulübü şu an sadece <strong>A1 öğrencilerine</strong> açıktır.
-          A2 ve B1 seviyeleri yakında eklenecektir.
-        </p>
-        <button
-          type="button"
-          onClick={() => setSelectedLevel("A1")}
-          className="mt-6 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-black text-white hover:bg-slate-800"
-        >
-          A1 Konuşma Kulübüne Geç
-        </button>
-      </div>
+    {/* Konuşma Kulübü seviye erişim kilidi */}
+    {speakingAccessStatus !== "open" ? (
+      <SpeakingClubAccessCard
+        status={speakingAccessStatus}
+        level={selectedLevel}
+        blockingLevel={speakingBlockingLevel}
+        onRegister={handleSpeakingClubRegister}
+        onGoToLevel={(lvl) => setSelectedLevel(lvl)}
+      />
     ) : (
       <div className="rounded-[2rem] bg-gradient-to-br from-emerald-50 via-teal-50 to-white">
 

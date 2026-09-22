@@ -27,6 +27,10 @@ const products = [
   { slug: "live-a1-a2", label: "A1 + A2 Canlı Kurs" },
   { slug: "live-a2-b1", label: "A2 + B1 Canlı Kurs" },
   { slug: "live-a1-a2-b1", label: "A1 + A2 + B1 Canlı Kurs" },
+
+  { slug: "konusma-a1", label: "A1 Konuşma Kulübü Kaydı" },
+  { slug: "konusma-a2", label: "A2 Konuşma Kulübü Kaydı" },
+  { slug: "konusma-b1", label: "B1 Konuşma Kulübü Kaydı" },
 ];
 
 export default function ShopierLinksPage() {

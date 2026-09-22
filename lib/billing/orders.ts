@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabase";
+
 export type OrderStatus =
   | "pending_payment"
   | "paid_waiting_activation"
@@ -17,9 +19,8 @@ export type BillingOrder = {
   status: OrderStatus;
   createdAt: string;
   updatedAt: string;
-  
   accessEndDate?: string | null;
-contentType?: "liveClass" | "digitalPackage";
+  contentType?: "liveClass" | "digitalPackage";
 };
 
 const ORDERS_KEY = "billing_orders";
@@ -77,6 +78,20 @@ export function createPendingOrder(params: {
 
   const orders = getBillingOrders();
   saveBillingOrders([order, ...orders]);
+
+  supabase
+    .from("orders")
+    .insert({
+      username: params.username,
+      product_slug: params.productSlug,
+      level: params.level,
+      status: "pending_payment",
+    })
+    .then(({ error }) => {
+      if (error) {
+        console.error("Supabase sipariş kaydı hatası:", error.message);
+      }
+    });
 
   return order;
 }

@@ -272,8 +272,14 @@ const isPremiumUpgrade =
   productSlug.includes("gelisim") ||
   productSlug.includes("zirve");
 
-if (!isLiveCourse && isPremiumUpgrade) {
-  alert(`${username} kullanıcısının premium paket erişimi açıldı.`);
+const isSpeakingClubOrder = productSlug.startsWith("konusma-");
+
+if (!isLiveCourse && (isPremiumUpgrade || isSpeakingClubOrder)) {
+  alert(
+    isSpeakingClubOrder
+      ? `${username} kullanıcısının Konuşma Kulübü erişimi açıldı.`
+      : `${username} kullanıcısının premium paket erişimi açıldı.`
+  );
   window.location.reload();
   return;
 }
