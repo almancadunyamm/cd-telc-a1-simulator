@@ -28,9 +28,12 @@ const products = [
   { slug: "live-a2-b1", label: "A2 + B1 Canlı Kurs" },
   { slug: "live-a1-a2-b1", label: "A1 + A2 + B1 Canlı Kurs" },
 
-  { slug: "konusma-a1", label: "A1 Konuşma Kulübü Kaydı" },
-  { slug: "konusma-a2", label: "A2 Konuşma Kulübü Kaydı" },
-  { slug: "konusma-b1", label: "B1 Konuşma Kulübü Kaydı" },
+  { slug: "konusma-a1", label: "A1 Konuşma Kulübü Kaydı (tek)" },
+  { slug: "konusma-a2", label: "A2 Konuşma Kulübü Kaydı (A1 zaten varsa, tek)" },
+  { slug: "konusma-a1-a2", label: "A1 + A2 Konuşma Kulübü Paketi" },
+  { slug: "konusma-b1", label: "B1 Konuşma Kulübü Kaydı (A1+A2 zaten varsa, tek)" },
+  { slug: "konusma-a2-b1", label: "A2 + B1 Konuşma Kulübü Paketi (A1 zaten varsa)" },
+  { slug: "konusma-a1-a2-b1", label: "A1 + A2 + B1 Konuşma Kulübü Paketi" },
 ];
 
 export default function ShopierLinksPage() {

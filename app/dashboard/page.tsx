@@ -353,12 +353,14 @@ function SpeakingClubAccessCard({
   status,
   level,
   blockingLevel,
+  bundleLevels,
   onRegister,
   onGoToLevel,
 }: {
   status: Exclude<SpeakingAccessStatus, "open">;
   level: Level;
   blockingLevel?: Level | null;
+  bundleLevels?: Level[];
   onRegister: () => void;
   onGoToLevel: (level: Level) => void;
 }) {
@@ -428,12 +430,19 @@ function SpeakingClubAccessCard({
           şekilde söyleyebilir hâle gelir. Bu kalıpları benzer cümlelere uyarlayarak konuşabilen bir öğrenci,
           artık orta seviyede bir konuşma becerisine sahip demektir.
         </p>
+        {bundleLevels && bundleLevels.length > 1 && (
+          <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+            {level} Konuşma Kulübüne başlayabilmen için önce{" "}
+            <strong>{bundleLevels.slice(0, -1).join(" ve ")}</strong> seviyelerini de tamamlaman gerekiyor. Bu yüzden
+            bu kayıt <strong>{bundleLevels.join(" + ")}</strong> seviyelerini birlikte açar.
+          </div>
+        )}
         <button
           type="button"
           onClick={onRegister}
           className="mt-8 rounded-2xl bg-emerald-500 px-8 py-4 text-sm font-black text-slate-950 shadow-lg shadow-emerald-500/30 hover:bg-emerald-400"
         >
-          🎙️ {level} Konuşma Kulübüne Kayıt Ol
+          🎙️ {bundleLevels && bundleLevels.length > 1 ? bundleLevels.join(" + ") : level} Konuşma Kulübüne Kayıt Ol
         </button>
         <p className="mt-3 text-xs text-slate-500">Shopier üzerinden güvenli ödeme · Kayıt sonrası admin onayıyla aktif olur</p>
       </div>
@@ -1814,19 +1823,25 @@ if (allClassIds.length > 0) {
     return highestIdx === -1 ? [] : SPEAKING_LEVEL_ORDER.slice(0, highestIdx + 1);
   }, [userClasses]);
 
-  // Dijital öğrenci: sadece "konusma-a1/a2/b1" siparişi aktifse o seviyeye hak kazanır.
+  // Dijital öğrenci: "konusma-..." siparişi (tekli ya da paket, örn. konusma-a1-a2)
+  // aktifse, slug içinde geçen tüm seviyelere hak kazanır.
   const speakingPurchasedLevels = useMemo(() => {
     if (!currentUser) return [];
     const uname = String(currentUser.username || "").trim().toLowerCase();
-    return SPEAKING_LEVEL_ORDER.filter((lvl) =>
-      dbActiveOrders.some(
-        (order: any) =>
-          String(order.username || "").trim().toLowerCase() === uname &&
-          ["completed", "active"].includes(order.status) &&
-          String(order.product_slug || order.productSlug || "").toLowerCase() ===
-            `konusma-${lvl.toLowerCase()}`
-      )
-    );
+    const levelsSet = new Set<Level>();
+
+    dbActiveOrders.forEach((order: any) => {
+      const slug = String(order.product_slug || order.productSlug || "").toLowerCase();
+      if (!slug.startsWith("konusma-")) return;
+      if (String(order.username || "").trim().toLowerCase() !== uname) return;
+      if (!["completed", "active"].includes(order.status)) return;
+
+      SPEAKING_LEVEL_ORDER.forEach((lvl) => {
+        if (slug.includes(lvl.toLowerCase())) levelsSet.add(lvl);
+      });
+    });
+
+    return Array.from(levelsSet);
   }, [currentUser, dbActiveOrders]);
 
   const speakingEntitledLevels = useMemo(
@@ -1858,14 +1873,24 @@ if (allClassIds.length > 0) {
     return null;
   }, [selectedLevel, allSpeakingProgress]);
 
+  // Seçili seviyeye kadar (dahil) sahip olmadığı seviyeler — kayıt olunca alınacak paket bundan çıkar.
+  // Örn: hiçbir şeyi yokken B1 seçiliyse → ["A1","A2","B1"] → slug: konusma-a1-a2-b1
+  //      A1'i zaten varken A2 seçiliyse → ["A2"] → slug: konusma-a2
+  const speakingMissingLevelsForSelected: Level[] = useMemo(() => {
+    const idx = SPEAKING_LEVEL_ORDER.indexOf(selectedLevel);
+    return SPEAKING_LEVEL_ORDER.slice(0, idx + 1).filter(
+      (lvl) => !speakingEntitledLevels.includes(lvl)
+    );
+  }, [selectedLevel, speakingEntitledLevels]);
+
   async function handleSpeakingClubRegister() {
-    if (!currentUser) return;
-    const slug = `konusma-${selectedLevel.toLowerCase()}`;
+    if (!currentUser || speakingMissingLevelsForSelected.length === 0) return;
+    const slug = `konusma-${speakingMissingLevelsForSelected.map((l) => l.toLowerCase()).join("-")}`;
     await refreshShopierLinks();
     const link = getShopierLink(slug);
 
     if (!link) {
-      alert(`${selectedLevel} Konuşma Kulübü için Shopier linki henüz eklenmemiş.`);
+      alert(`Bu kayıt için Shopier linki henüz eklenmemiş (${slug}).`);
       return;
     }
 
@@ -4630,6 +4655,7 @@ createPendingOrder({
         status={speakingAccessStatus}
         level={selectedLevel}
         blockingLevel={speakingBlockingLevel}
+        bundleLevels={speakingMissingLevelsForSelected}
         onRegister={handleSpeakingClubRegister}
         onGoToLevel={(lvl) => setSelectedLevel(lvl)}
       />
