@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from "@/lib/supabase";
 import { getShopierLink, refreshShopierLinks } from "@/lib/billing/shopier-links";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 const KelimeOyunu = dynamic(() => import("@/components/KelimeOyunu"), { ssr: false });
@@ -459,6 +459,7 @@ const [speakingGonderildi, setSpeakingGonderildi] = useState(false);
 const [teacherWhatsapp, setTeacherWhatsapp] = useState<string>("905013434419");
 const [speakingEslesmeler, setSpeakingEslesmeler] = useState<any[]>([]);
 const [allSpeakingProgress, setAllSpeakingProgress] = useState<any[]>([]);
+const hasAutoSelectedLevelRef = useRef(false);
 const [hocaAtamaBildirimi, setHocaAtamaBildirimi] = useState<any[]>([]);
 const [speakingYukleniyor, setSpeakingYukleniyor] = useState(false);
 const [partnerTelefon, setPartnerTelefon] = useState<string>("");
@@ -2108,20 +2109,29 @@ const pendingOrders =
   const isWaitingPaymentOrActivation = pendingOrders.length > 0;
   const hasPendingOrder = pendingOrders.length > 0;
   useEffect(() => {
-  if (!currentUser) return;
+  if (!currentUser || hasAutoSelectedLevelRef.current) return;
 
+  // Önce eski (localStorage) canlı kurs siparişine bak
   const activeOrder = getOrders().find(
     (order) =>
       order.username === currentUser.username &&
       order.status === "active"
   );
 
-  if (!activeOrder) return;
+  if (activeOrder) {
+    setSelectedLevel(getLevelFromSlug(activeOrder.productSlug));
+    hasAutoSelectedLevelRef.current = true;
+    return;
+  }
 
-  const orderLevel = getLevelFromSlug(activeOrder.productSlug);
+  // Supabase tabanlı dijital paket / canlı sınıf erişimi henüz yüklenmediyse bekle
+  if (dbActiveOrders.length === 0 && accessibleClassIds.length === 0) return;
 
-  setSelectedLevel(orderLevel);
-}, [currentUser]);
+  if (activeAccessLevels.length > 0) {
+    setSelectedLevel(activeAccessLevels[0] as Level);
+  }
+  hasAutoSelectedLevelRef.current = true;
+}, [currentUser, dbActiveOrders, accessibleClassIds, activeAccessLevels]);
 
   const selectedLevelLessons = useMemo(() => {
   return lessons.filter((lesson) => {
