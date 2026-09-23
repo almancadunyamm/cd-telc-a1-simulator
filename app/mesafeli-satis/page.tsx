@@ -207,7 +207,7 @@ export default function PrivacyPolicyPage() {
     <br />
     Online Almanca Eğitim Platformu
     <br />
-    Alaaddin Topuz Caddesi No: 13, Gaziosmanpaşa / İstanbul
+    Alaaddin Topuz Caddesi No: 13, Sultangazi / İstanbul
     <br />
     Telefon: 0542 695 44 19
     <br />

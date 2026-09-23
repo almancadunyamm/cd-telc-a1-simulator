@@ -194,7 +194,7 @@ export default function Footer() {
         <div className="border-b border-white/10 py-6 text-sm text-slate-400">
           <p className="font-bold text-slate-200">Almanca Okulum</p>
           <p className="mt-1">
-            Alaaddin Topuz Caddesi No: 13, Gaziosmanpaşa / İstanbul ·{" "}
+            Alaaddin Topuz Caddesi No: 13, Sultangazi / İstanbul ·{" "}
             <a href="tel:+905426954419" className="hover:text-white">
               0542 695 44 19
             </a>{" "}

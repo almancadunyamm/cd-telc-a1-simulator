@@ -24,7 +24,7 @@ export default function IletisimPage() {
           <div className="space-y-2 text-sm leading-6">
             <p>
               <span className="font-semibold text-white">Adres:</span>{" "}
-              Alaaddin Topuz Caddesi No: 13, Gaziosmanpaşa / İstanbul
+              Alaaddin Topuz Caddesi No: 13, Sultangazi / İstanbul
             </p>
             <p>
               <span className="font-semibold text-white">Telefon:</span>{" "}
