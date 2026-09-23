@@ -178,7 +178,7 @@ export default function Footer() {
                 {column.links.map((link) => (
   <li key={link}>
     <a
-      href="#"
+      href={link === "İletişim" ? "/iletisim" : "#"}
                       className="text-sm text-slate-400 transition hover:text-white"
                     >
                       {link}
@@ -188,6 +188,28 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+        </div>
+
+        {/* İLETİŞİM BİLGİLERİ */}
+        <div className="border-b border-white/10 py-6 text-sm text-slate-400">
+          <p className="font-bold text-slate-200">Almanca Okulum</p>
+          <p className="mt-1">
+            Alaaddin Topuz Caddesi No: 13, Gaziosmanpaşa / İstanbul ·{" "}
+            <a href="tel:+905426954419" className="hover:text-white">
+              0542 695 44 19
+            </a>{" "}
+            ·{" "}
+            <a
+              href="mailto:almancaokulum.info@gmail.com"
+              className="hover:text-white"
+            >
+              almancaokulum.info@gmail.com
+            </a>
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Eğitimlerimiz tamamen online sunulmaktadır; bu adreste yüz yüze
+            eğitim verilmemektedir.
+          </p>
         </div>
 
         {/* YASAL ALAN */}

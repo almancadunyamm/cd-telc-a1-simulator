@@ -205,9 +205,21 @@ export default function PrivacyPolicyPage() {
   <p>
     Almanca Okulum
     <br />
-    E-posta: info@almancaokulum.com
+    Online Almanca Eğitim Platformu
+    <br />
+    Alaaddin Topuz Caddesi No: 13, Gaziosmanpaşa / İstanbul
+    <br />
+    Telefon: 0542 695 44 19
+    <br />
+    E-posta: almancaokulum.info@gmail.com
     <br />
     Web: www.almancaokulum.com
+  </p>
+
+  <p>
+    Almanca Okulum eğitimlerini tamamen online olarak sunmaktadır. Yukarıdaki
+    adres işletmenin resmî iletişim adresidir; bu adreste yüz yüze eğitim
+    verilmemektedir.
   </p>
 </div>
       </article>
