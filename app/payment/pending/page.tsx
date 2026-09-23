@@ -1,82 +1,43 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { getShopierLink, refreshShopierLinks } from "@/lib/billing/shopier-links";
+import PaytrCheckoutModal from "@/components/PaytrCheckoutModal";
 
 export default function PaymentPendingPage() {
   const router = useRouter();
+  const [checkoutSlug, setCheckoutSlug] = useState<string | null>(null);
+  const [username, setUsername] = useState("");
 
   function handleLogout() {
     localStorage.removeItem("mock_logged_user");
     router.push("/");
   }
 
-  async function handlePayment() {
-  const rawUser = localStorage.getItem("mock_logged_user");
+  function handlePayment() {
+    const rawUser = localStorage.getItem("mock_logged_user");
 
-  if (!rawUser) {
-    router.push("/login");
-    return;
+    if (!rawUser) {
+      router.push("/login");
+      return;
+    }
+
+    const user = JSON.parse(rawUser);
+
+    const slug =
+      localStorage.getItem("pending_payment_slug") ||
+      localStorage.getItem("selected_product_slug") ||
+      localStorage.getItem("selectedProductSlug") ||
+      "";
+
+    if (!slug) {
+      alert("Seçilen paket bulunamadı. Lütfen paketi tekrar seçin.");
+      return;
+    }
+
+    setUsername(String(user.username || "").trim().toLowerCase());
+    setCheckoutSlug(slug);
   }
-
-  const user = JSON.parse(rawUser);
-
-  const slug =
-    localStorage.getItem("pending_payment_slug") ||
-    localStorage.getItem("selected_product_slug") ||
-    localStorage.getItem("selectedProductSlug") ||
-    "";
-
-  if (!slug) {
-    alert("Seçilen paket bulunamadı. Lütfen paketi tekrar seçin.");
-    return;
-  }
-
-  await refreshShopierLinks();
-  const link = getShopierLink(slug);
-
-  if (!link) {
-    alert("Bu paket için Shopier linki eklenmemiş.");
-    return;
-  }
-
-  const normalizedUsername = String(user.username || "")
-    .trim()
-    .toLowerCase();
-
-  const level = slug.toLowerCase().includes("b1")
-    ? "B1"
-    : slug.toLowerCase().includes("a2")
-    ? "A2"
-    : "A1";
-
-  const { data: existingOrders } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("username", normalizedUsername)
-    .eq("product_slug", slug)
-    .in("status", ["pending_payment", "paid_waiting_activation"])
-    .limit(1);
-
-  if (existingOrders && existingOrders.length > 0) {
-    await supabase
-      .from("orders")
-      .update({ status: "paid_waiting_activation" })
-      .eq("id", existingOrders[0].id);
-  } else {
-    await supabase.from("orders").insert({
-      username: normalizedUsername,
-      product_slug: slug,
-      level,
-      status: "paid_waiting_activation",
-    });
-  }
-
-  localStorage.setItem("pending_payment_slug", slug);
-  window.open(link, "_blank");
-  router.push("/dashboard");
-}
 
   return (
     <main className="relative min-h-screen bg-slate-100">
@@ -160,7 +121,7 @@ export default function PaymentPendingPage() {
             onClick={handlePayment}
             className="mt-6 w-full rounded-2xl bg-blue-600 px-5 py-4 text-sm font-black text-white hover:bg-blue-700"
           >
-            💳 Shopier ile Ödeme Yap
+            💳 Kredi Kartı ile Ödeme Yap
           </button>
 
           <button
@@ -172,6 +133,18 @@ export default function PaymentPendingPage() {
           </button>
         </div>
       </div>
+
+      <PaytrCheckoutModal
+        open={!!checkoutSlug}
+        slug={checkoutSlug}
+        username={username}
+        onClose={() => setCheckoutSlug(null)}
+        onSuccess={() => {
+          setCheckoutSlug(null);
+          localStorage.removeItem("pending_payment_slug");
+          router.push("/dashboard");
+        }}
+      />
     </main>
   );
 }

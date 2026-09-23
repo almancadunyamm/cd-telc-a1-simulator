@@ -1,13 +1,12 @@
 "use client";
 import { supabase } from "@/lib/supabase";
-import { getShopierLink, refreshShopierLinks } from "@/lib/billing/shopier-links";
+import PaytrCheckoutModal from "@/components/PaytrCheckoutModal";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 const KelimeOyunu = dynamic(() => import("@/components/KelimeOyunu"), { ssr: false });
 import ClassLeagueTab from "@/components/ClassLeagueTab";
 import {
-  createPendingOrder,
   getActiveOrderForUserAndLevel,
   getOrders,
   getPendingOrders,
@@ -469,6 +468,11 @@ const [teacherWhatsapp, setTeacherWhatsapp] = useState<string>("905013434419");
 const [speakingEslesmeler, setSpeakingEslesmeler] = useState<any[]>([]);
 const [allSpeakingProgress, setAllSpeakingProgress] = useState<any[]>([]);
 const hasAutoSelectedLevelRef = useRef(false);
+const [paytrCheckoutSlug, setPaytrCheckoutSlug] = useState<string | null>(null);
+
+function openPaytrCheckout(slug: string) {
+  setPaytrCheckoutSlug(slug);
+}
 const [hocaAtamaBildirimi, setHocaAtamaBildirimi] = useState<any[]>([]);
 const [speakingYukleniyor, setSpeakingYukleniyor] = useState(false);
 const [partnerTelefon, setPartnerTelefon] = useState<string>("");
@@ -1883,27 +1887,10 @@ if (allClassIds.length > 0) {
     );
   }, [selectedLevel, speakingEntitledLevels]);
 
-  async function handleSpeakingClubRegister() {
+  function handleSpeakingClubRegister() {
     if (!currentUser || speakingMissingLevelsForSelected.length === 0) return;
     const slug = `konusma-${speakingMissingLevelsForSelected.map((l) => l.toLowerCase()).join("-")}`;
-    await refreshShopierLinks();
-    const link = getShopierLink(slug);
-
-    if (!link) {
-      alert(`Bu kayıt için Shopier linki henüz eklenmemiş (${slug}).`);
-      return;
-    }
-
-    const normalizedUsername = String(currentUser.username || "").trim().toLowerCase();
-
-    await supabase.from("orders").insert({
-      username: normalizedUsername,
-      product_slug: slug,
-      level: selectedLevel,
-      status: "paid_waiting_activation",
-    });
-
-    window.open(link, "_blank");
+    openPaytrCheckout(slug);
   }
   const activeTeacherWhatsapp = useMemo(() => {
   const defaultWhatsapp = "905013434419";
@@ -2634,131 +2621,24 @@ const newDisplayName = String(profileName || "").trim();
   ? packageType
   : "practice";
   const slug = `${selectedLevel.toLowerCase()}-${finalPackageType}`;
-  const link = getShopierLink(slug);
-
-  if (!link) {
-    alert("Bu paket için Shopier linki eklenmemiş.");
-    return;
-  }
-
-  localStorage.setItem(
-    "last_payment_attempt",
-    JSON.stringify({
-      username: currentUser.username,
-      slug,
-      time: Date.now(),
-    })
-  );
-  setPendingPaymentSlug(slug);
-  setHidePendingOrderNotice(false);
-
-  createPendingOrder({
-    username: currentUser.username,
-    productSlug: slug,
-    level: selectedLevel,
-  });
-  const normalizedUsername = String(currentUser.username || "")
-  .trim()
-  .toLowerCase();
-
-await supabase.from("orders").insert({
-  username: normalizedUsername,
-  product_slug: slug,
-  level: selectedLevel,
-  status: "paid_waiting_activation",
-});
 
   setShowUpsell(false);
-  setHidePendingOrderNotice(false);
-  setPendingPaymentSlug(slug);
-setHidePendingOrderNotice(false);
-setPaymentNoticeRefreshKey((prev) => prev + 1);
-
-setDbPendingOrders([
-  {
-    id: crypto.randomUUID(),
-    username: currentUser.username,
-    product_slug: slug,
-    level: selectedLevel,
-    status: "paid_waiting_activation",
-    created_at: new Date().toISOString(),
-  },
-]);
-
-setHidePendingOrderNotice(false);
-window.open(link, "_blank");
+  openPaytrCheckout(slug);
 }
 
   async function handleStartPendingPayment() {
   if (!currentUser || !pendingPaymentSlug) return;
-
-  const link = getShopierLink(pendingPaymentSlug);
-
-  if (!link) {
-    alert("Bu ürün için Shopier linki henüz eklenmemiş.");
-    return;
-  }
-
-  const normalizedUsername = String(currentUser.username || "")
-  .trim()
-  .toLowerCase();
-
-const { data: existingOrders, error: findOrderError } = await supabase
-  .from("orders")
-  .select("*")
-  .eq("username", normalizedUsername)
-  .eq("product_slug", pendingPaymentSlug)
-  .in("status", ["pending_payment", "paid_waiting_activation"])
-  .limit(1);
-
-if (findOrderError) {
-  alert("Sipariş kontrol edilemedi: " + findOrderError.message);
-  return;
-}
-
-if (existingOrders && existingOrders.length > 0) {
-  const { error: updateError } = await supabase
-    .from("orders")
-    .update({ status: "paid_waiting_activation" })
-    .eq("id", existingOrders[0].id);
-
-  if (updateError) {
-    alert("Sipariş güncellenemedi: " + updateError.message);
-    return;
-  }
-} else {
-  const { error: insertError } = await supabase.from("orders").insert({
-    username: normalizedUsername,
-    product_slug: pendingPaymentSlug,
-    level: getLevelFromSlug(pendingPaymentSlug),
-    status: "paid_waiting_activation",
-  });
-
-  if (insertError) {
-    alert("Sipariş oluşturulamadı: " + insertError.message);
-    return;
-  }
-}
-
-setPendingPaymentSlug("");
-setHidePendingOrderNotice(false);
-setPaymentNoticeRefreshKey((prev) => prev + 1);
-
-  localStorage.removeItem("selected_product_slug");
-  localStorage.removeItem("selectedProductSlug");
-
-  window.open(link, "_blank");
+  openPaytrCheckout(pendingPaymentSlug);
 }
   function handleContinuePayment() {
     const pendingOrder = pendingOrders[0];
-    const link = pendingOrder ? getShopierLink(pendingOrder.productSlug) : "";
 
-    if (!link) {
-      alert("Bu paket için ödeme linki bulunamadı.");
+    if (!pendingOrder) {
+      alert("Bekleyen bir ödeme bulunamadı.");
       return;
     }
 
-    window.open(link, "_blank");
+    openPaytrCheckout(pendingOrder.productSlug);
   }
 
   function getSpeakingUnlockedThemeCount(masteryCompletedCount: number): number {
@@ -3760,19 +3640,7 @@ window.open(worksheet.url, "_blank");
 
           <button
   type="button"
-  onClick={async () => {
-    const slug = `live-${selectedLevel.toLowerCase()}`;
-
-    await refreshShopierLinks();
-    const link = getShopierLink(slug);
-
-    if (!link) {
-      alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
-      return;
-    }
-
-    window.open(link, "_blank");
-  }}
+  onClick={() => openPaytrCheckout(`live-${selectedLevel.toLowerCase()}`)}
   className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
 >
   🎓 {selectedLevel} Canlı Kursunu İncele
@@ -4375,26 +4243,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
     {!hasAnyLiveCourseOrder && (
     <button
       type="button"
-      onClick={() => {
-        const slug = `live-${selectedLevel.toLowerCase()}`;
-        const link = getShopierLink(slug);
-
-        if (!link) {
-          alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
-          return;
-        }
-
-        setPendingPaymentSlug(slug);
-setHidePendingOrderNotice(false);
-setPaymentNoticeRefreshKey((prev) => prev + 1);
-
-createPendingOrder({
-  username: currentUser.username,
-  productSlug: slug,
-  level: selectedLevel,
-});
-        window.open(link, "_blank");
-      }}
+      onClick={() => openPaytrCheckout(`live-${selectedLevel.toLowerCase()}`)}
       className="mt-5 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-sm font-bold text-white hover:from-purple-700 hover:to-blue-700"
     >
       🎓 {selectedLevel} Canlı Programını Keşfet
@@ -5387,7 +5236,7 @@ createPendingOrder({
   currentUserName={currentUser?.name || ""}
   activeAccessLevels={activeAccessLevels}
   onUpsell={() => { setUpsellPackage("practice"); setShowUpsell(true); }}
-  onB1Live={() => { const link = getShopierLink("live-b1"); if (link) window.open(link, "_blank"); }}
+  onB1Live={() => openPaytrCheckout("live-b1")}
 />
   </section>
 )}
@@ -5471,20 +5320,7 @@ createPendingOrder({
 
   <button
     type="button"
-    onClick={() => {
-      const slug = `live-${selectedMasteryLevel.toLowerCase()}`;
-
-      const link = getShopierLink(slug);
-
-      if (!link) {
-        alert(
-          `${selectedMasteryLevel} canlı kurs Shopier linki henüz eklenmemiş.`
-        );
-        return;
-      }
-
-      window.open(link, "_blank");
-    }}
+    onClick={() => openPaytrCheckout(`live-${selectedMasteryLevel.toLowerCase()}`)}
     className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
   >
     🎓 {selectedMasteryLevel} Canlı Kursunu İncele
@@ -6225,28 +6061,7 @@ if (!isPreviousThemeCompleted) {
 
           <button
   type="button"
-  onClick={() => {
-    const slug = `live-${selectedLevel.toLowerCase()}`;
-
-    const link = getShopierLink(slug);
-
-    if (!link) {
-      alert(`${selectedLevel} canlı kurs Shopier linki henüz eklenmemiş.`);
-      return;
-    }
-
-    setPendingPaymentSlug(slug);
-    setHidePendingOrderNotice(false);
-    setPaymentNoticeRefreshKey((prev) => prev + 1);
-
-    createPendingOrder({
-      username: currentUser.username,
-      productSlug: slug,
-      level: selectedLevel,
-    });
-
-    window.open(link, "_blank");
-  }}
+  onClick={() => openPaytrCheckout(`live-${selectedLevel.toLowerCase()}`)}
   className="mt-5 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-sm font-bold text-white hover:from-purple-700 hover:to-blue-700"
 >
   🎓 {selectedLevel} Canlı Programını Keşfet
@@ -7018,11 +6833,21 @@ if (!isPreviousThemeCompleted) {
   : `🚀 ${selectedLevel} Gelişim Paketini Aç`}
     </button>
   </section>
-)}       
+)}
 </div>
 </div>
 </div>
 </div>
+<PaytrCheckoutModal
+  open={!!paytrCheckoutSlug}
+  slug={paytrCheckoutSlug}
+  username={currentUser?.username || ""}
+  onClose={() => setPaytrCheckoutSlug(null)}
+  onSuccess={() => {
+    setPaytrCheckoutSlug(null);
+    window.location.reload();
+  }}
+/>
 </main>
   );
 }
