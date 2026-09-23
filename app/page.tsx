@@ -164,7 +164,7 @@ export default function HomePage() {
     <a href="/register" className="hover:text-blue-600 transition">Kayıt Ol</a>
   </nav>
   <div className="flex items-center gap-2">
-    <a href="/register" className="hidden rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 sm:inline-flex">Kayıt Ol</a>
+    <a href="/register" className="inline-flex rounded-xl border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 sm:px-4 sm:text-sm">Kayıt Ol</a>
     <a href="/login" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-slate-800">Giriş Yap</a>
   </div>
 </header>
