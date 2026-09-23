@@ -5,11 +5,6 @@ const resources = [
     href: "/almanca-seviye-tespit-sinavi",
   },
   {
-    title: "Kelime Arenası",
-    desc: "Oyunlaştırılmış alıştırmalarla kelime dağarcığını geliştir.",
-    href: "/Kelime",
-  },
-  {
     title: "Canlı Akademi",
     desc: "Eğitmen eşliğinde canlı ders programımızı incele.",
     href: "/academy-live",
@@ -58,13 +53,34 @@ export default function KaynaklarPage() {
           ))}
         </div>
 
-        <div className="mt-10 rounded-2xl border border-blue-500/20 bg-blue-500/10 p-6 text-sm text-slate-200 sm:text-base">
-          Video dersler, PDF materyaller, TELC denemeleri ve konuşma pratiği
-          gibi tüm içeriklere erişmek için{" "}
-          <a href="/register" className="font-bold text-blue-300 hover:text-white">
-            ücretsiz hesap oluştur
-          </a>
-          .
+        <div className="mt-10 grid gap-4 rounded-2xl border border-blue-500/20 bg-blue-500/10 p-6 text-sm text-slate-200 sm:grid-cols-2 sm:text-base">
+          <div>
+            <p className="font-bold text-white">Canlı ders almak istiyorum</p>
+            <p className="mt-1 text-slate-300">
+              Öğretmen eşliğinde canlı ders ve konuşma kulübü için{" "}
+              <a
+                href="/academy-live"
+                className="font-bold text-blue-300 hover:text-white"
+              >
+                Canlı Akademi'yi incele
+              </a>
+              .
+            </p>
+          </div>
+
+          <div>
+            <p className="font-bold text-white">Kendi hızımda çalışmak istiyorum</p>
+            <p className="mt-1 text-slate-300">
+              Video dersler, PDF materyaller ve TELC denemeleri için{" "}
+              <a
+                href="/digital-simulation#paketler"
+                className="font-bold text-blue-300 hover:text-white"
+              >
+                ücretsiz dijital başlangıç paketini incele
+              </a>
+              .
+            </p>
+          </div>
         </div>
       </article>
     </main>
