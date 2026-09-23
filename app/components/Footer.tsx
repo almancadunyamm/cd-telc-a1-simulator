@@ -178,7 +178,16 @@ export default function Footer() {
                 {column.links.map((link) => (
   <li key={link}>
     <a
-      href={link === "İletişim" ? "/iletisim" : "#"}
+      href={
+        {
+          "İletişim": "/iletisim",
+          "Hakkımızda": "/hakkimizda",
+          "Almanca Okulum": "/almanca-okulum",
+          "Başarı Hikayeleri": "/basari-hikayeleri",
+          "Destek": "/destek",
+          "Kaynaklar": "/kaynaklar",
+        }[link] || "#"
+      }
                       className="text-sm text-slate-400 transition hover:text-white"
                     >
                       {link}
