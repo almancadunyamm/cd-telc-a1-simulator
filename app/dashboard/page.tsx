@@ -533,7 +533,10 @@ useEffect(() => {
 
   setInactiveDays(diffDays);
 }, [lastActiveDate]);
-const loggedUser = JSON.parse(localStorage.getItem("mock_logged_user") || "{}");
+const loggedUser =
+  typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("mock_logged_user") || "{}")
+    : {};
 const currentUsername = loggedUser?.username || "guest";
 const studentKey = String(currentUsername || "")
   .trim()
