@@ -401,37 +401,37 @@ function SpeakingClubAccessCard({
   const target = SPEAKING_LEVEL_SENTENCE_TARGET[level];
 
   return (
-    <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 text-white shadow-2xl">
+    <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-teal-50 to-white shadow-sm border border-emerald-100">
       <div className="px-8 pt-10 pb-8 text-center">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 text-4xl">🎙️</div>
-        <p className="mt-5 text-xs font-black uppercase tracking-widest text-emerald-400">{level} Konuşma Kulübü</p>
-        <h2 className="mt-2 text-3xl font-black">Almanca Konuşmayı Gerçekten Öğren</h2>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-4xl">🎙️</div>
+        <p className="mt-5 text-xs font-black uppercase tracking-widest text-emerald-700">{level} Konuşma Kulübü</p>
+        <h2 className="mt-2 text-3xl font-black text-slate-900">Almanca Konuşmayı Gerçekten Öğren</h2>
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-600">
           Konuşma Kulübü, Başlangıç ve Gelişim paketlerinden bağımsız, ayrı bir bölümdür. Kayıt olduğunda sistem
-          sana bir <strong className="text-white">konuşma partneri</strong> atar; öğretmen rehberliğinde,
+          sana bir <strong className="text-slate-900">konuşma partneri</strong> atar; öğretmen rehberliğinde,
           basit cümlelerden başlayıp adım adım gelişmiş cümlelere ilerlersiniz. Bol tekrar esasıyla{" "}
-          <strong className="text-white">{level} seviyesinde {target} cümleyi akıcı bir şekilde</strong> söyleyebilecek
+          <strong className="text-slate-900">{level} seviyesinde {target} cümleyi akıcı bir şekilde</strong> söyleyebilecek
           konuma gelirsin.
         </p>
         <div className="mx-auto mt-6 grid max-w-xl gap-3 sm:grid-cols-3">
           {(["A1", "A2", "B1"] as Level[]).map((lvl) => (
             <div
               key={lvl}
-              className={`rounded-2xl p-4 ${lvl === level ? "bg-emerald-500/20 border border-emerald-400/40" : "bg-white/5 border border-white/10"}`}
+              className={`rounded-2xl p-4 border ${lvl === level ? "bg-emerald-100 border-emerald-300" : "bg-white border-slate-200"}`}
             >
-              <p className="text-xs font-black uppercase tracking-wider text-slate-400">{lvl}</p>
-              <p className="mt-1 text-xl font-black">{SPEAKING_LEVEL_SENTENCE_TARGET[lvl]} cümle</p>
+              <p className="text-xs font-black uppercase tracking-wider text-slate-500">{lvl}</p>
+              <p className="mt-1 text-xl font-black text-slate-900">{SPEAKING_LEVEL_SENTENCE_TARGET[lvl]} cümle</p>
             </div>
           ))}
         </div>
-        <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-300">
+        <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-600">
           Bütün seviyeleri tamamlayan bir öğrenci, en çok konuşulan{" "}
-          <strong className="text-white">{SPEAKING_CLUB_TOTAL_SENTENCES} Almanca cümle kalıbını</strong> akıcı bir
+          <strong className="text-slate-900">{SPEAKING_CLUB_TOTAL_SENTENCES} Almanca cümle kalıbını</strong> akıcı bir
           şekilde söyleyebilir hâle gelir. Bu kalıpları benzer cümlelere uyarlayarak konuşabilen bir öğrenci,
           artık orta seviyede bir konuşma becerisine sahip demektir.
         </p>
         {bundleLevels && bundleLevels.length > 1 && (
-          <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+          <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
             {level} Konuşma Kulübüne başlayabilmen için önce{" "}
             <strong>{bundleLevels.slice(0, -1).join(" ve ")}</strong> seviyelerini de tamamlaman gerekiyor. Bu yüzden
             bu kayıt <strong>{bundleLevels.join(" + ")}</strong> seviyelerini birlikte açar.
@@ -440,7 +440,7 @@ function SpeakingClubAccessCard({
         <button
           type="button"
           onClick={onRegister}
-          className="mt-8 rounded-2xl bg-emerald-500 px-8 py-4 text-sm font-black text-slate-950 shadow-lg shadow-emerald-500/30 hover:bg-emerald-400"
+          className="mt-8 rounded-2xl bg-emerald-600 px-8 py-4 text-sm font-black text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700"
         >
           🎙️ {bundleLevels && bundleLevels.length > 1 ? bundleLevels.join(" + ") : level} Konuşma Kulübüne Kayıt Ol
         </button>
