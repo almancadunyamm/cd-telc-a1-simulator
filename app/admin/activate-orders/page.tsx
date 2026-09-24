@@ -338,8 +338,8 @@ export default function ActivateOrdersPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
       <div className="mx-auto max-w-4xl">
-        <Link href="/admin/classes" className="text-sm text-slate-400 hover:text-white">
-          ← Sınıf yönetimine dön
+        <Link href="/admin" className="text-sm text-slate-400 hover:text-white">
+          ← Admin Paneline Dön
         </Link>
 
         <div className="mt-6">

@@ -278,6 +278,12 @@ setEditingClassId(null);
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-10">
       <div className="mx-auto max-w-6xl">
+        <a
+          href="/admin"
+          className="mb-4 inline-flex items-center text-sm font-semibold text-slate-500 hover:text-slate-900"
+        >
+          ← Admin Paneline Dön
+        </a>
         <div className="rounded-3xl bg-white p-8 shadow-sm">
           <p className="text-sm font-semibold text-blue-700">Admin Paneli</p>
 
