@@ -244,6 +244,16 @@ export default function LiveAcademyPage() {
               </div>
             ))}
           </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-sm text-slate-500">Sadece konuşma pratiği yapmak mı istiyorsun?</p>
+            <a
+              href="/konusma-kulubu"
+              className="mt-3 inline-flex rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-black text-slate-800 hover:bg-slate-50"
+            >
+              Sadece Konuşma Kulübü
+            </a>
+          </div>
         </div>
       </section>
 

@@ -106,7 +106,6 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             "18 video ders erişimi",
             "Ustalık Testleri",
             "Kelime Arenası",
-            "Konuşma Klübü",
             "Temel TELC hazırlık alanı",
             "3 Ay erişim",
           ],
@@ -123,7 +122,6 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             "Bütün konuları içeren video dersler",
             "Ustalık Testleri",
             "Kelime Arenası",
-            "Konuşma Klübü",
             "6 ay erişim",
           ],
         },
@@ -138,7 +136,6 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             "Tüm video ders arşivi",
             "Ustalık Testleri",
             "Kelime Arenası",
-            "Konuşma Klübü",
             "Zirve materyal sistemi",
             "12 ay erişim",
           ],
@@ -251,6 +248,16 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
 </a>
         </div>
       ))}
+    </div>
+
+    <div className="mt-12 text-center">
+      <p className="text-sm text-slate-500">Sadece konuşma pratiği yapmak mı istiyorsun?</p>
+      <a
+        href="/konusma-kulubu"
+        className="mt-3 inline-flex rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-black text-slate-800 hover:bg-slate-50"
+      >
+        Sadece Konuşma Kulübü
+      </a>
     </div>
   </div>
 </section>
