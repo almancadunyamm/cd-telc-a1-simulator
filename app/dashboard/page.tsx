@@ -57,6 +57,10 @@ import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
 import AnnouncementPopup from "@/components/AnnouncementPopup";
 
+// Sınıf Ligi (ClassLeagueTab) gereksiz yere çok sık veri çektiği için
+// şimdilik menüden kaldırıldı. Yeniden açmak için bunu true yapmak yeterli.
+const CLASS_LEAGUE_ENABLED = false;
+
 type Level = "A1" | "A2" | "B1";
 type PackageType = "starter" | "practice" | "master";
 
@@ -3237,7 +3241,7 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
-  ...(hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
+  ...(CLASS_LEAGUE_ENABLED && hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
   { key: "badges", label: "Rozetler", icon: "🏆" },
@@ -3299,7 +3303,7 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
-  ...(hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
+  ...(CLASS_LEAGUE_ENABLED && hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
   { key: "badges", label: "Rozetler", icon: "🏆" },
@@ -5221,7 +5225,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
     )}
   </section>
 )}
-{activeDashboardTab === "classleague" && (
+{CLASS_LEAGUE_ENABLED && activeDashboardTab === "classleague" && (
   <ClassLeagueTab
     currentUsername={currentUser?.username || ""}
     currentUserName={currentUser?.name || ""}
