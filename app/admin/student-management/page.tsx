@@ -182,42 +182,49 @@ await supabase.from("student_classes").insert({
   window.location.reload();
 }
 return (
-    <main className="min-h-screen bg-slate-950 p-6 text-white">
+    <main className="min-h-screen bg-slate-100 p-6">
       <div className="mx-auto max-w-7xl">
 
-        <h1 className="mb-6 text-3xl font-black">
+        <a
+          href="/admin"
+          className="mb-4 inline-flex items-center text-sm font-semibold text-slate-500 hover:text-slate-900"
+        >
+          ← Admin Paneline Dön
+        </a>
+
+        <h1 className="mb-6 text-3xl font-black text-slate-900">
   🎓 Öğrenci Yönetimi
 </h1>
 
 <div className="mb-6 grid gap-4 md:grid-cols-4">
-  <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-    <p className="text-sm font-black text-slate-400">Toplam Öğrenci</p>
-    <p className="mt-2 text-3xl font-black text-white">{students.length}</p>
+  <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <p className="text-sm font-black text-slate-500">Toplam Öğrenci</p>
+    <p className="mt-2 text-3xl font-black text-slate-900">{students.length}</p>
   </div>
 
-  <div className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-5">
-    <p className="text-sm font-black text-emerald-200">Canlı Öğrenci</p>
-    <p className="mt-2 text-3xl font-black text-emerald-100">
+  <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
+    <p className="text-sm font-black text-emerald-700">Canlı Öğrenci</p>
+    <p className="mt-2 text-3xl font-black text-emerald-700">
       {students.filter((student) => getStudentType(student) === "Canlı").length}
     </p>
   </div>
 
-  <div className="rounded-3xl border border-blue-400/20 bg-blue-500/10 p-5">
-    <p className="text-sm font-black text-blue-200">Dijital Öğrenci</p>
-    <p className="mt-2 text-3xl font-black text-blue-100">
+  <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5">
+    <p className="text-sm font-black text-blue-700">Dijital Öğrenci</p>
+    <p className="mt-2 text-3xl font-black text-blue-700">
       {students.filter((student) => getStudentType(student) === "Dijital").length}
     </p>
   </div>
 
-  <div className="rounded-3xl border border-red-400/20 bg-red-500/10 p-5">
-    <p className="text-sm font-black text-red-200">Pasif Öğrenci</p>
-    <p className="mt-2 text-3xl font-black text-red-100">
+  <div className="rounded-3xl border border-red-200 bg-red-50 p-5">
+    <p className="text-sm font-black text-red-700">Pasif Öğrenci</p>
+    <p className="mt-2 text-3xl font-black text-red-700">
       {students.filter((student) => !student.is_active).length}
     </p>
   </div>
 </div>
-        <div className="mb-6 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-5">
-  <h2 className="text-xl font-black text-white">
+        <div className="mb-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
+  <h2 className="text-xl font-black text-slate-900">
     ➕ Canlı Öğrenci Ekle
   </h2>
 
@@ -226,20 +233,20 @@ return (
       value={newStudentName}
       onChange={(e) => setNewStudentName(e.target.value)}
       placeholder="Ad Soyad"
-      className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900"
+      className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900"
     />
 
     <input
   value={newStudentEmail}
   onChange={(e) => setNewStudentEmail(e.target.value)}
   placeholder="Email"
-  className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900"
+  className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900"
 />
 
 <select
   value={selectedClassId}
   onChange={(e) => setSelectedClassId(e.target.value)}
-  className="rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900"
+  className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900"
 >
   <option value="">Sınıf Seç</option>
 
@@ -273,8 +280,8 @@ return (
         }}
         className={`rounded-full px-5 py-2 text-sm font-black transition ${
           newStudentLevels.includes(level)
-            ? "bg-yellow-400 text-slate-950"
-            : "bg-white/10 text-white hover:bg-white/20"
+            ? "bg-yellow-400 text-slate-900"
+            : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
         }`}
       >
         {newStudentLevels.includes(level) ? "✓" : "＋"} {level}
@@ -282,7 +289,7 @@ return (
     ))}
   </div>
 
-  <p className="mt-3 text-xs text-emerald-100">
+  <p className="mt-3 text-xs text-emerald-700">
     Geçici şifre: <span className="font-black">123456</span>
   </p>
 </div>
@@ -299,24 +306,24 @@ return (
       onClick={() => setStudentFilter(item.key as any)}
       className={`rounded-full px-5 py-2 text-sm font-black transition ${
         studentFilter === item.key
-          ? "bg-yellow-400 text-slate-950"
-          : "bg-white/10 text-white hover:bg-white/20"
+          ? "bg-yellow-400 text-slate-900"
+          : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
       }`}
     >
       {item.label}
     </button>
   ))}
 </div>
-        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
           <table className="w-full">
-            <thead className="bg-white/10">
+            <thead className="bg-slate-50">
               <tr>
-                <th className="p-4 text-left">Kullanıcı</th>
-                <th className="p-4 text-left">Ad Soyad</th>
-                <th className="p-4 text-left">Durum</th>
-                <th className="p-4 text-left">Tip</th>
-                <th className="p-4 text-left">İşlem</th>
+                <th className="p-4 text-left text-slate-900">Kullanıcı</th>
+                <th className="p-4 text-left text-slate-900">Ad Soyad</th>
+                <th className="p-4 text-left text-slate-900">Durum</th>
+                <th className="p-4 text-left text-slate-900">Tip</th>
+                <th className="p-4 text-left text-slate-900">İşlem</th>
               </tr>
             </thead>
 
@@ -324,29 +331,29 @@ return (
               {filteredStudents.map((student) => (
                 <tr
                   key={student.id || student.email || student.username}
-                  className="border-t border-white/10"
+                  className="border-t border-slate-200"
                 >
-                  <td className="p-4">
+                  <td className="p-4 text-slate-900">
   {student.email || student.username || "-"}
 </td>
 
-                  <td className="p-4">
+                  <td className="p-4 text-slate-900">
   {student.name || student.full_name || "-"}
 </td>
 
                   <td className="p-4">
                     {student.is_active ? (
-                      <span className="text-emerald-400">
+                      <span className="text-emerald-600">
                         Aktif
                       </span>
                     ) : (
-                      <span className="text-red-400">
+                      <span className="text-red-600">
                         Pasif
                       </span>
                     )}
                   </td>
                   <td className="p-4">
-  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black">
+  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
     {getStudentType(student)}
   </span>
 </td>
@@ -401,7 +408,7 @@ return (
 
   alert("Öğrenci kalıcı olarak silindi.");
 }}
-    className="rounded-xl bg-red-500/15 px-3 py-2 text-xs font-black text-red-300 hover:bg-red-500/25"
+    className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:bg-red-100"
   >
     Sil
   </button>

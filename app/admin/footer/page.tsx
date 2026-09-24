@@ -64,11 +64,17 @@ export default function AdminFooterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
+    <main className="min-h-screen bg-slate-100 px-4 py-8">
       <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-black">Footer SEO Yönetimi</h1>
+        <a
+          href="/admin"
+          className="mb-4 inline-flex items-center text-sm font-semibold text-slate-500 hover:text-slate-900"
+        >
+          ← Admin Paneline Dön
+        </a>
+        <h1 className="text-3xl font-black text-slate-900">Footer SEO Yönetimi</h1>
 
-        <p className="mt-3 text-sm text-slate-300">
+        <p className="mt-3 text-sm text-slate-600">
           Footer başlıklarını ve açıklamalarını buradan düzenleyebilirsin.
         </p>
 
@@ -76,17 +82,17 @@ export default function AdminFooterPage() {
           {content.map((column, columnIndex) => (
             <section
               key={column.title}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6"
+              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
             >
-              <h2 className="text-xl font-bold">{column.title}</h2>
+              <h2 className="text-xl font-bold text-slate-900">{column.title}</h2>
 
               <div className="mt-5 space-y-4">
                 {column.links.map((link, linkIndex) => (
                   <div
                     key={link.title}
-                    className="rounded-2xl border border-white/10 bg-slate-900 p-4"
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <label className="text-xs font-bold text-slate-400">
+                    <label className="text-xs font-bold text-slate-500">
   Başlık
 </label>
 
@@ -98,10 +104,10 @@ export default function AdminFooterPage() {
     setContent(updated);
     setSaved(false);
   }}
-  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
+  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500"
 />
 
-<label className="mt-4 block text-xs font-bold text-slate-400">
+<label className="mt-4 block text-xs font-bold text-slate-500">
   SEO Açıklaması
 </label>
 
@@ -114,10 +120,10 @@ export default function AdminFooterPage() {
     setSaved(false);
   }}
   rows={3}
-  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
+  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500"
 />
 
-<label className="mt-4 block text-xs font-bold text-slate-400">
+<label className="mt-4 block text-xs font-bold text-slate-500">
   Link
 </label>
 
@@ -129,7 +135,7 @@ export default function AdminFooterPage() {
     setContent(updated);
     setSaved(false);
   }}
-  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
+  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500"
 />
                   </div>
                 ))}
@@ -147,7 +153,7 @@ export default function AdminFooterPage() {
         </button>
 
         {saved ? (
-          <p className="mt-4 text-sm text-green-400">Kaydedildi.</p>
+          <p className="mt-4 text-sm text-green-600">Kaydedildi.</p>
         ) : null}
       </div>
     </main>

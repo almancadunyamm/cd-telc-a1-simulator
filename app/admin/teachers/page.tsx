@@ -71,7 +71,7 @@ export default function AdminTeachersPage() {
 
   if (!allowed) {
     return (
-      <main className="min-h-screen bg-slate-950 p-6 text-white">
+      <main className="min-h-screen bg-slate-100 p-6 text-slate-900">
         Yetki kontrol ediliyor...
       </main>
     );
@@ -201,40 +201,40 @@ setTeachers([newTeacher, ...teachers]);
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
+    <main className="min-h-screen bg-slate-100 px-4 py-10">
       <div className="mx-auto max-w-6xl">
         <a
           href="/admin"
-          className="text-sm font-bold text-slate-300 hover:text-white"
+          className="text-sm font-bold text-slate-500 hover:text-slate-900"
         >
           ← Admin merkeze dön
         </a>
 
-        <header className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl">
-          <p className="text-sm font-black uppercase tracking-widest text-yellow-300">
+        <header className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-black uppercase tracking-widest text-blue-700">
             Öğretmen Yönetimi
           </p>
 
-          <h1 className="mt-3 text-3xl font-black md:text-5xl">
+          <h1 className="mt-3 text-3xl font-black text-slate-900 md:text-5xl">
             Öğretmen Hesapları
           </h1>
 
-          <p className="mt-4 max-w-3xl text-slate-300">
+          <p className="mt-4 max-w-3xl text-slate-600">
             Öğretmenleri burada tanımlayın. Buradaki öğretmen ID ile sınıf
             oluştururken yazılan öğretmen ID aynı olmalıdır.
           </p>
         </header>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-2xl font-black">Yeni Öğretmen Ekle</h2>
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-black text-slate-900">Yeni Öğretmen Ekle</h2>
 
             <div className="mt-6 grid gap-4">
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ad Soyad örn: Ahmet Hoca"
-                className="rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400"
+                className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-yellow-400"
               />
 
               <input
@@ -242,14 +242,14 @@ setTeachers([newTeacher, ...teachers]);
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email örn: ahmet@test.com"
                 type="email"
-                className="rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400"
+                className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-yellow-400"
               />
               <select
   value={teacherType}
   onChange={(e) =>
     setTeacherType(e.target.value as "teacher" | "expertTeacher")
   }
-  className="rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+  className="rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900"
 >
   <option value="teacher">
     Normal Öğretmen
@@ -264,7 +264,7 @@ setTeachers([newTeacher, ...teachers]);
                 value={teacherId}
                 onChange={(e) => setTeacherId(e.target.value)}
                 placeholder="Öğretmen ID örn: ahmet-hoca"
-                className="rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400"
+                className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-yellow-400"
               />
 
               <input
@@ -272,35 +272,35 @@ setTeachers([newTeacher, ...teachers]);
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Şifre en az 6 karakter"
                 type="password"
-                className="rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400"
+                className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-yellow-400"
               />
               <input
   value={whatsapp}
   onChange={(e) => setWhatsapp(e.target.value)}
   placeholder="WhatsApp numarası örn: 905013434419"
-  className="rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white outline-none focus:border-yellow-400"
+  className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-yellow-400"
 />
 
               <button
                 type="button"
                 onClick={handleAddTeacher}
-                className="rounded-xl bg-yellow-400 px-4 py-3 text-sm font-black text-slate-950 shadow-lg shadow-yellow-400/30 hover:bg-yellow-300"
+                className="rounded-xl bg-yellow-400 px-4 py-3 text-sm font-black text-slate-900 shadow-lg shadow-yellow-400/30 hover:bg-yellow-300"
               >
                 {editingTeacherId ? "Öğretmeni Güncelle" : "Öğretmen Ekle"}
               </button>
             </div>
 
-            <div className="mt-5 rounded-2xl border border-blue-400/20 bg-blue-400/10 p-4 text-sm text-blue-100">
+            <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
               Önemli: Sınıf oluştururken yazdığınız öğretmen ID ile buradaki
               öğretmen ID aynı olmalı.
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-2xl font-black">Kayıtlı Öğretmenler</h2>
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-black text-slate-900">Kayıtlı Öğretmenler</h2>
 
             {teachers.length === 0 ? (
-              <p className="mt-4 text-sm text-slate-400">
+              <p className="mt-4 text-sm text-slate-500">
                 Henüz öğretmen eklenmedi.
               </p>
             ) : (
@@ -308,29 +308,29 @@ setTeachers([newTeacher, ...teachers]);
                 {teachers.map((teacher) => (
                   <div
                     key={teacher.id}
-                    className="rounded-2xl border border-white/10 bg-slate-900 p-5"
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
                   >
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div>
-                        <h3 className="text-lg font-black">{teacher.name}</h3>
+                        <h3 className="text-lg font-black text-slate-900">{teacher.name}</h3>
 
-                        <p className="mt-1 text-sm text-slate-300">
+                        <p className="mt-1 text-sm text-slate-600">
                           Email: {teacher.email}
                         </p>
-                        <span className="mt-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                        <span className="mt-2 inline-flex rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-700">
   {teacher.teacherType === "expertTeacher"
     ? "Uzman Öğretmen"
     : "Normal Öğretmen"}
 </span>
 
-                        <p className="mt-1 text-sm text-slate-300">
+                        <p className="mt-1 text-sm text-slate-600">
                           Öğretmen ID: {teacher.teacherId}
                         </p>
 
                         <p className="mt-1 text-sm text-slate-500">
                           Şifre: {teacher.password}
                         </p>
-                        <p className="mt-1 text-sm text-slate-300">
+                        <p className="mt-1 text-sm text-slate-600">
   WhatsApp: {teacher.whatsapp || "Eklenmedi"}
 </p>
                       </div>
@@ -338,7 +338,7 @@ setTeachers([newTeacher, ...teachers]);
                       <button
   type="button"
   onClick={() => handleEditTeacher(teacher)}
-  className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-bold text-blue-200 hover:bg-blue-500/20"
+  className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100"
 >
   Düzenle
 </button>
@@ -346,7 +346,7 @@ setTeachers([newTeacher, ...teachers]);
   <button
     type="button"
     onClick={() => handleEditTeacher(teacher)}
-    className="rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-bold text-blue-200 hover:bg-blue-500/20"
+    className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100"
   >
     Düzenle
   </button>
@@ -354,7 +354,7 @@ setTeachers([newTeacher, ...teachers]);
   <button
     type="button"
     onClick={() => handleDeleteTeacher(teacher.id)}
-    className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-200 hover:bg-red-500/20"
+    className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-100"
   >
     Sil
   </button>

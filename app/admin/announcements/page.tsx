@@ -115,23 +115,29 @@ export default function AnnouncementsAdminPage() {
   };
 
   if (!allowed) return (
-    <main className="min-h-screen bg-slate-950 flex items-center justify-center">
+    <main className="min-h-screen bg-slate-100 flex items-center justify-center">
       <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
     </main>
   );
 
   return (
-    <main className="min-h-screen bg-[#0a0f1e] px-4 py-10 text-white">
+    <main className="min-h-screen bg-slate-100 px-4 py-10">
       <div className="mx-auto max-w-4xl">
+        <a
+          href="/admin"
+          className="mb-4 inline-flex items-center text-sm font-semibold text-slate-500 hover:text-slate-900"
+        >
+          ← Admin Paneline Dön
+        </a>
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-yellow-400">Admin Panel</p>
-            <h1 className="mt-1 text-3xl font-black">Duyuru Yönetimi</h1>
-            <p className="mt-1 text-sm text-slate-400">Tüm kullanıcılara gösterilecek duyuruları yönetin</p>
+            <p className="text-xs font-black uppercase tracking-widest text-blue-700">Admin Panel</p>
+            <h1 className="mt-1 text-3xl font-black text-slate-900">Duyuru Yönetimi</h1>
+            <p className="mt-1 text-sm text-slate-500">Tüm kullanıcılara gösterilecek duyuruları yönetin</p>
           </div>
           <div className="flex gap-3">
             <button onClick={() => router.push("/admin")}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-black hover:bg-white/10">
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-50">
               ← Geri
             </button>
             <button onClick={() => { setForm(emptyForm); setEditingId(null); setShowForm(true); }}
@@ -142,26 +148,26 @@ export default function AnnouncementsAdminPage() {
         </div>
 
         {showForm && (
-          <div className="mb-8 rounded-3xl border border-white/10 bg-white/5 p-6">
-            <h2 className="mb-5 text-xl font-black">{editingId ? "Duyuruyu Düzenle" : "Yeni Duyuru Oluştur"}</h2>
+          <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-5 text-xl font-black text-slate-900">{editingId ? "Duyuruyu Düzenle" : "Yeni Duyuru Oluştur"}</h2>
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-xs font-black text-slate-400">BAŞLIK *</label>
+                <label className="mb-1 block text-xs font-black text-slate-500">BAŞLIK *</label>
                 <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                  className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:ring-2 focus:ring-yellow-400"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-yellow-400"
                   placeholder="Duyuru başlığı" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-black text-slate-400">AÇIKLAMA</label>
+                <label className="mb-1 block text-xs font-black text-slate-500">AÇIKLAMA</label>
                 <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                  rows={4} className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:ring-2 focus:ring-yellow-400"
+                  rows={4} className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-yellow-400"
                   placeholder="Duyuru içeriği..." />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-black text-slate-400">DUYURU TÜRÜ</label>
+                  <label className="mb-1 block text-xs font-black text-slate-500">DUYURU TÜRÜ</label>
                   <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}
-                    className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400">
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-yellow-400">
                     <option value="info">📢 Bilgilendirme</option>
                     <option value="campaign">🎯 Kampanya</option>
                     <option value="warning">⚠️ Uyarı</option>
@@ -170,9 +176,9 @@ export default function AnnouncementsAdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-black text-slate-400">GÖSTERİM SIKLIĞI</label>
+                  <label className="mb-1 block text-xs font-black text-slate-500">GÖSTERİM SIKLIĞI</label>
                   <select value={form.show_frequency} onChange={e => setForm(p => ({ ...p, show_frequency: e.target.value }))}
-                    className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400">
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-yellow-400">
                     <option value="once">Yalnızca bir kez göster</option>
                     <option value="every_login">Her girişte göster</option>
                     <option value="until_closed">Kapatana kadar her girişte göster</option>
@@ -181,40 +187,40 @@ export default function AnnouncementsAdminPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-black text-slate-400">BUTON METNİ (opsiyonel)</label>
+                  <label className="mb-1 block text-xs font-black text-slate-500">BUTON METNİ (opsiyonel)</label>
                   <input value={form.button_text} onChange={e => setForm(p => ({ ...p, button_text: e.target.value }))}
-                    className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-yellow-400"
                     placeholder="Eski Fiyatlardan Kayıt Ol" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-black text-slate-400">BUTON BAĞLANTISI (opsiyonel)</label>
+                  <label className="mb-1 block text-xs font-black text-slate-500">BUTON BAĞLANTISI (opsiyonel)</label>
                   <input value={form.button_url} onChange={e => setForm(p => ({ ...p, button_url: e.target.value }))}
-                    className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:ring-2 focus:ring-yellow-400"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-yellow-400"
                     placeholder="https://..." />
                 </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-black text-slate-400">BAŞLANGIÇ TARİHİ</label>
+                  <label className="mb-1 block text-xs font-black text-slate-500">BAŞLANGIÇ TARİHİ</label>
                   <input type="datetime-local" value={form.starts_at} onChange={e => setForm(p => ({ ...p, starts_at: e.target.value }))}
-                    className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400" />
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-black text-slate-400">BİTİŞ TARİHİ</label>
+                  <label className="mb-1 block text-xs font-black text-slate-500">BİTİŞ TARİHİ</label>
                   <input type="datetime-local" value={form.ends_at} onChange={e => setForm(p => ({ ...p, ends_at: e.target.value }))}
-                    className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400" />
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
               </div>
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.show_countdown} onChange={e => setForm(p => ({ ...p, show_countdown: e.target.checked }))}
                     className="h-4 w-4 rounded" />
-                  <span className="text-sm font-bold">Geri sayım sayacı göster</span>
+                  <span className="text-sm font-bold text-slate-700">Geri sayım sayacı göster</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))}
                     className="h-4 w-4 rounded" />
-                  <span className="text-sm font-bold">Aktif</span>
+                  <span className="text-sm font-bold text-slate-700">Aktif</span>
                 </label>
               </div>
               <div className="flex gap-3 pt-2">
@@ -223,7 +229,7 @@ export default function AnnouncementsAdminPage() {
                   {saving ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
                 </button>
                 <button onClick={() => { setShowForm(false); setForm(emptyForm); setEditingId(null); }}
-                  className="rounded-2xl border border-white/10 px-6 py-3 text-sm font-black hover:bg-white/5">
+                  className="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-50">
                   İptal
                 </button>
               </div>
@@ -233,21 +239,21 @@ export default function AnnouncementsAdminPage() {
 
         <div className="space-y-4">
           {announcements.length === 0 ? (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
-              <p className="text-slate-400">Henüz duyuru oluşturulmamış.</p>
+            <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+              <p className="text-slate-500">Henüz duyuru oluşturulmamış.</p>
             </div>
           ) : announcements.map((ann: any) => (
-            <div key={ann.id} className={`rounded-2xl border p-5 ${ann.is_active ? "border-yellow-400/30 bg-yellow-400/5" : "border-white/10 bg-white/5 opacity-60"}`}>
+            <div key={ann.id} className={`rounded-2xl border p-5 shadow-sm ${ann.is_active ? "border-yellow-300 bg-yellow-50" : "border-slate-200 bg-white opacity-70"}`}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-black text-yellow-400">{typeLabels[ann.type] || ann.type}</span>
-                    {ann.is_active ? <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-black text-emerald-400">Aktif</span>
-                      : <span className="rounded-full bg-slate-500/20 px-2 py-0.5 text-xs font-black text-slate-400">Pasif</span>}
-                    {ann.show_countdown && <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-black text-blue-400">⏱ Geri sayım</span>}
+                    <span className="text-xs font-black text-yellow-600">{typeLabels[ann.type] || ann.type}</span>
+                    {ann.is_active ? <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-black text-emerald-700">Aktif</span>
+                      : <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-500">Pasif</span>}
+                    {ann.show_countdown && <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-black text-blue-700">⏱ Geri sayım</span>}
                   </div>
-                  <p className="font-black text-white">{ann.title}</p>
-                  {ann.description && <p className="mt-1 text-sm text-slate-400 line-clamp-2">{ann.description}</p>}
+                  <p className="font-black text-slate-900">{ann.title}</p>
+                  {ann.description && <p className="mt-1 text-sm text-slate-500 line-clamp-2">{ann.description}</p>}
                   <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
                     {ann.ends_at && <span>Bitiş: {new Date(ann.ends_at).toLocaleString("tr-TR")}</span>}
                     <span>Sıklık: {ann.show_frequency === "once" ? "Bir kez" : ann.show_frequency === "every_login" ? "Her girişte" : "Kapatana kadar"}</span>
@@ -256,13 +262,13 @@ export default function AnnouncementsAdminPage() {
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => toggleActive(ann)}
-                    className={`rounded-xl px-3 py-2 text-xs font-black ${ann.is_active ? "bg-slate-700 hover:bg-slate-600" : "bg-emerald-600 hover:bg-emerald-500"}`}>
+                    className={`rounded-xl px-3 py-2 text-xs font-black ${ann.is_active ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" : "bg-emerald-600 text-white hover:bg-emerald-500"}`}>
                     {ann.is_active ? "Pasif Yap" : "Aktif Yap"}
                   </button>
                   <button onClick={() => startEdit(ann)}
-                    className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-black hover:bg-blue-500">Düzenle</button>
+                    className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-black text-white hover:bg-blue-500">Düzenle</button>
                   <button onClick={() => handleDelete(ann.id)}
-                    className="rounded-xl bg-red-600 px-3 py-2 text-xs font-black hover:bg-red-500">Sil</button>
+                    className="rounded-xl bg-red-600 px-3 py-2 text-xs font-black text-white hover:bg-red-500">Sil</button>
                 </div>
               </div>
             </div>

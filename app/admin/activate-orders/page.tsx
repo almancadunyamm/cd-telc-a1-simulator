@@ -217,7 +217,7 @@ export default function ActivateOrdersPage() {
   }
 
   const OrderCard = ({ order, isTrash = false }: { order: EnrichedOrder; isTrash?: boolean }) => (
-    <div className="rounded-2xl border border-white/10 bg-slate-900 p-5">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       {/* Üst rozetler */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -227,7 +227,7 @@ export default function ActivateOrdersPage() {
             {order.orderType === "live" ? "🎓 CANLI KURS" : "💻 DİJİTAL"}
           </div>
           <div className={`rounded-xl px-3 py-1.5 text-xs font-black ${
-            order.isNewStudent ? "bg-yellow-500 text-slate-900" : "bg-slate-700 text-slate-200"
+            order.isNewStudent ? "bg-yellow-500 text-slate-900" : "bg-slate-100 text-slate-600"
           }`}>
             {order.isNewStudent ? "🆕 YENİ ÖĞRENCİ" : "✅ Mevcut Öğrenci"}
           </div>
@@ -237,12 +237,12 @@ export default function ActivateOrdersPage() {
             {order.status === "paid_waiting_activation" ? "💳 Ödendi" : "⏳ Ödeme Bekliyor"}
           </div>
           {isTrash && order.cancelledAt && (
-            <div className="rounded-xl bg-red-800 px-3 py-1.5 text-xs font-black text-white">
+            <div className="rounded-xl bg-red-700 px-3 py-1.5 text-xs font-black text-white">
               🚫 İptal Edildi
             </div>
           )}
           {isTrash && order.trashAt && !order.cancelledAt && (
-            <div className="rounded-xl bg-slate-700 px-3 py-1.5 text-xs font-black text-slate-300">
+            <div className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-600">
               🗑️ Otomatik Çöp
             </div>
           )}
@@ -252,18 +252,18 @@ export default function ActivateOrdersPage() {
 
       {/* Bilgi kartları */}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl bg-slate-800 p-4">
-          <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Öğrenci</p>
-          <p className="text-base font-black text-white">{order.studentName}</p>
-          <p className="text-sm text-slate-400 mt-0.5">{order.username}</p>
+        <div className="rounded-xl bg-slate-50 p-4">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Öğrenci</p>
+          <p className="text-base font-black text-slate-900">{order.studentName}</p>
+          <p className="text-sm text-slate-500 mt-0.5">{order.username}</p>
           <div className="mt-3">
             <p className="text-xs font-bold text-slate-500 mb-1">Mevcut Sınıflar:</p>
             {(order.existingClasses || []).length === 0 ? (
-              <p className="text-xs text-yellow-400">⚠️ Henüz hiç sınıfı yok</p>
+              <p className="text-xs text-amber-600">⚠️ Henüz hiç sınıfı yok</p>
             ) : (
               <div className="flex flex-wrap gap-1">
                 {order.existingClasses!.map((cls, i) => (
-                  <span key={i} className="rounded-full bg-slate-700 px-2 py-0.5 text-xs font-bold text-slate-300">
+                  <span key={i} className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-600">
                     {cls.level} — {cls.className}
                   </span>
                 ))}
@@ -272,16 +272,16 @@ export default function ActivateOrdersPage() {
           </div>
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-4">
-          <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Talep Edilen Paket</p>
-          <p className="text-base font-black text-white">{order.packageLabel}</p>
-          <p className="text-sm text-slate-400 mt-0.5">Seviye: <span className="font-bold text-white">{order.levelLabel}</span></p>
+        <div className="rounded-xl bg-slate-50 p-4">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Talep Edilen Paket</p>
+          <p className="text-base font-black text-slate-900">{order.packageLabel}</p>
+          <p className="text-sm text-slate-500 mt-0.5">Seviye: <span className="font-bold text-slate-900">{order.levelLabel}</span></p>
           <p className="text-xs text-slate-500 mt-2">Slug: {order.productSlug}</p>
 
           {!isTrash && (
-            <div className="mt-3 rounded-lg bg-slate-700 p-2">
-              <p className="text-xs font-bold text-emerald-400">✓ Aktif Et → Ne Olacak?</p>
-              <p className="text-xs text-slate-300 mt-1">
+            <div className="mt-3 rounded-lg bg-emerald-50 p-2">
+              <p className="text-xs font-bold text-emerald-700">✓ Aktif Et → Ne Olacak?</p>
+              <p className="text-xs text-slate-600 mt-1">
                 {order.orderType === "live"
                   ? `${order.levelLabel} varsayılan canlı sınıfına atanacak`
                   : `${order.levelLabel} dijital ${order.packageLabel} paketi açılacak`}
@@ -290,8 +290,8 @@ export default function ActivateOrdersPage() {
           )}
 
           {isTrash && (
-            <div className="mt-3 rounded-lg bg-slate-700 p-2">
-              <p className="text-xs font-bold text-slate-400">
+            <div className="mt-3 rounded-lg bg-slate-100 p-2">
+              <p className="text-xs font-bold text-slate-500">
                 {order.cancelledAt
                   ? `İptal tarihi: ${formatDate(order.cancelledAt)}`
                   : order.trashAt
@@ -309,7 +309,7 @@ export default function ActivateOrdersPage() {
           <>
             <button
               onClick={() => handleCancel(order.id)}
-              className="rounded-xl border border-red-800 bg-red-900/30 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-900/60"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-100"
             >
               🚫 İptal Et
             </button>
@@ -319,13 +319,13 @@ export default function ActivateOrdersPage() {
           <>
             <button
               onClick={() => handleDeletePermanently(order.id)}
-              className="rounded-xl border border-red-800 bg-red-900/30 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-900/60"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-100"
             >
               🗑️ Kalıcı Sil
             </button>
             <button
               onClick={() => handleRestore(order.id)}
-              className="rounded-xl bg-slate-700 px-4 py-2 text-sm font-bold text-white hover:bg-slate-600"
+              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800"
             >
               ↩️ Geri Al
             </button>
@@ -336,18 +336,18 @@ export default function ActivateOrdersPage() {
   );
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
+    <main className="min-h-screen bg-slate-100 px-4 py-8">
       <div className="mx-auto max-w-4xl">
-        <Link href="/admin" className="text-sm text-slate-400 hover:text-white">
+        <Link href="/admin" className="text-sm font-semibold text-slate-500 hover:text-slate-900">
           ← Admin Paneline Dön
         </Link>
 
         <div className="mt-6">
           <div className="flex items-center justify-between gap-4">
-            <h1 className="text-2xl font-black">Sipariş Aktivasyon Paneli</h1>
+            <h1 className="text-2xl font-black text-slate-900">Sipariş Aktivasyon Paneli</h1>
             <button
               onClick={loadOrders}
-              className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
             >
               🔄 Yenile
             </button>
@@ -359,8 +359,8 @@ export default function ActivateOrdersPage() {
               onClick={() => setActiveTab("pending")}
               className={`rounded-xl px-5 py-2.5 text-sm font-black transition ${
                 activeTab === "pending"
-                  ? "bg-white text-slate-900"
-                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                  ? "bg-slate-900 text-white"
+                  : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
               }`}
             >
               📋 Bekleyen
@@ -374,13 +374,13 @@ export default function ActivateOrdersPage() {
               onClick={() => setActiveTab("trash")}
               className={`rounded-xl px-5 py-2.5 text-sm font-black transition ${
                 activeTab === "trash"
-                  ? "bg-white text-slate-900"
-                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                  ? "bg-slate-900 text-white"
+                  : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
               }`}
             >
               🗑️ Çöp Kutusu
               {trashOrders.length > 0 && (
-                <span className="ml-2 rounded-full bg-slate-600 px-2 py-0.5 text-xs font-black text-white">
+                <span className="ml-2 rounded-full bg-slate-300 px-2 py-0.5 text-xs font-black text-slate-700">
                   {trashOrders.length}
                 </span>
               )}
@@ -393,7 +393,7 @@ export default function ActivateOrdersPage() {
             </div>
           ) : activeTab === "pending" ? (
             pendingOrders.length === 0 ? (
-              <div className="mt-6 rounded-2xl bg-slate-900 p-6 text-center text-slate-400">
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500">
                 ✅ Bekleyen sipariş bulunmuyor.
               </div>
             ) : (
@@ -405,7 +405,7 @@ export default function ActivateOrdersPage() {
             )
           ) : (
             trashOrders.length === 0 ? (
-              <div className="mt-6 rounded-2xl bg-slate-900 p-6 text-center text-slate-400">
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500">
                 🗑️ Çöp kutusu boş.
               </div>
             ) : (
