@@ -231,6 +231,7 @@ export default function LiveAcademyPage() {
                     localStorage.setItem("selected_product_slug", plan.slug);
                     localStorage.setItem("selectedProductSlug", plan.slug);
                     localStorage.setItem("pending_payment_slug", plan.slug);
+                    localStorage.setItem("product_selected_at", String(Date.now()));
                   }}
                   className={`mt-8 inline-flex w-full justify-center rounded-full px-6 py-4 text-sm font-black transition ${
                     plan.highlight

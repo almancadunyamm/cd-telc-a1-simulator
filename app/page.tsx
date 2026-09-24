@@ -136,6 +136,7 @@ export default function HomePage() {
   function goToPay(slug: string) {
   localStorage.setItem("pending_payment_slug", slug);
   localStorage.setItem("selected_product_slug", slug);
+  localStorage.setItem("product_selected_at", String(Date.now()));
 
   const rawUser = localStorage.getItem("mock_logged_user");
 

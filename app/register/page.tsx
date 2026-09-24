@@ -59,6 +59,30 @@ function getLevelFromSlug(slug: string) {
   return "A1";
 }
 
+// Bir paket seçimi sadece kısa süre önce (paket/fiyat sayfasından az önce
+// gelindiyse) "taze" sayılır. Aksi halde localStorage'da günlerce/haftalarca
+// kalabilen eski bir seçim, kullanıcı "Kayıt Ol"a tekrar bastığında paket
+// ekranını atlayıp direkt forma düşürüyordu — bu da paketleri/fiyatları
+// tekrar görmesini engelliyordu. Bu yüzden eski seçimleri artık yok sayıyoruz.
+const PRODUCT_SELECTION_FRESHNESS_MS = 30 * 60 * 1000; // 30 dakika
+
+function getFreshSelectedSlug(): string {
+  if (typeof window === "undefined") return "";
+
+  const selectedAt = Number(localStorage.getItem("product_selected_at") || 0);
+  const isFresh =
+    selectedAt > 0 && Date.now() - selectedAt < PRODUCT_SELECTION_FRESHNESS_MS;
+
+  if (!isFresh) return "";
+
+  return (
+    localStorage.getItem("selected_product_slug") ||
+    localStorage.getItem("selectedProductSlug") ||
+    localStorage.getItem("pending_payment_slug") ||
+    ""
+  );
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -74,8 +98,7 @@ const isFreeStarter =
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [step, setStep] = useState<"select" | "form">(
-    typeof window !== "undefined" &&
-    (localStorage.getItem("selected_product_slug") || localStorage.getItem("pending_payment_slug"))
+    getFreshSelectedSlug()
       ? "form"
       : searchParams.get("free") === "true"
       ? "form"
@@ -84,10 +107,7 @@ const isFreeStarter =
   const [selectedType, setSelectedType] = useState<"live" | "digital" | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<"A1" | "A2" | "B1" | null>(null);
 
-  const selectedProduct =
-    typeof window !== "undefined"
-      ? localStorage.getItem("selected_product_slug") || ""
-      : "";
+  const selectedProduct = getFreshSelectedSlug();
 
   async function handleRegister() {
     if (!name.trim() || !email.trim() || !password.trim()) {
@@ -132,10 +152,7 @@ if (insertError) {
 
     const selectedSlug = isFreeStarter
   ? `${freeStarterLevel.toLowerCase()}-starter`
-  : localStorage.getItem("selected_product_slug") ||
-    localStorage.getItem("selectedProductSlug") ||
-    localStorage.getItem("pending_payment_slug") ||
-    "";
+  : getFreshSelectedSlug();
 
     localStorage.setItem(
       "mock_logged_user",
