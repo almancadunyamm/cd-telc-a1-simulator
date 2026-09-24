@@ -352,19 +352,64 @@ const SPEAKING_CLUB_TOTAL_SENTENCES = 760;
 
 type SpeakingAccessStatus = "open" | "purchase" | "sequence" | "soon";
 
+const SPEAKING_CLUB_PACKAGES: {
+  slug: string;
+  label: string;
+  levels: string;
+  priceLabel: string;
+  featured?: boolean;
+  features: string[];
+}[] = [
+  {
+    slug: "konusma-a1-a2-b1",
+    label: "Tam Konuşma Programı",
+    levels: "A1 + A2 + B1",
+    priceLabel: "₺12.000",
+    features: [
+      "760 Almanca cümle kalıbı, üç seviye boyunca",
+      "Her seviyede kişisel konuşma partneri",
+      "Öğretmen rehberliğinde haftalık görevler",
+      "Tüm seviyelerde ilerleme ve bildirim takibi",
+    ],
+  },
+  {
+    slug: "konusma-a1-a2",
+    label: "Hızlandırılmış",
+    levels: "A1 + A2",
+    priceLabel: "₺9.000",
+    featured: true,
+    features: [
+      "360 Almanca cümle kalıbı (A1 + A2)",
+      "Kişisel konuşma partneri eşleşmesi",
+      "Öğretmen rehberliğinde haftalık görevler",
+      "B1'e geçtiğinde tek seviye fiyatına devam etme",
+    ],
+  },
+  {
+    slug: "konusma-a1",
+    label: "Tek Seviye",
+    levels: "A1",
+    priceLabel: "₺5.000",
+    features: [
+      "180 Almanca cümle kalıbı (A1)",
+      "Kişisel konuşma partneri eşleşmesi",
+      "Öğretmen rehberliğinde haftalık görevler",
+      "İstediğin zaman üst seviyeye geçiş imkanı",
+    ],
+  },
+];
+
 function SpeakingClubAccessCard({
   status,
   level,
   blockingLevel,
-  bundleLevels,
-  onRegister,
+  onSelectPackage,
   onGoToLevel,
 }: {
   status: Exclude<SpeakingAccessStatus, "open">;
   level: Level;
   blockingLevel?: Level | null;
-  bundleLevels?: Level[];
-  onRegister: () => void;
+  onSelectPackage: (slug: string) => void;
   onGoToLevel: (level: Level) => void;
 }) {
   if (status === "sequence" && blockingLevel) {
@@ -433,21 +478,58 @@ function SpeakingClubAccessCard({
           şekilde söyleyebilir hâle gelir. Bu kalıpları benzer cümlelere uyarlayarak konuşabilen bir öğrenci,
           artık orta seviyede bir konuşma becerisine sahip demektir.
         </p>
-        {bundleLevels && bundleLevels.length > 1 && (
-          <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-            {level} Konuşma Kulübüne başlayabilmen için önce{" "}
-            <strong>{bundleLevels.slice(0, -1).join(" ve ")}</strong> seviyelerini de tamamlaman gerekiyor. Bu yüzden
-            bu kayıt <strong>{bundleLevels.join(" + ")}</strong> seviyelerini birlikte açar.
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={onRegister}
-          className="mt-8 rounded-2xl bg-emerald-600 px-8 py-4 text-sm font-black text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700"
-        >
-          🎙️ {bundleLevels && bundleLevels.length > 1 ? bundleLevels.join(" + ") : level} Konuşma Kulübüne Kayıt Ol
-        </button>
-        <p className="mt-3 text-xs text-slate-500">Shopier üzerinden güvenli ödeme · Kayıt sonrası admin onayıyla aktif olur</p>
+      </div>
+
+      <div className="border-t border-emerald-100 bg-white/60 px-6 pb-10 pt-8 sm:px-10">
+        <h3 className="text-center text-xl font-black text-slate-900">Sana uygun Konuşma Kulübü paketini seç</h3>
+        <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-500">
+          Tek seviye ile başlayabilir veya A1'den B1'e kadar birlikte kayıt olarak avantajlı fiyattan yararlanabilirsin.
+        </p>
+        <div className="mx-auto mt-8 grid max-w-4xl gap-5 sm:grid-cols-3">
+          {SPEAKING_CLUB_PACKAGES.map((pkg) => (
+            <div
+              key={pkg.slug}
+              className={`relative rounded-3xl border p-6 text-left ${
+                pkg.featured
+                  ? "border-emerald-500 bg-slate-900 text-white shadow-xl"
+                  : "border-slate-200 bg-white text-slate-900"
+              }`}
+            >
+              {pkg.featured && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-emerald-500 px-3 py-1 text-xs font-black text-white">
+                  En Çok Tercih Edilen
+                </span>
+              )}
+              <p className={`text-xs font-black uppercase tracking-widest ${pkg.featured ? "text-emerald-400" : "text-emerald-700"}`}>
+                {pkg.levels}
+              </p>
+              <p className={`mt-1 text-lg font-black ${pkg.featured ? "text-white" : "text-slate-900"}`}>{pkg.label}</p>
+              <p className={`mt-3 text-3xl font-black ${pkg.featured ? "text-white" : "text-slate-900"}`}>{pkg.priceLabel}</p>
+              <ul className="mt-5 space-y-2 text-sm leading-6">
+                {pkg.features.map((f) => (
+                  <li key={f} className={`flex gap-2 ${pkg.featured ? "text-slate-200" : "text-slate-600"}`}>
+                    <span>✓</span>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() => onSelectPackage(pkg.slug)}
+                className={`mt-6 w-full rounded-2xl px-4 py-3 text-sm font-black ${
+                  pkg.featured
+                    ? "bg-emerald-500 text-white hover:bg-emerald-400"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
+              >
+                Paketi Seç
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 text-center text-xs text-slate-500">
+          Kredi kartıyla güvenli ödeme · Ödeme onaylandıktan sonra erişimin otomatik olarak açılır
+        </p>
       </div>
     </div>
   );
@@ -1897,6 +1979,10 @@ if (allClassIds.length > 0) {
   function handleSpeakingClubRegister() {
     if (!currentUser || speakingMissingLevelsForSelected.length === 0) return;
     const slug = `konusma-${speakingMissingLevelsForSelected.map((l) => l.toLowerCase()).join("-")}`;
+    openPaytrCheckout(slug);
+  }
+  function handleSpeakingPackageSelect(slug: string) {
+    if (!currentUser) return;
     openPaytrCheckout(slug);
   }
   const activeTeacherWhatsapp = useMemo(() => {
@@ -4511,8 +4597,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
         status={speakingAccessStatus}
         level={selectedLevel}
         blockingLevel={speakingBlockingLevel}
-        bundleLevels={speakingMissingLevelsForSelected}
-        onRegister={handleSpeakingClubRegister}
+        onSelectPackage={handleSpeakingPackageSelect}
         onGoToLevel={(lvl) => setSelectedLevel(lvl)}
       />
     ) : (
