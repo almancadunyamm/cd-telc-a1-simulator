@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
 const adminCards = [
   {
@@ -100,10 +101,34 @@ const adminCards = [
   },
 ];
 
+type OnlineStats = {
+  digital: number;
+  live: number;
+  todayTotal: number;
+};
+
+// Bir öğrenci "online" sayılır, eğer son 3 dakika içinde panelden ping
+// göndermişse (bkz. dashboard/page.tsx içindeki heartbeat). Bu eşik,
+// sekmesini kapatan bir öğrencinin çok uzun süre "online" görünmesini
+// engelliyor ama gereksiz sık sorgu da yaratmıyor.
+const ONLINE_THRESHOLD_MS = 3 * 60 * 1000;
+
+// Türkiye (UTC+3, DST uygulanmıyor) takvim gününün başlangıcını UTC ISO
+// olarak döner — "bugün toplam kaç kişi" sorgusu buna göre filtrelenir.
+function getTodayStartIsoForTurkey(): string {
+  const TR_OFFSET_MS = 3 * 60 * 60 * 1000;
+  const now = new Date();
+  const trNow = new Date(now.getTime() + TR_OFFSET_MS);
+  const trMidnightUtc = Date.UTC(trNow.getUTCFullYear(), trNow.getUTCMonth(), trNow.getUTCDate());
+  return new Date(trMidnightUtc - TR_OFFSET_MS).toISOString();
+}
+
 export default function AdminHomePage() {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
   const [time, setTime] = useState("");
+  const [onlineStats, setOnlineStats] = useState<OnlineStats | null>(null);
+  const [statsError, setStatsError] = useState(false);
 
   useEffect(() => {
     const raw = localStorage.getItem("mock_logged_user");
@@ -119,6 +144,75 @@ export default function AdminHomePage() {
     const interval = setInterval(tick, 10000);
     return () => clearInterval(interval);
   }, [router]);
+
+  useEffect(() => {
+    if (!allowed) return;
+
+    let cancelled = false;
+
+    async function loadOnlineStats() {
+      const onlineThresholdIso = new Date(Date.now() - ONLINE_THRESHOLD_MS).toISOString();
+      const todayStartIso = getTodayStartIsoForTurkey();
+
+      const [{ data: onlinePings, error: onlineError }, { data: todayPings, error: todayError }] =
+        await Promise.all([
+          supabase.from("user_activity_ping").select("username").gte("seen_at", onlineThresholdIso),
+          supabase.from("user_activity_ping").select("username").gte("seen_at", todayStartIso),
+        ]);
+
+      if (cancelled) return;
+
+      if (onlineError || todayError) {
+        // Tablo henüz oluşturulmamış olabilir — sessizce hata durumuna geç.
+        setStatsError(true);
+        return;
+      }
+
+      const onlineUsernames = Array.from(new Set((onlinePings || []).map((p: any) => p.username)));
+      const todayUsernames = new Set((todayPings || []).map((p: any) => p.username));
+
+      if (onlineUsernames.length === 0) {
+        setOnlineStats({ digital: 0, live: 0, todayTotal: todayUsernames.size });
+        setStatsError(false);
+        return;
+      }
+
+      const [{ data: accessRows }, { data: classRows }] = await Promise.all([
+        supabase
+          .from("student_class_access")
+          .select("username, main_class_id, extra_class_access")
+          .in("username", onlineUsernames),
+        supabase.from("classes").select("id, class_type"),
+      ]);
+
+      if (cancelled) return;
+
+      const liveClassIds = new Set(
+        (classRows || []).filter((c: any) => c.class_type === "live").map((c: any) => c.id)
+      );
+
+      let live = 0;
+      let digital = 0;
+
+      for (const username of onlineUsernames) {
+        const access = (accessRows || []).find((a: any) => a.username === username);
+        const classIds = access ? [access.main_class_id, ...(access.extra_class_access || [])] : [];
+        const isLive = classIds.some((id: string) => liveClassIds.has(id));
+        if (isLive) live++;
+        else digital++;
+      }
+
+      setOnlineStats({ digital, live, todayTotal: todayUsernames.size });
+      setStatsError(false);
+    }
+
+    loadOnlineStats();
+    const statsInterval = setInterval(loadOnlineStats, 20000);
+    return () => {
+      cancelled = true;
+      clearInterval(statsInterval);
+    };
+  }, [allowed]);
 
   if (!allowed) return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
@@ -162,6 +256,47 @@ export default function AdminHomePage() {
             </div>
           </div>
         </div>
+
+        {/* CANLI SAYAÇ */}
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-xs font-black uppercase tracking-wider text-slate-500">
+                Şu An Online · Dijital
+              </p>
+            </div>
+            <p className="mt-2 text-3xl font-black text-slate-900">
+              {statsError ? "—" : onlineStats === null ? "…" : onlineStats.digital}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-xs font-black uppercase tracking-wider text-slate-500">
+                Şu An Online · Canlı Kurs
+              </p>
+            </div>
+            <p className="mt-2 text-3xl font-black text-slate-900">
+              {statsError ? "—" : onlineStats === null ? "…" : onlineStats.live}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
+            <p className="text-xs font-black uppercase tracking-wider text-blue-700">
+              Bugün Toplam Kullanan
+            </p>
+            <p className="mt-2 text-3xl font-black text-slate-900">
+              {statsError ? "—" : onlineStats === null ? "…" : onlineStats.todayTotal}
+            </p>
+          </div>
+        </div>
+        {statsError && (
+          <p className="-mt-6 mb-8 text-xs text-amber-700">
+            Sayaç verisi okunamadı — Supabase'de <code className="rounded bg-amber-100 px-1">user_activity_ping</code> tablosunun oluşturulduğundan emin ol.
+          </p>
+        )}
 
         {/* KARTLAR */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

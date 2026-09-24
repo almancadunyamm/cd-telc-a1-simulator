@@ -895,6 +895,22 @@ const earnedBadges = [
     null
   );
 
+  // Admin panelindeki "Şu An Online" sayacı için: öğrenci panel açıkken
+  // periyodik olarak bir "ping" kaydı düşer. Sekmeyi kapatınca ping durur,
+  // ~3 dakika sonra admin panelinde otomatik olarak "online" görünmez olur.
+  useEffect(() => {
+    const username = currentUser?.username;
+    if (!username) return;
+
+    const ping = () => {
+      supabase.from("user_activity_ping").insert({ username }).then(() => {});
+    };
+
+    ping();
+    const interval = setInterval(ping, 90 * 1000);
+    return () => clearInterval(interval);
+  }, [currentUser?.username]);
+
   const [selectedLevel, setSelectedLevel] = useState<Level>("A1");
   const [activeDashboardTab, setActiveDashboardTab] = useState("home");
   type MasteryQuestion = {
