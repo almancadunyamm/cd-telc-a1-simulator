@@ -361,15 +361,15 @@ const SPEAKING_CLUB_PACKAGES: {
   features: string[];
 }[] = [
   {
-    slug: "konusma-a1-a2-b1",
-    label: "Tam Konuşma Programı",
-    levels: "A1 + A2 + B1",
-    priceLabel: "₺12.000",
+    slug: "konusma-a1",
+    label: "Tek Seviye",
+    levels: "A1",
+    priceLabel: "₺5.000",
     features: [
-      "760 Almanca cümle kalıbı, üç seviye boyunca",
-      "Her seviyede kişisel konuşma partneri",
+      "2 ay süren eğitim (A1)",
+      "Kişisel konuşma partneri eşleşmesi",
       "Öğretmen rehberliğinde haftalık görevler",
-      "Tüm seviyelerde ilerleme ve bildirim takibi",
+      "İstediğin zaman üst seviyeye geçiş imkanı",
     ],
   },
   {
@@ -379,22 +379,22 @@ const SPEAKING_CLUB_PACKAGES: {
     priceLabel: "₺9.000",
     featured: true,
     features: [
-      "360 Almanca cümle kalıbı (A1 + A2)",
+      "4 ay süren eğitim (A1 + A2)",
       "Kişisel konuşma partneri eşleşmesi",
       "Öğretmen rehberliğinde haftalık görevler",
       "B1'e geçtiğinde tek seviye fiyatına devam etme",
     ],
   },
   {
-    slug: "konusma-a1",
-    label: "Tek Seviye",
-    levels: "A1",
-    priceLabel: "₺5.000",
+    slug: "konusma-a1-a2-b1",
+    label: "Tam Konuşma Programı",
+    levels: "A1 + A2 + B1",
+    priceLabel: "₺12.000",
     features: [
-      "180 Almanca cümle kalıbı (A1)",
-      "Kişisel konuşma partneri eşleşmesi",
+      "6 ay süren eğitim (A1 + A2 + B1)",
+      "Her seviyede kişisel konuşma partneri",
       "Öğretmen rehberliğinde haftalık görevler",
-      "İstediğin zaman üst seviyeye geçiş imkanı",
+      "Tüm seviyelerde ilerleme ve bildirim takibi",
     ],
   },
 ];
