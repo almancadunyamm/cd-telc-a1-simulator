@@ -41,6 +41,10 @@ export const PRICING_CATALOG: Record<string, PricedProduct> = {
   "konusma-a1-a2": { slug: "konusma-a1-a2", label: "A1 + A2 Konuşma Kulübü", amountKurus: TL(9000) },
   "konusma-a2-b1": { slug: "konusma-a2-b1", label: "A2 + B1 Konuşma Kulübü", amountKurus: TL(9000) },
   "konusma-a1-a2-b1": { slug: "konusma-a1-a2-b1", label: "A1 + A2 + B1 Konuşma Kulübü", amountKurus: TL(12000) },
+
+  // ── Özel test ürünü (herhangi bir yerde listelenmez/linklenmez) ────
+  // Sadece PayTR canlı ödeme akışını gerçek küçük bir tutarla doğrulamak için.
+  "ozel-test-100": { slug: "ozel-test-100", label: "Test Ödemesi", amountKurus: TL(100) },
 };
 
 export function getPricedProduct(slug: string): PricedProduct | null {
