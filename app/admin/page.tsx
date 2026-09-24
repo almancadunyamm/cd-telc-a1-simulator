@@ -6,11 +6,10 @@ import Link from "next/link";
 const adminCards = [
   {
     title: "Sipariş Aktivasyonu",
-    description: "Ödeme yapan öğrencilerin erişimini tek tıkla aç.",
+    description: "PayTR ödemesi otomatik tamamlanmayan/askıda kalan siparişleri elle aktif et.",
     href: "/admin/activate-orders",
     icon: "✅",
     accent: "#10b981",
-    tag: "Öncelikli",
   },
   {
     title: "Sınıf Yönetimi",
@@ -55,10 +54,10 @@ const adminCards = [
     accent: "#ef4444",
   },
   {
-    title: "Shopier Linkleri",
-    description: "Paket ve kurs ödeme linklerini güncelle.",
-    href: "/admin/shopier-links",
-    icon: "💳",
+    title: "Manuel Erişim Ver",
+    description: "Ödeme almadan (hediye/telafi vb.) bir öğrenciye elle paket erişimi tanımla.",
+    href: "/admin/manual-activate",
+    icon: "🎁",
     accent: "#eab308",
   },
   {
@@ -251,7 +250,7 @@ export default function AdminHomePage() {
             {[
               { label: "Supabase DB", status: "Aktif" },
               { label: "Vercel Deploy", status: "Canlı" },
-              { label: "Shopier Ödeme", status: "Açık" },
+              { label: "PayTR (Kredi Kartı)", status: "Canlı" },
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
                 <span className="text-xs text-slate-400">{item.label}</span>

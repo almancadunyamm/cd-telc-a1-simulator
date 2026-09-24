@@ -3073,27 +3073,27 @@ if (!currentUser) {
           {hasPendingOrder ? (
   <>
     <p className="mt-3 text-sm leading-6 text-slate-600">
-      Siparişiniz oluşturuldu. Ödeme yaptıysanız erişiminiz admin onayından
-      sonra açılacaktır.
+      Siparişiniz oluşturuldu ama ödeme tamamlanmamış görünüyor. Ödemeni
+      tamamladığında erişimin otomatik olarak açılır.
     </p>
-
-    <a
-      href={`https://wa.me/905013434419?text=${encodeURIComponent(
-        `Merhaba, ödeme dekontumu göndermek istiyorum. Kullanıcı: ${currentUser.username}`
-      )}`}
-      target="_blank"
-      className="mt-6 block w-full rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white hover:bg-green-700"
-    >
-      📩 Dekontu WhatsApp’tan Gönder
-    </a>
 
     <button
       type="button"
       onClick={handleContinuePayment}
-      className="mt-4 w-full rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-bold text-blue-700 hover:bg-blue-100"
+      className="mt-6 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-500 px-5 py-3 text-sm font-bold text-white shadow-lg hover:from-blue-700 hover:to-indigo-600"
     >
-      Ödeme Sayfasını Tekrar Aç
+      💳 Ödeme Sayfasını Tekrar Aç
     </button>
+
+    <a
+      href={`https://wa.me/905013434419?text=${encodeURIComponent(
+        `Merhaba, ödeme sürecinde bir sorun yaşıyorum. Kullanıcı: ${currentUser.username}`
+      )}`}
+      target="_blank"
+      className="mt-4 block w-full rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-bold text-blue-700 hover:bg-blue-100"
+    >
+      Ödemede sorun mu var? Bize yaz
+    </a>
   </>
 ) : pendingPaymentSlug ? (
   <>
@@ -3107,7 +3107,7 @@ if (!currentUser) {
       onClick={handleStartPendingPayment}
       className="mt-6 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-500 px-5 py-3 text-sm font-bold text-white shadow-lg hover:from-blue-700 hover:to-indigo-600"
     >
-      💳 Shopier ile Ödeme Yap
+      💳 Kredi Kartıyla Öde
     </button>
   </>
 ) : (
@@ -3250,29 +3250,19 @@ if (!currentUser) {
   ✕
 </button>
       <p className="text-sm font-black uppercase tracking-widest text-blue-700">
-        Siparişin onay bekliyor ⏳
+        Ödemen tamamlanmadı ⏳
       </p>
 
       <h2 className="mt-2 text-xl font-black">
-        Ödeme yaptıysan dekontunu gönder
+        Seçtiğin paket seni bekliyor
       </h2>
 
       <p className="mt-2 text-sm text-slate-600">
-        Siparişin admin paneline düştü. Dekontu WhatsApp’tan gönderirsen
-        erişimin daha hızlı aktif edilir.
+        Ödemeni tamamladığında erişimin otomatik olarak açılır, admin
+        onayı beklemene gerek yok.
       </p>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-        <a
-          href={`https://wa.me/905013434419?text=${encodeURIComponent(
-            `Merhaba, ödeme yaptım. Dekont göndermek istiyorum. Kullanıcı: ${currentUser.username}`
-          )}`}
-          target="_blank"
-          className="rounded-2xl bg-green-600 px-5 py-3 text-center text-sm font-black text-white hover:bg-green-700"
-        >
-          📩 Dekontu WhatsApp’tan Gönder
-        </a>
-
         <button
           type="button"
           onClick={handleContinuePayment}
@@ -3280,6 +3270,16 @@ if (!currentUser) {
         >
           💳 Ödeme Sayfasını Tekrar Aç
         </button>
+
+        <a
+          href={`https://wa.me/905013434419?text=${encodeURIComponent(
+            `Merhaba, ödeme sürecinde bir sorun yaşıyorum. Kullanıcı: ${currentUser.username}`
+          )}`}
+          target="_blank"
+          className="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-3 text-center text-sm font-black text-blue-700 hover:bg-blue-100"
+        >
+          Ödemede sorun mu var? Bize yaz
+        </a>
       </div>
     </section>
   </div>
@@ -6713,31 +6713,20 @@ if (!isPreviousThemeCompleted) {
       
       <div>
         <p className="text-sm font-black uppercase tracking-widest text-blue-200">
-          Ödeme alındı
+          Ödemen tamamlanmadı
         </p>
 
         <h2 className="mt-2 text-xl font-black">
-          Siparişin onay bekliyor ⏳
+          Seçtiğin paket seni bekliyor ⏳
         </h2>
 
         <p className="mt-2 text-sm text-blue-100">
-          Ödemeni yaptıysan dekontunu WhatsApp’tan gönder.  
-          Admin onayından sonra erişimin otomatik olarak açılacak.
+          Ödemeni tamamladığında erişimin otomatik olarak açılır, admin
+          onayı beklemene gerek yok.
         </p>
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row">
-        
-        <a
-          href={`https://wa.me/905013434419?text=${encodeURIComponent(
-            `Merhaba, ödeme yaptım. Kullanıcı: ${currentUser.username}`
-          )}`}
-          target="_blank"
-          className="rounded-2xl bg-green-500 px-5 py-3 text-center text-sm font-black text-white shadow-lg hover:bg-green-600"
-        >
-          📩 Dekont Gönder
-        </a>
-
         <button
           type="button"
           onClick={handleContinuePayment}
@@ -6745,6 +6734,16 @@ if (!isPreviousThemeCompleted) {
         >
           💳 Ödemeyi Tekrar Aç
         </button>
+
+        <a
+          href={`https://wa.me/905013434419?text=${encodeURIComponent(
+            `Merhaba, ödeme sürecinde bir sorun yaşıyorum. Kullanıcı: ${currentUser.username}`
+          )}`}
+          target="_blank"
+          className="rounded-2xl border border-blue-300/40 bg-white/10 px-5 py-3 text-center text-sm font-black text-white shadow-lg hover:bg-white/20"
+        >
+          Ödemede sorun mu var? Bize yaz
+        </a>
       </div>
     </div>
   </section>
