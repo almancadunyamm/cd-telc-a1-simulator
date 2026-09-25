@@ -2277,6 +2277,48 @@ const pendingOrders =
   hasAutoSelectedLevelRef.current = true;
 }, [currentUser, dbActiveOrders, accessibleClassIds, activeAccessLevels]);
 
+  // ── Canlı kurs öğrencisi için sistemin asıl başlangıç dersleri ─────────
+  // Canlı kurs alan öğrenci önce seviyenin varsayılan satış sınıfına
+  // (örn. "A1 Rifat Hoca Akşam Grubu") atanır; sistemin asıl başlangıç
+  // videoları bu sınıfa yüklüdür. Öğrenci daha sonra kendi öğretmeninin
+  // sınıfına taşındığında varsayılan sınıf erişimi silinse bile bu
+  // başlangıç dersleri Başlangıç sekmesinde görünmeye devam etmelidir.
+  const defaultLiveStarterClassIds = useMemo(() => {
+    const liveLevels = new Set<string>([
+      ...userClasses
+        .filter((item) => item.classType === "live")
+        .map((item) => String(item.level)),
+      ...activeLiveCourseLevels.map(String),
+      ...dbActiveOrders
+        .filter(
+          (order: any) =>
+            order.status === "completed" &&
+            isLiveCourseSlug(order.product_slug || order.productSlug)
+        )
+        .flatMap((order: any) =>
+          getLevelsFromSlug(order.product_slug || order.productSlug).map(String)
+        ),
+    ]);
+
+    return classes
+      .filter(
+        (item) =>
+          item.isDefaultSalesClass &&
+          (item.classType || "live") === "live" &&
+          liveLevels.has(String(item.level))
+      )
+      .map((item) => item.id);
+  }, [userClasses, activeLiveCourseLevels, dbActiveOrders, classes]);
+
+  function isDefaultLiveStarterLesson(lesson: TeacherLesson) {
+    return (
+      lesson.contentType === "liveClass" &&
+      (lesson.packageType || "starter") === "starter" &&
+      !!lesson.classId &&
+      defaultLiveStarterClassIds.includes(lesson.classId)
+    );
+  }
+
   const selectedLevelLessons = useMemo(() => {
   return lessons.filter((lesson) => {
     if (lesson.level !== selectedLevel) return false;
@@ -2292,7 +2334,11 @@ const pendingOrders =
   const lessonPackage = lesson.packageType || "starter";
   const isDigitalStarterLesson = isDigitalLesson && lessonPackage === "starter";
   const isAccessibleLiveLessonAnyPackage = isLiveLesson && hasClassAccess;
-  return isDigitalStarterLesson || isAccessibleLiveLessonAnyPackage;
+  return (
+    isDigitalStarterLesson ||
+    isAccessibleLiveLessonAnyPackage ||
+    isDefaultLiveStarterLesson(lesson)
+  );
 }
 
     if (isDigitalLesson) {
@@ -2306,6 +2352,7 @@ const pendingOrders =
   selectedLevel,
   accessibleClassIds,
   hasAnyLiveCourseOrder,
+  defaultLiveStarterClassIds,
 ]);
 
   const visibleLessons = useMemo(() => {
@@ -2352,7 +2399,9 @@ const lessonsForList = selectedLevelHasAccess
       : false;
 
     const canShowLessonPdf =
-      hasClassAccess || isDigitalPackagePdf;
+      hasClassAccess ||
+      isDigitalPackagePdf ||
+      (hasAnyLiveCourseOrder && isDefaultLiveStarterLesson(lesson));
 
     if (!canShowLessonPdf) return [];
 
@@ -2406,7 +2455,7 @@ const lessonsForList = selectedLevelHasAccess
 
     return materials;
   });
-}, [selectedLevelLessons, accessibleClassIds]);
+}, [selectedLevelLessons, accessibleClassIds, hasAnyLiveCourseOrder, defaultLiveStarterClassIds]);
   useEffect(() => {
   if (visibleLessons.length === 0) return;
 
@@ -3862,10 +3911,14 @@ window.open(worksheet.url, "_blank");
   // Canlı kurs öğrencisi:
   // 1) Ortak dijital başlangıç havuzundaki tüm resmi dersleri görür.
   // 2) Varsa kendi canlı sınıfına yüklenen başlangıç kayıtlarını da görür.
+  // 3) Başka bir öğretmenin sınıfına taşınsa bile varsayılan satış
+  //    sınıfındaki asıl başlangıç derslerini görmeye devam eder.
   if (hasAnyLiveCourseOrder) {
     if (isDigitalPackage) return true;
 
     if (isLiveClassLesson && hasClassAccess) return true;
+
+    if (isDefaultLiveStarterLesson(lesson)) return true;
 
     return false;
   }
