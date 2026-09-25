@@ -10,6 +10,7 @@ type ClassItem = {
   level: "A1" | "A2" | "B1";
   teacherId: string;
   teacherName: string;
+  classType: "live" | "digital";
 };
 
 type StudentAccess = {
@@ -44,6 +45,7 @@ export default function AdminStudentsPage() {
       level: item.level,
       teacherId: item.teacher_id,
       teacherName: item.teacher_name,
+      classType: item.class_type || "live",
     }));
 
     setClasses(mappedClasses);
@@ -87,7 +89,7 @@ setStudentAccessList(
     );
   }
 
-  async function handleSaveAccess() {
+  async function handleSaveAccess(startLevelPeriod = false) {
     if (!username || !mainClassId) {
   alert("Öğrenci kullanıcı adı ve sınıf seçimi zorunlu.");
   return;
@@ -105,6 +107,18 @@ if (!selectedClass) {
 }
 
 const selectedLevel = selectedClass.level;
+
+if (startLevelPeriod) {
+  if (selectedClass.classType !== "live") {
+    alert("Seviye süresi yalnızca canlı sınıf atamasında başlatılabilir.");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `${normalizedUsername} için ${selectedLevel} canlı kurs süresi BUGÜNDEN itibaren 6 ay olarak başlatılacak ve öğrenci "${selectedClass.name}" sınıfına atanacak. Devam edilsin mi?`
+  );
+  if (!confirmed) return;
+}
 
 const { data: existingAccess } = await supabase
   .from("student_class_access")
@@ -140,6 +154,29 @@ if (error) {
   return;
 }
 
+if (startLevelPeriod) {
+  // Seviyenin 6 aylık canlı kurs süresi, bu 0 TL'lik tamamlanmış sipariş
+  // kaydının tarihinden başlar (panel en geç biten siparişi esas alır;
+  // böylece paketle önceden alınmış seviyelerde süre bugünden başlar).
+  const { error: orderError } = await supabase.from("orders").insert({
+    username: normalizedUsername,
+    product_slug: `live-${selectedLevel.toLowerCase()}`,
+    level: selectedLevel,
+    status: "completed",
+    is_activated: true,
+    amount: 0,
+    currency: "TL",
+  });
+
+  if (orderError) {
+    alert(
+      "Öğrenci sınıfa atandı ancak seviye süresi başlatılamadı: " +
+        orderError.message
+    );
+    return;
+  }
+}
+
 const { data: refreshedAccess } = await supabase
   .from("student_class_access")
   .select("*");
@@ -152,7 +189,11 @@ setStudentAccessList(
   }))
 );
 
-alert("Öğrenci sınıfa atandı.");
+alert(
+  startLevelPeriod
+    ? `Öğrenci sınıfa atandı ve ${selectedLevel} süresi bugünden itibaren 6 ay olarak başlatıldı.`
+    : "Öğrenci sınıfa atandı."
+);
   }
 
   return (
@@ -196,11 +237,34 @@ alert("Öğrenci sınıfa atandı.");
               </select>
 
               <button
-                onClick={handleSaveAccess}
+                onClick={() => handleSaveAccess(false)}
                 className="rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800"
               >
                 Öğrenciyi Sınıfa Ata
               </button>
+
+              <button
+                onClick={() => handleSaveAccess(true)}
+                disabled={
+                  classes.find((item) => item.id === mainClassId)?.classType !== "live"
+                }
+                className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                🚀 Sınıfa Ata ve Seviye Süresini Başlat (6 ay)
+              </button>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs leading-5 text-slate-600">
+                <p>
+                  <strong>Öğrenciyi Sınıfa Ata:</strong> Aynı seviyede öğretmen/sınıf
+                  değişikliği için. Erişim süresini değiştirmez.
+                </p>
+                <p className="mt-1">
+                  <strong>Sınıfa Ata ve Seviye Süresini Başlat:</strong> Öğrenci yeni bir
+                  canlı seviyeye (örn. A1 bitti, A2 başlıyor) geçtiğinde kullan. Seçilen
+                  sınıfın seviyesi için 6 aylık erişim bugünden başlar; diğer seviyelerin
+                  süresi etkilenmez.
+                </p>
+              </div>
             </div>
           )}
         </div>
