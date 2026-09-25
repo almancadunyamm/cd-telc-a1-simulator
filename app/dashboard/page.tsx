@@ -2075,12 +2075,11 @@ const isLiveClassStudent = useMemo(() => {
   );
   const hasPendingLiveOrder =
     !isStudentActive &&
-    (isLiveCourseSlug(pendingPaymentSlug) ||
-      dbPendingOrders.some((order: any) =>
-        isLiveCourseSlug(order.product_slug || order.productSlug)
-      ));
+    dbPendingOrders.some((order: any) =>
+      isLiveCourseSlug(order.product_slug || order.productSlug)
+    );
   return hasLiveClass || hasLiveOrder || hasPendingLiveOrder;
-}, [userClasses, dbActiveOrders, dbPendingOrders, isStudentActive, pendingPaymentSlug]);
+}, [userClasses, dbActiveOrders, dbPendingOrders, isStudentActive]);
 
 const showWhatsAppButton = dashboardDataLoaded && !isLiveClassStudent;
 
@@ -2198,10 +2197,18 @@ const isFutureLiveCourseLevel =
     : (activeDigitalOrder?.packageType as PackageType | undefined) ||
       (activeLiveOrder || isStudentActive ? "starter" : undefined);
       const hasAnyLiveCourseOrder =
+  // Canlı kurs öğrencisi olup olmadığı yalnızca gerçek verilere göre
+  // belirlenir: canlı sınıf ataması veya tamamlanmış canlı kurs siparişi.
+  // (Tarayıcıdaki "selected_product_slug" gibi değerler, öğrenci sadece
+  // Canlı Akademi sayfasında bir pakete tıkladığında bile "live-..." olabilir;
+  // bu yüzden karar için kullanılmaz.)
   userClasses.some((classItem) => classItem.classType === "live") ||
   activeLiveCourseLevels.length > 0 ||
-  localStorage.getItem("selected_product_slug")?.includes("live") ||
-  localStorage.getItem("pending_payment_slug")?.includes("live");
+  dbActiveOrders.some(
+    (order: any) =>
+      order.status === "completed" &&
+      isLiveCourseSlug(order.product_slug || order.productSlug)
+  );
   const profileLevel = activeAccessLevels[0] || selectedLevel;
     const packageStudentLabel =
   hasAnyLiveCourseOrder
