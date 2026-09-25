@@ -17,7 +17,7 @@ export default function DestekPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <a
-            href="https://wa.me/905013434419"
+            href="https://wa.me/905426954419"
             target="_blank"
             className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 transition hover:bg-emerald-500/20"
           >

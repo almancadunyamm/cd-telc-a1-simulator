@@ -14,6 +14,11 @@ const resources = [
     desc: "Gerçek sınav formatına uygun dijital deneme sistemini keşfet.",
     href: "/digital-simulation",
   },
+  {
+    title: "Konuşma Kulübü",
+    desc: "Sadece konuşma pratiği yapmak istiyorsan, ayrı paketleri incele.",
+    href: "/konusma-kulubu",
+  },
 ];
 
 export default function KaynaklarPage() {

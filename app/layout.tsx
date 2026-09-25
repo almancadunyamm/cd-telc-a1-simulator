@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import "./globals.css";
 import type { Metadata } from "next";
+import WhatsAppButton from "./components/WhatsAppButton";
 
 export const metadata: Metadata = {
   title: "Almanca Okulum",
@@ -25,7 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body>{children}</body>
+      <body>
+        {children}
+        <WhatsAppButton />
+      </body>
     </html>
   );
 }
