@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 // öğrencinin türüne göre <WhatsAppLink /> bileşenini kendisi render eder.
 const STUDENT_PANEL_PREFIXES = ["/dashboard"];
 
+// Öğretmen ve admin panellerinde buton hiç gösterilmez.
+const STAFF_PANEL_PREFIXES = ["/teacher", "/admin"];
+
 export function WhatsAppLink() {
   return (
     <a
@@ -29,10 +32,13 @@ export function WhatsAppLink() {
 
 export default function WhatsAppButton() {
   const pathname = usePathname() || "";
-  const inStudentPanel = STUDENT_PANEL_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
-  );
+  const matches = (prefixes: string[]) =>
+    prefixes.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+    );
 
-  if (inStudentPanel) return null;
+  if (matches(STUDENT_PANEL_PREFIXES) || matches(STAFF_PANEL_PREFIXES)) {
+    return null;
+  }
   return <WhatsAppLink />;
 }
