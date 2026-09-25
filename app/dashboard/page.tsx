@@ -2405,12 +2405,32 @@ const lessonsForList = selectedLevelHasAccess
       ? accessibleClassIds.includes(lesson.classId)
       : false;
 
+    // Dijital öğrenci için dijital paket dersinin materyalleri, dersin
+    // PDF görünürlük ayarından bağımsız olarak dijital materyaldir.
+    const isDigitalLessonForDigitalStudent =
+      !hasAnyLiveCourseOrder && lesson.contentType === "digitalPackage";
+
     const canShowLessonPdf =
       hasClassAccess ||
       isDigitalPackagePdf ||
+      isDigitalLessonForDigitalStudent ||
       (hasAnyLiveCourseOrder && isDefaultLiveStarterLesson(lesson));
 
     if (!canShowLessonPdf) return [];
+
+    const lessonPackageType: PackageType = lesson.packageType || "starter";
+    const materialSource: "class" | "digital" =
+      isDigitalPackagePdf || isDigitalLessonForDigitalStudent ? "digital" : "class";
+
+    // Dijital derslerde çalışma sayfası, ait olduğu videonun paketinden
+    // daha düşük bir pakette görünmez (Gelişim videosunun çalışma sayfaları
+    // Gelişim grubunda yer alır). Canlı sınıf materyalleri değişmez.
+    function getWorksheetGroup(worksheetPackageType: PackageType): PackageType {
+      if (!isDigitalLessonForDigitalStudent) return worksheetPackageType;
+      return getPackageValue(worksheetPackageType) >= getPackageValue(lessonPackageType)
+        ? worksheetPackageType
+        : lessonPackageType;
+    }
 
     const materials: {
       id: string;
@@ -2427,10 +2447,10 @@ const lessonsForList = selectedLevelHasAccess
         id: `${lesson.id || lesson.title}-main-pdf`,
         title: lesson.pdfTitle || "PDF Materyali",
         url: lesson.pdfUrl,
-        packageType: lesson.packageType || "starter",
+        packageType: lessonPackageType,
         lessonTitle: lesson.title,
         type: "pdf",
-        source: isDigitalPackagePdf ? "digital" : "class",
+        source: materialSource,
       });
     }
 
@@ -2453,10 +2473,10 @@ const lessonsForList = selectedLevelHasAccess
         id: `${lesson.id || lesson.title}-${worksheet.id}`,
         title: worksheet.title,
         url: worksheet.url,
-        packageType: worksheet.packageType,
+        packageType: getWorksheetGroup(worksheet.packageType || "practice"),
         lessonTitle: lesson.title,
         type: "worksheet",
-        source: isDigitalPackagePdf ? "digital" : "class",
+        source: materialSource,
       });
     });
 
