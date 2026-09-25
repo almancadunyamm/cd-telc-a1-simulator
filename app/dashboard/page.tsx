@@ -6481,7 +6481,7 @@ if (!isPreviousThemeCompleted) {
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
     <div className="w-full max-w-xl rounded-[32px] bg-white p-8 shadow-2xl">
       <div className="inline-flex rounded-full bg-purple-100 px-4 py-2 text-sm font-bold text-purple-700">
-        A1 Zirve Paketi
+        {selectedLevel} Zirve Paketi
       </div>
       <h3 className="mt-5 text-3xl font-black text-slate-900">
         Gerçek sınav deneyimi için hazır mısın?
@@ -6503,14 +6503,16 @@ if (!isPreviousThemeCompleted) {
         >
           Vazgeç
         </button>
-        <a
-          href={`https://www.shopier.com/almanca_okulum/46635118`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => {
+            setShowUpgradeModal(false);
+            openPaytrCheckout(`${selectedLevel.toLowerCase()}-master`);
+          }}
           className="flex-1 rounded-2xl bg-purple-600 py-4 text-center text-sm font-black text-white hover:bg-purple-700"
         >
           Zirve'ye Geç →
-        </a>
+        </button>
       </div>
     </div>
   </div>
