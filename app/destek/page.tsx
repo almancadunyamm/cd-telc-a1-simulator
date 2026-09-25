@@ -17,13 +17,13 @@ export default function DestekPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <a
-            href="https://wa.me/905426954419"
+            href="https://wa.me/905013434419"
             target="_blank"
             className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 transition hover:bg-emerald-500/20"
           >
             <p className="text-lg font-bold text-emerald-300">WhatsApp</p>
             <p className="mt-2 text-sm text-slate-300">
-              0542 695 44 19 — hızlı yanıt için tercih edebilirsin.
+              0501 343 44 19 — hızlı yanıt için tercih edebilirsin.
             </p>
           </a>
 
