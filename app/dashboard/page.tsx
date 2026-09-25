@@ -2222,17 +2222,66 @@ const isFutureLiveCourseLevel =
     : `${profileLevel} Öğrencisi`;
     const isDigitalStarterStudent =
   effectivePackageType === "starter" && !hasAnyLiveCourseOrder;
-  const activeAccessEndDate =
-  effectivePackageType === "practice" || effectivePackageType === "master"
-    ? activeDigitalOrder?.accessEndDate || activeLiveOrder?.accessEndDate || null
-    : activeLiveOrder?.accessEndDate || activeDigitalOrder?.accessEndDate || null;
+  // ── Paket erişim süresi ──────────────────────────────────────────────
+  // Başlangıç 3 ay, Gelişim 6 ay, Zirve 12 ay (dijital ve canlı öğrenci için
+  // aynı). Süre, öğrencinin mevcut paketini veren siparişin veritabanındaki
+  // oluşturulma tarihinden (created_at) başlar.
+  const packageDurationMonths =
+    effectivePackageType === "master"
+      ? 12
+      : effectivePackageType === "practice"
+      ? 6
+      : 3;
 
-const packageDefaultDays =
-  effectivePackageType === "master"
-    ? 365
-    : effectivePackageType === "practice"
-    ? 180
-    : 90;
+  const packageDefaultDays =
+    effectivePackageType === "master"
+      ? 365
+      : effectivePackageType === "practice"
+      ? 180
+      : 90;
+
+  const currentPackageOrder = useMemo(() => {
+    if (!currentUser) return undefined;
+
+    // Gelişim / Zirve: paketi veren dijital sipariş (yükseltme tarihi)
+    if (effectivePackageType === "practice" || effectivePackageType === "master") {
+      return activeDigitalOrder;
+    }
+
+    // Canlı sınıf öğrencisi (Başlangıç): seviyeyi kapsayan en eski
+    // tamamlanmış canlı kurs siparişi
+    if (hasAnyLiveCourseOrder) {
+      const liveOrder = dbActiveOrders
+        .filter(
+          (order: any) =>
+            String(order.username || "").trim().toLowerCase() ===
+              String(currentUser.username || "").trim().toLowerCase() &&
+            ["completed", "active"].includes(order.status) &&
+            isLiveCourseSlug(order.product_slug || order.productSlug) &&
+            getLevelsFromSlug(order.product_slug || order.productSlug).includes(selectedLevel)
+        )
+        .sort(
+          (a: any, b: any) =>
+            new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+        )[0];
+
+      if (liveOrder) return liveOrder;
+    }
+
+    return activeDigitalOrder;
+  }, [currentUser, activeDigitalOrder, hasAnyLiveCourseOrder, effectivePackageType, dbActiveOrders, selectedLevel]);
+
+  const activeAccessEndDate = useMemo(() => {
+    const startRaw = currentPackageOrder?.created_at || currentPackageOrder?.createdAt;
+    if (!startRaw) return null;
+
+    const start = new Date(startRaw);
+    if (Number.isNaN(start.getTime())) return null;
+
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + packageDurationMonths);
+    return end.toISOString();
+  }, [currentPackageOrder, packageDurationMonths]);
 
 const remainingDays =
   activeAccessEndDate
