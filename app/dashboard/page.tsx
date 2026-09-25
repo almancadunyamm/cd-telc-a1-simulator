@@ -56,6 +56,7 @@ import { a2Tema11Questions } from "@/app/data/mastery-a2/tema11";
 import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
 import { speakingPatterns } from "@/app/data/speaking_patterns";
 import AnnouncementPopup from "@/components/AnnouncementPopup";
+import { WhatsAppLink } from "@/app/components/WhatsAppButton";
 
 // Sınıf Ligi (ClassLeagueTab) gereksiz yere çok sık veri çektiği için
 // şimdilik menüden kaldırıldı. Yeniden açmak için bunu true yapmak yeterli.
@@ -887,6 +888,7 @@ const earnedBadges = [
   const [hidePendingOrderNotice, setHidePendingOrderNotice] = useState(false);
   const [paymentNoticeRefreshKey, setPaymentNoticeRefreshKey] = useState(0);
   const [dbPendingOrders, setDbPendingOrders] = useState<any[]>([]);
+  const [dashboardDataLoaded, setDashboardDataLoaded] = useState(false);
   const [dbActiveOrders, setDbActiveOrders] = useState<any[]>([]);
   const [classes, setClasses] = useState<AdminClass[]>([]);
   const [teachers, setTeachers] = useState<any[]>([]);
@@ -1896,7 +1898,7 @@ if (allClassIds.length > 0) {
 }
   }
 
-  loadDashboardData();
+  loadDashboardData().finally(() => setDashboardDataLoaded(true));
 }, [router]);
 
   const accessibleClassIds = useMemo(() => {
@@ -2060,6 +2062,27 @@ const isInDefaultClassForSelectedLevel = useMemo(() => {
 
   return !!activeClass?.isDefaultSalesClass;
 }, [studentAccess, classes, selectedLevel]);
+
+// ── Genel WhatsApp butonu görünürlüğü ─────────────────────────────────
+// Panelde yalnızca dijital öğrencilere görünür. Canlı sınıfa atanmış
+// (class_type = "live") veya canlı kurs siparişi olan öğrencide gizlenir.
+const isLiveClassStudent = useMemo(() => {
+  const hasLiveClass = userClasses.some((item) => item.classType === "live");
+  const hasLiveOrder = dbActiveOrders.some(
+    (order: any) =>
+      order.status === "completed" &&
+      isLiveCourseSlug(order.product_slug || order.productSlug)
+  );
+  const hasPendingLiveOrder =
+    !isStudentActive &&
+    (isLiveCourseSlug(pendingPaymentSlug) ||
+      dbPendingOrders.some((order: any) =>
+        isLiveCourseSlug(order.product_slug || order.productSlug)
+      ));
+  return hasLiveClass || hasLiveOrder || hasPendingLiveOrder;
+}, [userClasses, dbActiveOrders, dbPendingOrders, isStudentActive, pendingPaymentSlug]);
+
+const showWhatsAppButton = dashboardDataLoaded && !isLiveClassStudent;
 
   const selectedLevelClasses = useMemo(() => {
     return classes.filter((item) => item.level === selectedLevel);
@@ -3145,6 +3168,7 @@ if (!currentUser) {
           </button>
         </div>
       </div>
+      {showWhatsAppButton && <WhatsAppLink />}
     </main>
   );
 }
@@ -6955,6 +6979,7 @@ if (!isPreviousThemeCompleted) {
     window.location.reload();
   }}
 />
+{showWhatsAppButton && <WhatsAppLink />}
 </main>
   );
 }

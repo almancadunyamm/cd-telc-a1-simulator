@@ -1,6 +1,12 @@
 "use client";
 
-export default function WhatsAppButton() {
+import { usePathname } from "next/navigation";
+
+// Öğrenci paneli: buton burada global olarak gösterilmez; panel sayfası
+// öğrencinin türüne göre <WhatsAppLink /> bileşenini kendisi render eder.
+const STUDENT_PANEL_PREFIXES = ["/dashboard"];
+
+export function WhatsAppLink() {
   return (
     <a
       href="https://wa.me/905013434419"
@@ -19,4 +25,14 @@ export default function WhatsAppButton() {
       </svg>
     </a>
   );
+}
+
+export default function WhatsAppButton() {
+  const pathname = usePathname() || "";
+  const inStudentPanel = STUDENT_PANEL_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+  );
+
+  if (inStudentPanel) return null;
+  return <WhatsAppLink />;
 }
