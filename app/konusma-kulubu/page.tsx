@@ -56,48 +56,48 @@ function selectSpeakingPackage(slug: string) {
 
 export default function KonusmaKulubuPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      {/* ── HEADER ───────────────────────────────────────────────── */}
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5">
-        <a href="/" className="flex items-center gap-3">
-          <img src="/images/icon.png" alt="Almanca Okulum" className="h-12 w-auto" />
-          <div>
-            <p className="text-base font-black text-white">Almanca Okulum</p>
-            <p className="text-xs text-slate-400">Konuşma Kulübü</p>
-          </div>
-        </a>
-        <a
-          href="/login"
-          className="rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-950 hover:bg-slate-200"
-        >
-          Giriş Yap
-        </a>
-      </header>
+    <main className="min-h-screen bg-white text-slate-950">
+      {/* ── HEADER + HERO ────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-yellow-50 px-4 py-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(251,146,60,0.20),transparent_30%),radial-gradient(circle_at_85%_10%,rgba(250,204,21,0.18),transparent_28%)]" />
 
-      {/* ── HERO ─────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-4 py-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(16,185,129,0.18),transparent_30%),radial-gradient(circle_at_85%_15%,rgba(59,130,246,0.15),transparent_30%)]" />
-        <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10 text-4xl">
+        <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between">
+          <a href="/" className="flex items-center gap-3">
+            <img src="/images/icon.png" alt="Almanca Okulum" className="h-12 w-auto" />
+            <div>
+              <p className="text-base font-black text-slate-950">Almanca Okulum</p>
+              <p className="text-xs text-slate-500">Konuşma Kulübü</p>
+            </div>
+          </a>
+          <a
+            href="/login"
+            className="rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+          >
+            Giriş Yap
+          </a>
+        </header>
+
+        <div className="relative z-10 mx-auto max-w-3xl pb-14 pt-12 text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-orange-100 text-4xl shadow-lg shadow-orange-200/60">
             🎙️
           </div>
-          <p className="mt-6 text-xs font-black uppercase tracking-[0.25em] text-emerald-400">
+          <p className="mt-6 text-xs font-black uppercase tracking-[0.25em] text-orange-600">
             Sadece Konuşma Kulübü
           </p>
           <h1 className="mt-4 text-4xl font-black leading-[1.05] tracking-tight md:text-5xl">
-            Almanca Konuşmayı Gerçekten Öğren
+            Almanca Konuşmayı <span className="text-orange-500">Gerçekten Öğren</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-300 md:text-base">
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-600 md:text-base">
             Dijital Kurs veya Canlı Akademi'ye kayıt olmana gerek yok. Konuşma
             Kulübü, sadece konuşma pratiği yapmak isteyenler için ayrı bir
             programdır. Kayıt olduğunda sana bir{" "}
-            <strong className="text-white">konuşma partneri</strong> atanır;
+            <strong className="text-slate-950">konuşma partneri</strong> atanır;
             öğretmen rehberliğinde, basit cümlelerden başlayıp adım adım
             gelişmiş cümlelere ilerlersin.
           </p>
           <a
             href="#paketler"
-            className="mt-8 inline-flex rounded-full bg-emerald-500 px-8 py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/20 hover:bg-emerald-400"
+            className="mt-8 inline-flex rounded-full bg-yellow-400 px-8 py-4 text-sm font-black text-slate-950 shadow-xl shadow-yellow-400/30 hover:bg-yellow-300"
           >
             Paketleri İncele
           </a>
@@ -105,42 +105,60 @@ export default function KonusmaKulubuPage() {
       </section>
 
       {/* ── PAKETLER ─────────────────────────────────────────────── */}
-      <section id="paketler" className="border-t border-white/10 bg-white/[0.02] px-4 py-16">
-        <div className="mx-auto max-w-5xl">
+      <section id="paketler" className="relative overflow-hidden bg-white px-4 py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(251,146,60,0.12),transparent_35%)]" />
+        <div className="relative mx-auto max-w-5xl">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-black md:text-4xl">
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-orange-600">
+              Paketler
+            </p>
+            <h2 className="mt-3 text-3xl font-black md:text-4xl">
               Sana uygun Konuşma Kulübü paketini seç
             </h2>
-            <p className="mt-3 text-sm leading-7 text-slate-400">
+            <p className="mt-3 text-sm leading-7 text-slate-600">
               Tek seviye ile başlayabilir veya A1'den B1'e kadar birlikte
               kayıt olarak avantajlı fiyattan yararlanabilirsin.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+          <div className="mt-12 grid gap-6 sm:grid-cols-3">
             {SPEAKING_CLUB_PACKAGES.map((pkg) => (
               <div
                 key={pkg.slug}
-                className={`relative rounded-3xl border p-6 text-left ${
+                className={`relative rounded-[32px] border p-6 text-left shadow-xl transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${
                   pkg.featured
-                    ? "border-emerald-400 bg-emerald-500/10 shadow-xl shadow-emerald-500/10"
-                    : "border-white/10 bg-white/[0.04]"
+                    ? "border-orange-300 bg-slate-950 text-white ring-4 ring-orange-100"
+                    : "border-slate-200 bg-white text-slate-950"
                 }`}
               >
                 {pkg.featured && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-emerald-500 px-3 py-1 text-xs font-black text-white">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-orange-500 px-4 py-1 text-xs font-black text-white shadow-lg">
                     En Çok Tercih Edilen
                   </span>
                 )}
-                <p className="text-xs font-black uppercase tracking-widest text-emerald-400">
+                <p
+                  className={`text-xs font-black uppercase tracking-widest ${
+                    pkg.featured ? "text-yellow-300" : "text-orange-600"
+                  }`}
+                >
                   {pkg.levels}
                 </p>
-                <p className="mt-1 text-lg font-black text-white">{pkg.label}</p>
-                <p className="mt-3 text-3xl font-black text-white">{pkg.priceLabel}</p>
-                <ul className="mt-5 space-y-2 text-sm leading-6 text-slate-300">
+                <p className="mt-1 text-lg font-black">{pkg.label}</p>
+                <p
+                  className={`mt-3 text-4xl font-black ${
+                    pkg.featured ? "text-white" : "text-orange-500"
+                  }`}
+                >
+                  {pkg.priceLabel}
+                </p>
+                <ul
+                  className={`mt-5 space-y-2 text-sm font-semibold leading-6 ${
+                    pkg.featured ? "text-slate-200" : "text-slate-700"
+                  }`}
+                >
                   {pkg.features.map((f) => (
                     <li key={f} className="flex gap-2">
-                      <span className="text-emerald-400">✓</span>
+                      <span className={pkg.featured ? "text-orange-400" : "text-orange-500"}>✓</span>
                       <span>{f}</span>
                     </li>
                   ))}
@@ -148,10 +166,10 @@ export default function KonusmaKulubuPage() {
                 <a
                   href="/register"
                   onClick={() => selectSpeakingPackage(pkg.slug)}
-                  className={`mt-6 flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-black transition ${
+                  className={`mt-6 flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-black transition ${
                     pkg.featured
-                      ? "bg-emerald-500 text-white hover:bg-emerald-400"
-                      : "bg-white text-slate-950 hover:bg-slate-200"
+                      ? "bg-orange-500 text-white hover:bg-orange-400"
+                      : "bg-slate-950 text-white hover:bg-slate-800"
                   }`}
                 >
                   Paketi Seç
@@ -168,9 +186,14 @@ export default function KonusmaKulubuPage() {
       </section>
 
       {/* ── NASIL ÇALIŞIR ────────────────────────────────────────── */}
-      <section className="px-4 py-16">
+      <section className="bg-slate-50 px-4 py-20">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-center text-2xl font-black md:text-3xl">Nasıl çalışır?</h2>
+          <div className="text-center">
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-orange-600">
+              3 Adımda Başla
+            </p>
+            <h2 className="mt-3 text-2xl font-black md:text-3xl">Nasıl çalışır?</h2>
+          </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
             {[
               {
@@ -189,10 +212,10 @@ export default function KonusmaKulubuPage() {
                 desc: "Haftalık görevlerle bol tekrar esasıyla akıcı konuşmaya adım adım yaklaşırsın.",
               },
             ].map((step) => (
-              <div key={step.title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
+              <div key={step.title} className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
                 <div className="text-3xl">{step.icon}</div>
-                <p className="mt-3 text-sm font-black text-white">{step.title}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-400">{step.desc}</p>
+                <p className="mt-3 text-sm font-black text-slate-950">{step.title}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{step.desc}</p>
               </div>
             ))}
           </div>
