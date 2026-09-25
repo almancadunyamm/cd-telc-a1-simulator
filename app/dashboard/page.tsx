@@ -2187,16 +2187,7 @@ const isFutureLiveCourseLevel =
   return allLevels.length > 0 ? allLevels : [selectedLevel];
 }, [currentUser, selectedLevel, dbActiveOrders, accessibleClassIds, classes]);
 
-  const effectivePackageType: PackageType | undefined =
-  activeDigitalOrder?.productSlug?.includes("master")
-    ? "master"
-    : activeDigitalOrder?.productSlug?.includes("practice")
-    ? "practice"
-    : activeDigitalOrder?.productSlug?.includes("starter")
-    ? "starter"
-    : (activeDigitalOrder?.packageType as PackageType | undefined) ||
-      (activeLiveOrder || isStudentActive ? "starter" : undefined);
-      const hasAnyLiveCourseOrder =
+  const hasAnyLiveCourseOrder =
   // Canlı kurs öğrencisi olup olmadığı yalnızca gerçek verilere göre
   // belirlenir: canlı sınıf ataması veya tamamlanmış canlı kurs siparişi.
   // (Tarayıcıdaki "selected_product_slug" gibi değerler, öğrenci sadece
@@ -2209,6 +2200,23 @@ const isFutureLiveCourseLevel =
       order.status === "completed" &&
       isLiveCourseSlug(order.product_slug || order.productSlug)
   );
+
+  const baseEffectivePackageType: PackageType | undefined =
+  activeDigitalOrder?.productSlug?.includes("master")
+    ? "master"
+    : activeDigitalOrder?.productSlug?.includes("practice")
+    ? "practice"
+    : activeDigitalOrder?.productSlug?.includes("starter")
+    ? "starter"
+    : (activeDigitalOrder?.packageType as PackageType | undefined) ||
+      (activeLiveOrder || isStudentActive ? "starter" : undefined);
+
+  // Canlı kurs öğrencisi doğrudan Gelişim öğrencisi sayılır (yükseltme
+  // gerekmez). Zirve'ye geçmişse Zirve olarak kalır.
+  const effectivePackageType: PackageType | undefined =
+    hasAnyLiveCourseOrder && baseEffectivePackageType !== "master"
+      ? "practice"
+      : baseEffectivePackageType;
   const profileLevel = activeAccessLevels[0] || selectedLevel;
     const packageStudentLabel =
   hasAnyLiveCourseOrder
@@ -2223,16 +2231,12 @@ const isFutureLiveCourseLevel =
     const isDigitalStarterStudent =
   effectivePackageType === "starter" && !hasAnyLiveCourseOrder;
   // ── Paket erişim süresi ──────────────────────────────────────────────
-  // Başlangıç 3 ay, Gelişim 6 ay, Zirve 12 ay (dijital ve canlı öğrenci için
-  // aynı). Süre, öğrencinin mevcut paketini veren siparişin veritabanındaki
-  // oluşturulma tarihinden (created_at) başlar.
-  const packageDurationMonths =
-    effectivePackageType === "master"
-      ? 12
-      : effectivePackageType === "practice"
-      ? 6
-      : 3;
-
+  // Her seviye ayrı hesaplanır. Seviyeyi kapsayan her tamamlanmış sipariş
+  // kendi tarihinden bir bitiş tarihi üretir; en geç biten geçerlidir:
+  //   dijital Başlangıç 3 ay · dijital Gelişim 6 ay · Zirve 12 ay
+  //   canlı kurs 6 ay (canlı öğrenci doğrudan Gelişim öğrencisidir)
+  // Yükseltmede süre yükseltme tarihinden sıfırdan başlar; önceki pakette
+  // kalan süre eklenmez.
   const packageDefaultDays =
     effectivePackageType === "master"
       ? 365
@@ -2240,48 +2244,44 @@ const isFutureLiveCourseLevel =
       ? 180
       : 90;
 
-  const currentPackageOrder = useMemo(() => {
-    if (!currentUser) return undefined;
-
-    // Gelişim / Zirve: paketi veren dijital sipariş (yükseltme tarihi)
-    if (effectivePackageType === "practice" || effectivePackageType === "master") {
-      return activeDigitalOrder;
-    }
-
-    // Canlı sınıf öğrencisi (Başlangıç): seviyeyi kapsayan en eski
-    // tamamlanmış canlı kurs siparişi
-    if (hasAnyLiveCourseOrder) {
-      const liveOrder = dbActiveOrders
-        .filter(
-          (order: any) =>
-            String(order.username || "").trim().toLowerCase() ===
-              String(currentUser.username || "").trim().toLowerCase() &&
-            ["completed", "active"].includes(order.status) &&
-            isLiveCourseSlug(order.product_slug || order.productSlug) &&
-            getLevelsFromSlug(order.product_slug || order.productSlug).includes(selectedLevel)
-        )
-        .sort(
-          (a: any, b: any) =>
-            new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
-        )[0];
-
-      if (liveOrder) return liveOrder;
-    }
-
-    return activeDigitalOrder;
-  }, [currentUser, activeDigitalOrder, hasAnyLiveCourseOrder, effectivePackageType, dbActiveOrders, selectedLevel]);
-
   const activeAccessEndDate = useMemo(() => {
-    const startRaw = currentPackageOrder?.created_at || currentPackageOrder?.createdAt;
-    if (!startRaw) return null;
+    if (!currentUser) return null;
 
-    const start = new Date(startRaw);
-    if (Number.isNaN(start.getTime())) return null;
+    const username = String(currentUser.username || "").trim().toLowerCase();
 
-    const end = new Date(start);
-    end.setMonth(end.getMonth() + packageDurationMonths);
-    return end.toISOString();
-  }, [currentPackageOrder, packageDurationMonths]);
+    function getOrderDurationMonths(slug: string): number | null {
+      const value = slug.toLowerCase();
+      if (value.startsWith("konusma-") || value.startsWith("ozel-test")) return null;
+      if (value.includes("master") || value.includes("zirve")) return 12;
+      if (isLiveCourseSlug(value)) return 6;
+      if (value.includes("practice") || value.includes("gelisim")) return 6;
+      if (value.includes("starter")) return 3;
+      return null;
+    }
+
+    let latestEnd: Date | null = null;
+
+    dbActiveOrders.forEach((order: any) => {
+      const slug = String(order.product_slug || order.productSlug || "");
+      if (String(order.username || "").trim().toLowerCase() !== username) return;
+      if (!["completed", "active"].includes(order.status)) return;
+      if (!getLevelsFromSlug(slug).includes(selectedLevel)) return;
+
+      const months = getOrderDurationMonths(slug);
+      const startRaw = order.created_at || order.createdAt;
+      if (!months || !startRaw) return;
+
+      const start = new Date(startRaw);
+      if (Number.isNaN(start.getTime())) return;
+
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + months);
+
+      if (!latestEnd || end > latestEnd) latestEnd = end;
+    });
+
+    return latestEnd ? (latestEnd as Date).toISOString() : null;
+  }, [currentUser, dbActiveOrders, selectedLevel]);
 
 const remainingDays =
   activeAccessEndDate
