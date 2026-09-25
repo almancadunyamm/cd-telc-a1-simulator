@@ -1,3 +1,5 @@
+import CorporateShell from "@/app/components/CorporateShell";
+
 const features = [
   {
     title: "Dijital Paketler",
@@ -27,10 +29,10 @@ const features = [
 
 export default function AlmancaOkulumPage() {
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-16 text-white">
-      <article className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/[0.04] p-8 sm:p-10">
-        <div className="mb-10 border-b border-white/10 pb-8">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">
+    <CorporateShell>
+      <article className="mx-auto max-w-4xl rounded-[32px] border border-slate-200 bg-white shadow-xl p-8 sm:p-10">
+        <div className="mb-10 border-b border-slate-200 pb-8">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-600">
             Platform
           </p>
 
@@ -38,7 +40,7 @@ export default function AlmancaOkulumPage() {
             Almanca Okulum Nedir?
           </h1>
 
-          <p className="mt-4 text-sm text-slate-400 sm:text-base">
+          <p className="mt-4 text-sm text-slate-600 sm:text-base">
             TELC, Goethe ve ÖSD sınavlarına hazırlık için geliştirdiğimiz,
             canlı ders ve dijital içeriği bir arada sunan öğrenme platformu.
           </p>
@@ -48,33 +50,33 @@ export default function AlmancaOkulumPage() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
             >
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-lg font-bold text-slate-950">
                 {feature.title}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-400">
+              <p className="mt-2 text-sm leading-6 text-slate-600">
                 {feature.desc}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="mt-10 rounded-2xl border border-blue-500/20 bg-blue-500/10 p-6 text-sm text-slate-200 sm:text-base">
+        <div className="mt-10 rounded-2xl border border-orange-200 bg-orange-50 p-6 text-sm text-slate-700 sm:text-base">
           Platformu incelemek ve seviyene uygun paketi görmek için{" "}
-          <a href="/register" className="font-bold text-blue-300 hover:text-white">
+          <a href="/register" className="font-bold text-orange-600 hover:text-orange-600">
             hemen kayıt ol
           </a>{" "}
           veya{" "}
           <a
             href="/almanca-seviye-tespit-sinavi"
-            className="font-bold text-blue-300 hover:text-white"
+            className="font-bold text-orange-600 hover:text-orange-600"
           >
             ücretsiz seviye tespit sınavına
           </a>{" "}
           göz at.
         </div>
       </article>
-    </main>
+    </CorporateShell>
   );
 }

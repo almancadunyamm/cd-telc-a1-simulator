@@ -1,15 +1,17 @@
+import CorporateShell from "@/app/components/CorporateShell";
+
 export default function DestekPage() {
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-16 text-white">
-      <article className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-white/[0.04] p-8 sm:p-10">
-        <div className="mb-10 border-b border-white/10 pb-8">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">
+    <CorporateShell>
+      <article className="mx-auto max-w-3xl rounded-[32px] border border-slate-200 bg-white shadow-xl p-8 sm:p-10">
+        <div className="mb-10 border-b border-slate-200 pb-8">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-600">
             Almanca Okulum
           </p>
 
           <h1 className="mt-4 text-4xl font-black tracking-tight">Destek</h1>
 
-          <p className="mt-4 text-sm text-slate-400 sm:text-base">
+          <p className="mt-4 text-sm text-slate-600 sm:text-base">
             Hesabın, ödemen veya derslerinle ilgili bir sorun mu var? Sana en
             hızlı şekilde yardımcı olalım.
           </p>
@@ -19,40 +21,40 @@ export default function DestekPage() {
           <a
             href="https://wa.me/905013434419"
             target="_blank"
-            className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 transition hover:bg-emerald-500/20"
+            className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 transition hover:bg-emerald-100"
           >
-            <p className="text-lg font-bold text-emerald-300">WhatsApp</p>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="text-lg font-bold text-emerald-600">WhatsApp</p>
+            <p className="mt-2 text-sm text-slate-600">
               0501 343 44 19 — hızlı yanıt için tercih edebilirsin.
             </p>
           </a>
 
           <a
             href="mailto:almancaokulum.info@gmail.com"
-            className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-5 transition hover:bg-blue-500/20"
+            className="rounded-2xl border border-orange-200 bg-orange-50 p-5 transition hover:bg-orange-100"
           >
-            <p className="text-lg font-bold text-blue-300">E-posta</p>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="text-lg font-bold text-orange-600">E-posta</p>
+            <p className="mt-2 text-sm text-slate-600">
               almancaokulum.info@gmail.com
             </p>
           </a>
         </div>
 
-        <div className="mt-8 space-y-4 text-sm leading-6 text-slate-400">
+        <div className="mt-8 space-y-4 text-sm leading-6 text-slate-600">
           <p>
-            <span className="font-bold text-white">Ödeme ile ilgili sorunlar:</span>{" "}
+            <span className="font-bold text-slate-950">Ödeme ile ilgili sorunlar:</span>{" "}
             Ödeme yaptığın halde erişimin açılmadıysa, işlem numaranla
             birlikte bize WhatsApp veya e-posta üzerinden ulaşabilirsin.
           </p>
           <p>
-            <span className="font-bold text-white">Ders ve içerik soruları:</span>{" "}
+            <span className="font-bold text-slate-950">Ders ve içerik soruları:</span>{" "}
             Panelindeki derslerle ilgili sorularını eğitmenlerimize iletmek
             için de aynı kanalları kullanabilirsin.
           </p>
           <p>
-            <span className="font-bold text-white">İptal ve iade talepleri:</span>{" "}
+            <span className="font-bold text-slate-950">İptal ve iade talepleri:</span>{" "}
             Koşullar için{" "}
-            <a href="/mesafeli-satis" className="text-blue-400 hover:text-white">
+            <a href="/mesafeli-satis" className="text-orange-600 hover:text-orange-600">
               Mesafeli Satış Sözleşmesi
             </a>{" "}
             sayfamıza göz atabilir, talebini yine yukarıdaki kanallardan
@@ -60,6 +62,6 @@ export default function DestekPage() {
           </p>
         </div>
       </article>
-    </main>
+    </CorporateShell>
   );
 }

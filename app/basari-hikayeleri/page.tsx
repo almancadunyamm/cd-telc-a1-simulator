@@ -1,3 +1,5 @@
+import CorporateShell from "@/app/components/CorporateShell";
+
 const approachPoints = [
   {
     title: "Seviyene uygun hazırlık",
@@ -19,10 +21,10 @@ const approachPoints = [
 
 export default function BasariHikayeleriPage() {
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-16 text-white">
-      <article className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/[0.04] p-8 sm:p-10">
-        <div className="mb-10 border-b border-white/10 pb-8">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">
+    <CorporateShell>
+      <article className="mx-auto max-w-4xl rounded-[32px] border border-slate-200 bg-white shadow-xl p-8 sm:p-10">
+        <div className="mb-10 border-b border-slate-200 pb-8">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-600">
             Almanca Okulum
           </p>
 
@@ -30,7 +32,7 @@ export default function BasariHikayeleriPage() {
             Başarı Yaklaşımımız
           </h1>
 
-          <p className="mt-4 text-sm text-slate-400 sm:text-base">
+          <p className="mt-4 text-sm text-slate-600 sm:text-base">
             Öğrencilerimizin TELC, Goethe ve ÖSD sınavlarında başarılı olmasını
             sağlayan çalışma yaklaşımımız.
           </p>
@@ -40,21 +42,21 @@ export default function BasariHikayeleriPage() {
           {approachPoints.map((point) => (
             <div
               key={point.title}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
             >
-              <h2 className="text-lg font-bold text-white">{point.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-400">
+              <h2 className="text-lg font-bold text-slate-950">{point.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
                 {point.desc}
               </p>
             </div>
           ))}
         </div>
 
-        <p className="mt-10 text-sm leading-6 text-slate-400">
+        <p className="mt-10 text-sm leading-6 text-slate-600">
           Sınav sonuçlarına ve öğrenci deneyimlerine dair paylaşımlarımızı
           önümüzdeki dönemde bu sayfada güncelleyeceğiz.
         </p>
       </article>
-    </main>
+    </CorporateShell>
   );
 }

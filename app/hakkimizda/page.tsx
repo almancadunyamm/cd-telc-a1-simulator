@@ -1,3 +1,5 @@
+import CorporateShell from "@/app/components/CorporateShell";
+
 const stats = [
   { value: "7500+", label: "Öğrenci" },
   { value: "15+ Yıl", label: "Online Eğitim Deneyimi" },
@@ -7,10 +9,10 @@ const stats = [
 
 export default function HakkimizdaPage() {
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-16 text-white">
-      <article className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/[0.04] p-8 sm:p-10">
-        <div className="mb-10 border-b border-white/10 pb-8">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">
+    <CorporateShell>
+      <article className="mx-auto max-w-4xl rounded-[32px] border border-slate-200 bg-white shadow-xl p-8 sm:p-10">
+        <div className="mb-10 border-b border-slate-200 pb-8">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-600">
             Almanca Okulum
           </p>
 
@@ -19,7 +21,7 @@ export default function HakkimizdaPage() {
           </h1>
         </div>
 
-        <div className="space-y-5 text-sm leading-7 text-slate-300 sm:text-base">
+        <div className="space-y-5 text-sm leading-7 text-slate-600 sm:text-base">
           <p>
             Almanca Okulum, TELC, Goethe ve ÖSD sınavlarına hazırlanan
             öğrencilere yönelik, tamamen dijital bir Almanca öğrenme
@@ -45,16 +47,16 @@ export default function HakkimizdaPage() {
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-4 border-t border-white/10 pt-8 sm:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-4 border-t border-slate-200 pt-8 sm:grid-cols-4">
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center"
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center"
             >
-              <p className="text-2xl font-black text-blue-400 sm:text-3xl">
+              <p className="text-2xl font-black text-orange-500 sm:text-3xl">
                 {stat.value}
               </p>
-              <p className="mt-1 text-xs text-slate-400 sm:text-sm">
+              <p className="mt-1 text-xs text-slate-600 sm:text-sm">
                 {stat.label}
               </p>
             </div>
@@ -66,6 +68,6 @@ export default function HakkimizdaPage() {
           tahmini/özet bilgilerdir.
         </p>
       </article>
-    </main>
+    </CorporateShell>
   );
 }
