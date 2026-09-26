@@ -277,6 +277,8 @@ export default function LevelTestPage() {
           </p>
         </div>
 
+        <HomeLink />
+
         <SeoSection />
       </main>
     );
@@ -440,6 +442,8 @@ export default function LevelTestPage() {
             </button>
           </div>
         </div>
+
+        <HomeLink />
       </main>
     );
   }
@@ -511,12 +515,27 @@ export default function LevelTestPage() {
           </div>
         </div>
 
+        <HomeLink />
+
         <SeoSection />
       </main>
     );
   }
 
   return null;
+}
+
+function HomeLink() {
+  return (
+    <div className="mx-auto mt-8 flex max-w-3xl justify-center">
+      <a
+        href="/"
+        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:border-blue-300 hover:bg-blue-50"
+      >
+        ← Ana Sayfaya Dön
+      </a>
+    </div>
+  );
 }
 
 function SeoSection() {
