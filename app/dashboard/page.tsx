@@ -4728,29 +4728,38 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
       <div className="rounded-3xl bg-gradient-to-br from-purple-50 to-blue-50 p-5 text-slate-900 shadow-lg transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl">
         {isDigitalStarterStudent ? (
   <>
-    <p className="text-sm font-semibold text-purple-600">
-  🔒 Mentor Destekli Konuşma Akademisi
-</p>
+    <div className="mb-4 flex items-center justify-between">
+      <p className="text-sm font-semibold text-purple-600">
+        🔒 Öğretmenle Canlı Hazırlan
+      </p>
+      <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700">
+        Canlı Ders
+      </span>
+    </div>
 
-    <p className="mt-3 text-sm leading-6 text-slate-600">
-  Kurs süreciniz boyunca eğitmen tarafından yönlendirilen konuşma çalışmaları,
-  düzenli görev sistemi ve kişisel geri bildirimlerle kontrollü bir gelişim
-  deneyimi yaşayın.
-</p>
-
-    <div className="mt-4 rounded-2xl bg-white/70 p-3 text-sm text-slate-600">
-  ✓ Kişisel konuşma gelişim takibi<br />
-  ✓ Eğitmen geri bildirimli görev sistemi<br />
-  ✓ Haftalık yönlendirme ve çalışma planı<br />
-  ✓ Gerçek sınav odaklı konuşma pratiği<br />
-  ✓ Öncelikli öğrenci destek hattı
-</div>
+    <div className="space-y-3">
+      {[
+        "Canlı Zoom dersleri",
+        "Öğretmen geri bildirimi",
+        "Konuşma kulübü ve partner pratiği",
+        "Ödev takibi ve sınav hazırlığı",
+      ].map((item) => (
+        <div
+          key={item}
+          className="flex items-center rounded-2xl bg-white/80 p-3"
+        >
+          <span className="text-sm font-medium text-slate-600">
+            {item}
+          </span>
+        </div>
+      ))}
+    </div>
 
     {!hasAnyLiveCourseOrder && (
     <button
       type="button"
       onClick={() => setPackagePicker({ mode: "live", level: selectedLevel })}
-      className="mt-5 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-sm font-bold text-white hover:from-purple-700 hover:to-blue-700"
+      className="mt-5 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-sm font-black text-white hover:from-purple-700 hover:to-blue-700"
     >
       🎓 {selectedLevel} Canlı Programını Keşfet
     </button>
