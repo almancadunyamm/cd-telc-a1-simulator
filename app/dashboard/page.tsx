@@ -467,7 +467,7 @@ function SpeakingClubAccessCard({
           {(["A1", "A2", "B1"] as Level[]).map((lvl) => (
             <div
               key={lvl}
-              className={`rounded-2xl p-4 border ${lvl === level ? "bg-emerald-100 border-emerald-300" : "bg-white border-slate-200"}`}
+              className={`rounded-2xl p-4 border shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg ${lvl === level ? "bg-emerald-100 border-emerald-300" : "bg-white border-slate-200"}`}
             >
               <p className="text-xs font-black uppercase tracking-wider text-slate-500">{lvl}</p>
               <p className="mt-1 text-xl font-black text-slate-900">{SPEAKING_LEVEL_SENTENCE_TARGET[lvl]} cümle</p>
@@ -491,9 +491,9 @@ function SpeakingClubAccessCard({
           {SPEAKING_CLUB_PACKAGES.map((pkg) => (
             <div
               key={pkg.slug}
-              className={`relative rounded-3xl border p-6 text-left ${
+              className={`relative rounded-3xl border p-6 text-left shadow-xl transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${
                 pkg.featured
-                  ? "border-emerald-500 bg-slate-900 text-white shadow-xl"
+                  ? "border-emerald-500 bg-slate-900 text-white"
                   : "border-slate-200 bg-white text-slate-900"
               }`}
             >

@@ -219,6 +219,15 @@ export default function KonusmaKulubuPage() {
               </div>
             ))}
           </div>
+
+          <div className="mt-12 flex justify-center">
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:border-orange-300 hover:bg-orange-50"
+            >
+              ← Ana Sayfa
+            </a>
+          </div>
         </div>
       </section>
     </main>
