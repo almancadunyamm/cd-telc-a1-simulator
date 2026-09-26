@@ -1,5 +1,13 @@
 ﻿"use client";
 import { useState } from "react";
+// Ustalık testi tema sayısı seviyeye göre değişir (B1 henüz hazırlanıyor)
+const MASTERY_THEMES_BY_LEVEL: Record<string, number | null> = { A1: 12, A2: 10, B1: null };
+function masteryLabel(level: string, starter: boolean) {
+  const total = MASTERY_THEMES_BY_LEVEL[level];
+  if (!total) return "Ustalık Testleri (yakında)";
+  return `Ustalık Testleri (${starter ? Math.min(6, total) : total} tema)`;
+}
+
 export default function DigitalSimulationPage() {
     const [starterLevel, setStarterLevel] = useState<"A1" | "A2" | "B1">("A1");
 const [practiceLevel, setPracticeLevel] = useState<"A1" | "A2" | "B1">("A1");
@@ -104,10 +112,10 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           features: [
             "Tema bazlı ilerleme",
             "18 video ders erişimi",
-            "Ustalık Testleri",
-            "Kelime Arenası",
+            masteryLabel(starterLevel, true),
+            "Kelime Arenası (6 tema)",
             "Temel TELC hazırlık alanı",
-            "3 Ay erişim",
+            "3 ay erişim",
           ],
         },
         {
@@ -117,11 +125,11 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           badge: `${practiceLevel} Gelişim`,
           highlight: true,
           features: [
-            "2 adet Goethe ve TELC uyumlu dijital Deneme",
             "Tema bazlı ilerleme",
-            "Bütün konuları içeren video dersler",
-            "Ustalık Testleri",
-            "Kelime Arenası",
+            "56 video ders erişimi (bütün konular)",
+            masteryLabel(practiceLevel, false),
+            "Kelime Arenası (12 tema)",
+            "2 adet Goethe ve TELC uyumlu dijital deneme",
             "6 ay erişim",
           ],
         },
@@ -132,10 +140,11 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
           badge: `${masterLevel} Zirve`,
           highlight: false,
           features: [
-            "10 TELC dijital deneme",
-            "Tüm video ders arşivi",
-            "Ustalık Testleri",
-            "Kelime Arenası",
+            "Tema bazlı ilerleme",
+            "56 video ders erişimi (bütün konular)",
+            masteryLabel(masterLevel, false),
+            "Kelime Arenası (12 tema)",
+            "10 adet Goethe ve TELC uyumlu dijital deneme",
             "Zirve materyal sistemi",
             "12 ay erişim",
           ],
