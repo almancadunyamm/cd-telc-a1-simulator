@@ -3945,7 +3945,7 @@ if (!currentUser) {
 
 <div className="pointer-events-none absolute right-0 top-0 h-full w-20 rounded-r-2xl bg-gradient-to-l from-white via-white/80 to-transparent" />
 </div>
-<div className="relative w-full min-w-0 overflow-hidden">
+<div className={`relative w-full min-w-0 overflow-hidden ${activeDashboardTab !== "home" ? "pt-4" : ""}`}>
 {activeDashboardTab !== "home" && (
   <button
     type="button"
@@ -3958,7 +3958,7 @@ if (!currentUser) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }}
     aria-label="Ana Sayfa"
-    className="absolute right-3 top-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-500 shadow-sm ring-1 ring-slate-200/80 backdrop-blur transition hover:text-slate-900 hover:ring-slate-300 sm:right-4 sm:top-4"
+    className="absolute right-6 top-0 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-500 shadow-sm ring-1 ring-slate-200/80 backdrop-blur transition hover:text-slate-900 hover:ring-slate-300"
   >
     <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-3.5 w-3.5">
       <path d="M10.7 2.3a1 1 0 0 0-1.4 0l-7 7A1 1 0 0 0 3 11h1v6a1 1 0 0 0 1 1h3v-4h4v4h3a1 1 0 0 0 1-1v-6h1a1 1 0 0 0 .7-1.7l-7-7Z" />
@@ -5889,7 +5889,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
 )}
 {activeDashboardTab === "vocabulary" && (
   <section className="mb-8">
-    <div className="rounded-[2rem] bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 px-3 pb-6 pt-12 sm:px-6 sm:pt-6">
+    <div className="rounded-[2rem] bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 px-3 py-6 sm:px-6">
       <div>
         <p className="text-sm font-black uppercase tracking-widest text-emerald-700">
           Kelime & Ustalık Testleri
@@ -6875,7 +6875,7 @@ if (!isPreviousThemeCompleted) {
   </section>
 )}
 {activeDashboardTab === "exams" && (
-  <section className="mb-8 rounded-3xl bg-white p-6 pt-12 shadow-lg sm:pt-6">
+  <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
     <p className="text-sm font-black uppercase tracking-widest text-blue-600">
       Goethe ve TELC Deneme Merkezi
     </p>
@@ -7063,7 +7063,7 @@ if (!isPreviousThemeCompleted) {
   return (
   <>
   {/* GENEL İLERLEME */}
-  <section className="mb-8 rounded-3xl bg-white p-6 pt-14 shadow-lg">
+  <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h2 className="text-xl font-bold text-slate-900">
         {shownLevel} Genel İlerleme
