@@ -5765,6 +5765,9 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
   onUpsell={() => { setUpsellPackage("practice"); setShowUpsell(true); }}
   onB1Live={() => setPackagePicker({ mode: "live", level: "B1" })}
   onRoundComplete={() => completeDailyTask("pdf")}
+  onLevelLocked={(level) =>
+    setPackagePicker({ mode: hasAnyLiveCourseOrder ? "live" : "digital", level })
+  }
 />
   </section>
 )}

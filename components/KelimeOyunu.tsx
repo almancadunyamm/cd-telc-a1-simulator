@@ -396,9 +396,12 @@ type Props = {
   // Bir tur (tema turu veya genel sınav) bitip kaydedildiğinde çağrılır;
   // panelde "Kelime Arenasında oyna" günlük görevini tamamlar.
   onRoundComplete?: () => void;
+  // Paketi olmayan seviyeye (örn. A2/B1) tıklanınca çağrılır; panel dijital
+  // paket seçim ekranını o seviye seçili olarak açar.
+  onLevelLocked?: (level: "A1" | "A2" | "B1") => void;
 };
 
-export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [], onUpsell, onB1Live, onRoundComplete }: Props) {
+export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [], onUpsell, onB1Live, onRoundComplete, onLevelLocked }: Props) {
   const [ekran, setEkran] = useState<Ekran>("menu");
   const [tema, setTema] = useState<TemaKey | null>(null);
   const [mod, setMod] = useState<Mod>("de_to_tr");
@@ -660,9 +663,14 @@ const bugun = new Date().toISOString().split("T")[0];
   // içindeki temalar yine sırayla açılır.
   const hasLevelAccess = (level: "A1" | "A2" | "B1") => activeAccessLevels.includes(level);
 
+  const openLockedLevel = (level: "A1" | "A2" | "B1") => {
+    if (onLevelLocked) onLevelLocked(level);
+    else if (onUpsell) onUpsell();
+  };
+
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
     if (!hasLevelAccess(level)) {
-      if (onUpsell) onUpsell();
+      openLockedLevel(level);
       return;
     }
     setSelectedWordLevel(level);
@@ -680,7 +688,7 @@ const bugun = new Date().toISOString().split("T")[0];
 
   const hemenBasla = () => {
     if (!hasLevelAccess(selectedWordLevel)) {
-      if (onUpsell) onUpsell();
+      openLockedLevel(selectedWordLevel);
       return;
     }
     // Tüm temalar bittiyse seviye tamamlandı ekranına git
@@ -1206,7 +1214,7 @@ const hasAccess = (temaNo <= 6 || hasDev) && hasLevelAccess(selectedWordLevel);
                 const temaYuzde = Math.min(100, Math.round((temaLearned.length / val.kelimeler.length) * 100));
                 return (
                   <button key={key} onClick={() => {
-                    if (!hasLevelAccess(selectedWordLevel)) { if (onUpsell) onUpsell(); return; }
+                    if (!hasLevelAccess(selectedWordLevel)) { openLockedLevel(selectedWordLevel); return; }
                     if (!hasAccess) { setUyariMesaji("🔒 Bu Tema Kilitli\n\nBu temaya erişmek için Gelişim Paketi gerekiyor."); return; }
                     if (!prevDone) { setUyariMesaji(`🎯 Sıradaki Tema Kilitli\n\nÖnce Tema ${temaNo - 1}'i tamamlamalısın.`); return; }
                     setTema(key); setEkran("mod");
