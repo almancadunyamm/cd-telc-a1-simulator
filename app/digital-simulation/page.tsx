@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState } from "react";
 // Ustalık testi tema sayısı seviyeye göre değişir (B1 henüz hazırlanıyor)
-const MASTERY_THEMES_BY_LEVEL: Record<string, number | null> = { A1: 12, A2: 10, B1: null };
+const MASTERY_THEMES_BY_LEVEL: Record<string, number | null> = { A1: 12, A2: 12, B1: null };
 function masteryLabel(level: string, starter: boolean) {
   const total = MASTERY_THEMES_BY_LEVEL[level];
   if (!total) return "Ustalık Testleri (yakında)";
