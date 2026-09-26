@@ -942,6 +942,17 @@ const completeSpeakingTask = () => {
   });
 };
 
+// Konuşma görevi: öğrenci bugün Konuşma Kulübü'nde görev bildirimini
+// gönderdiyse (speaking_progress.son_bildirim_tarihi = bugün) hangi cihazdan
+// girerse girsin tik görünür.
+useEffect(() => {
+  const todayUtc = new Date().toISOString().slice(0, 10);
+  if (speakingProgress?.son_bildirim_tarihi === todayUtc && !completedTasks.speaking) {
+    completeSpeakingTask();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [speakingProgress?.son_bildirim_tarihi, completedTasks.speaking]);
+
 const completedCount = Object.values(completedTasks).filter(Boolean).length;
 const progressPercent = Math.round(
   (completedCount / dailyTasks.length) * 100
@@ -3191,6 +3202,7 @@ async function handleSpeakingBildirim() {
 
     // Bugün zaten bildirim attım mı?
     if (speakingProgress.son_bildirim_tarihi === bugun) {
+      completeSpeakingTask();
       setSpeakingGorevBildiriliyor(false);
       setBildirimUyariModal(true);
       return;
@@ -3302,6 +3314,7 @@ async function handleSpeakingBildirim() {
   } else {
     // Bugün zaten bildirim attım mı?
     if (speakingProgress.son_bildirim_tarihi === bugun) {
+      completeSpeakingTask();
       setSpeakingGorevBildiriliyor(false);
       setBildirimUyariModal(true);
       return;
@@ -3339,6 +3352,46 @@ async function handleSpeakingBildirim() {
   setSpeakingBildirimGonderildi(true);
   completeSpeakingTask();
   setTimeout(() => setSpeakingBildirimGonderildi(false), 4000);
+}
+
+// ── Seviye genel ilerlemesi (İlerleme sekmesi ve Kalan Süre kartı ortak) ──
+// Ustalık testleri + Kelime Arenası + (içeriği açık seviyelerde) Konuşma Kulübü.
+function computeLevelProgress(level: Level) {
+  const statsReady = progressStats.loaded && progressStats.level === level;
+  const masteryTotal =
+    level === "A1" ? masteryThemes.length : level === "A2" ? a2MasteryThemes.length : 0;
+  const wordTotal = WORD_ARENA_THEMES_PER_LEVEL;
+  const masteryDone = statsReady ? Math.min(progressStats.masteryDone, masteryTotal) : 0;
+  const wordDone = statsReady ? Math.min(progressStats.wordDone, wordTotal) : 0;
+
+  const speakingCounted = SPEAKING_CLUB_PROGRESS_LEVELS.includes(level);
+  const speakingMember = speakingEntitledLevels.includes(level);
+  const speakingTotal = speakingCounted ? SPEAKING_CLUB_THEMES_PER_LEVEL : 0;
+  const speakingRow = allSpeakingProgress.find((row: any) => row.level === level);
+  const speakingDone = !speakingCounted || !speakingMember || !speakingRow
+    ? 0
+    : isSpeakingLevelCompleted(level)
+    ? speakingTotal
+    : Math.min(speakingTotal, Math.max(0, Number(speakingRow.current_tema || 1) - 1));
+
+  const overallTotal = masteryTotal + wordTotal + speakingTotal;
+  const overallPercent =
+    overallTotal > 0
+      ? Math.round(((masteryDone + wordDone + speakingDone) / overallTotal) * 100)
+      : 0;
+
+  return {
+    statsReady,
+    masteryTotal,
+    masteryDone,
+    wordTotal,
+    wordDone,
+    speakingCounted,
+    speakingMember,
+    speakingTotal,
+    speakingDone,
+    overallPercent,
+  };
 }
 
 if (!currentUser) {
@@ -3732,7 +3785,7 @@ if (!currentUser) {
       type="button"
       onClick={() => {
   setActiveDashboardTab(item.key);
-  if (item.key === "wordgame") completeDailyTask("pdf");
+  // "Kelime Arenasında oyna" görevi sekmeye tıklamakla değil, bir tur oynanınca tamamlanır
 }}
       className={`flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-left transition-all duration-300 ${
         activeDashboardTab === item.key
@@ -3794,7 +3847,7 @@ if (!currentUser) {
           type="button"
           onClick={() => {
   setActiveDashboardTab(item.key);
-  if (item.key === "wordgame") completeDailyTask("pdf");
+  // "Kelime Arenasında oyna" görevi sekmeye tıklamakla değil, bir tur oynanınca tamamlanır
 }}
           className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold whitespace-nowrap ${
             activeDashboardTab === item.key
@@ -3875,13 +3928,6 @@ if (!currentUser) {
       window.open(selectedLesson.pdfUrl, "_blank", "noopener,noreferrer");
 
       if (!alreadyOpened && isTodayLesson) {
-  completeDailyTask("pdf");
-
-  setCompletedTasks((prev) => ({
-    ...prev,
-    pdf: true,
-  }));
-
   localStorage.setItem(openedPdfKey, "true");
 }
     }}
@@ -3931,13 +3977,6 @@ if (!currentUser) {
 const alreadyOpened = localStorage.getItem(openedPdfKey);
 
 if (!alreadyOpened && isTodayLesson) {
-  completeDailyTask("pdf");
-
-  setCompletedTasks((prev) => ({
-    ...prev,
-    pdf: true,
-  }));
-
   localStorage.setItem(openedPdfKey, "true");
 }
 
@@ -4418,7 +4457,7 @@ const isOpen =
     </div>
   </div>
 
-  <div className="mt-4 grid gap-2 md:grid-cols-4">
+  <div className="mt-4 grid gap-2 md:grid-cols-3">
     {[
       {
         icon: "🏆",
@@ -4451,16 +4490,6 @@ const isOpen =
         action: () => setActiveDashboardTab("speaking"),
         badge: speakingProgress ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500",
         badgeText: speakingProgress ? "Aktif" : "Kilitli",
-      },
-      {
-        icon: "📝",
-        title: "Deneme Sınavı",
-        desc: "TELC & Goethe formatında",
-        color: "bg-blue-50 border-blue-200",
-        iconBg: "bg-blue-100",
-        action: () => setActiveDashboardTab("exams"),
-        badge: "bg-blue-100 text-blue-700",
-        badgeText: "Gör",
       },
     ].map((item) => (
       <button
@@ -4513,9 +4542,7 @@ const isOpen =
         </div>
 
         <div className="rounded-2xl bg-white/20 p-4 backdrop-blur">
-          <p className="text-xs opacity-80">
-  {JSON.stringify(activeLiveOrder)}
-</p>
+          <p className="text-xs opacity-80">Paket</p>
           <div
   className={`mt-2 inline-flex items-center rounded-full px-4 py-2 text-sm font-black shadow-lg ${
     effectivePackageType === "master"
@@ -4565,6 +4592,27 @@ const isOpen =
       <p className="mt-2 text-xs opacity-80">
         Günlük ilerleme: %{progressPercent}
       </p>
+      {(() => {
+        const homeLevel: Level = progressLevel || selectedLevel;
+        const homeProgress = computeLevelProgress(homeLevel);
+        return (
+          <>
+            <div className="mt-4 h-2 rounded-full bg-white/20">
+              <div
+                className="h-2 rounded-full bg-emerald-300 transition-all duration-700"
+                style={{ width: `${homeProgress.statsReady ? homeProgress.overallPercent : 0}%` }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveDashboardTab("progress")}
+              className="mt-2 text-left text-xs opacity-90 hover:underline"
+            >
+              {homeLevel} genel ilerleme: {homeProgress.statsReady ? `%${homeProgress.overallPercent}` : "…"}
+            </button>
+          </>
+        );
+      })()}
       <div className="mt-4 flex flex-wrap gap-2">
   {(["A1", "A2", "B1"] as const).map((levelItem) => {
     const hasLevelAccess = activeAccessLevels.includes(levelItem);
@@ -5727,6 +5775,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
   activeAccessLevels={activeAccessLevels}
   onUpsell={() => { setUpsellPackage("practice"); setShowUpsell(true); }}
   onB1Live={() => openPaytrCheckout("live-b1")}
+  onRoundComplete={() => completeDailyTask("pdf")}
 />
   </section>
 )}
@@ -6664,7 +6713,6 @@ if (!isPreviousThemeCompleted) {
                         return;
                       }
 
-                      completeDailyTask("pdf");
                       window.open(material.url, "_blank");
                     }}
                     className={`w-full rounded-2xl border p-4 text-left transition ${
@@ -6882,36 +6930,18 @@ if (!isPreviousThemeCompleted) {
     activeAccessLevels.includes(level)
   );
   const shownLevel: Level = progressLevel || selectedLevel;
-  const statsReady = progressStats.loaded && progressStats.level === shownLevel;
-
-  const masteryTotal =
-    shownLevel === "A1"
-      ? masteryThemes.length
-      : shownLevel === "A2"
-      ? a2MasteryThemes.length
-      : 0;
-  const wordTotal = WORD_ARENA_THEMES_PER_LEVEL;
-  const masteryDone = statsReady ? Math.min(progressStats.masteryDone, masteryTotal) : 0;
-  const wordDone = statsReady ? Math.min(progressStats.wordDone, wordTotal) : 0;
-
-  // Konuşma Kulübü: içeriği açık olan seviyelerde ilerlemeye dahil edilir.
-  // Canlı öğrenci otomatik üyedir; dijital öğrenci için ayrı üyelik gerekir.
-  // Üye olmayan dijital öğrenci bu bölümü tamamlayamadığı için %100'e ulaşamaz.
-  const speakingCounted = SPEAKING_CLUB_PROGRESS_LEVELS.includes(shownLevel);
-  const speakingMember = speakingEntitledLevels.includes(shownLevel);
-  const speakingTotal = speakingCounted ? SPEAKING_CLUB_THEMES_PER_LEVEL : 0;
-  const speakingRow = allSpeakingProgress.find((row: any) => row.level === shownLevel);
-  const speakingDone = !speakingCounted || !speakingMember || !speakingRow
-    ? 0
-    : isSpeakingLevelCompleted(shownLevel)
-    ? speakingTotal
-    : Math.min(speakingTotal, Math.max(0, Number(speakingRow.current_tema || 1) - 1));
-
-  const overallTotal = masteryTotal + wordTotal + speakingTotal;
-  const overallPercent =
-    overallTotal > 0
-      ? Math.round(((masteryDone + wordDone + speakingDone) / overallTotal) * 100)
-      : 0;
+  const {
+    statsReady,
+    masteryTotal,
+    masteryDone,
+    wordTotal,
+    wordDone,
+    speakingCounted,
+    speakingMember,
+    speakingTotal,
+    speakingDone,
+    overallPercent,
+  } = computeLevelProgress(shownLevel);
   const otherStepsDone =
     statsReady && masteryDone === masteryTotal && wordDone === wordTotal;
   const showSpeakingNudge =

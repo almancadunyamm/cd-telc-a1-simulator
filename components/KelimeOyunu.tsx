@@ -393,9 +393,12 @@ type Props = {
   activeAccessLevels?: string[];
   onUpsell?: () => void;
   onB1Live?: () => void;
+  // Bir tur (tema turu veya genel sınav) bitip kaydedildiğinde çağrılır;
+  // panelde "Kelime Arenasında oyna" günlük görevini tamamlar.
+  onRoundComplete?: () => void;
 };
 
-export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [], onUpsell, onB1Live }: Props) {
+export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [], onUpsell, onB1Live, onRoundComplete }: Props) {
   const [ekran, setEkran] = useState<Ekran>("menu");
   const [tema, setTema] = useState<TemaKey | null>(null);
   const [mod, setMod] = useState<Mod>("de_to_tr");
@@ -595,6 +598,7 @@ if (a2Data) {
 
   const kaydetIlerleme = async () => {
     if (!currentUserEmail || !tema) return;
+    onRoundComplete?.();
     const kelimeHavuzu = aktifKelimeListesi[tema].kelimeler;
     const mevcutLearned = temaLearnedRef.current[tema] || [];
     console.log("DEBUG:", { tema, mevcutLearnedCount: mevcutLearned.length, kelimeHavuzuCount: kelimeHavuzu.length, esik: Math.ceil(kelimeHavuzu.length * 0.9), tamamlandi: mevcutLearned.length >= Math.ceil(kelimeHavuzu.length * 0.9) });
@@ -634,6 +638,7 @@ const bugun = new Date().toISOString().split("T")[0];
 
   const kaydetGenelSinav = async () => {
     if (!currentUserEmail) return;
+    onRoundComplete?.();
     // Genel sınav başarılı ise A2 kilidini aç (word_progress'e özel kayıt)
     if (yanlis < 5) {
       await supabase.from("word_progress").upsert({
