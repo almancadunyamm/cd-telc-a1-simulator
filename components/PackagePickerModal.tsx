@@ -140,6 +140,14 @@ function PlanCard({
 }
 
 type LevelPackage = "starter" | "practice" | "master" | null;
+
+// Ustalık testi tema sayısı seviyeye göre değişir (B1 henüz hazırlanıyor)
+const MASTERY_THEMES_BY_LEVEL: Record<Level, number | null> = { A1: 12, A2: 10, B1: null };
+function masteryLabel(level: Level, starter: boolean) {
+  const total = MASTERY_THEMES_BY_LEVEL[level];
+  if (!total) return "Ustalık Testleri (yakında)";
+  return `Ustalık Testleri (${starter ? Math.min(6, total) : total} tema)`;
+}
 const PACKAGE_RANK: Record<"starter" | "practice" | "master", number> = {
   starter: 1,
   practice: 2,
@@ -299,8 +307,8 @@ export default function PackagePickerModal({
                 features={[
                   "Tema bazlı ilerleme",
                   "18 video ders erişimi",
-                  "Ustalık Testleri",
-                  "Kelime Arenası",
+                  masteryLabel(starterLevel, true),
+                  "Kelime Arenası (6 tema)",
                   "Temel TELC hazırlık alanı",
                   "3 ay erişim",
                 ]}
@@ -322,11 +330,11 @@ export default function PackagePickerModal({
                   <LevelToggle options={levels} value={practiceLevel} onChange={setPracticeLevel} dark />
                 }
                 features={[
-                  "2 adet Goethe ve TELC uyumlu dijital deneme",
                   "Tema bazlı ilerleme",
-                  "Bütün konuları içeren video dersler",
-                  "Ustalık Testleri",
-                  "Kelime Arenası",
+                  "56 video ders erişimi (bütün konular)",
+                  masteryLabel(practiceLevel, false),
+                  "Kelime Arenası (12 tema)",
+                  "2 adet Goethe ve TELC uyumlu dijital deneme",
                   "6 ay erişim",
                 ]}
                 cta={ownsAtLeast(practiceLevel, "practice") ? ownedLabel(practiceLevel, "practice") : "Paketi Seç"}
@@ -340,10 +348,11 @@ export default function PackagePickerModal({
                 subtitle="Tam dijital hazırlık"
                 toggle={<LevelToggle options={levels} value={masterLevel} onChange={setMasterLevel} />}
                 features={[
-                  "10 TELC dijital deneme",
-                  "Tüm video ders arşivi",
-                  "Ustalık Testleri",
-                  "Kelime Arenası",
+                  "Tema bazlı ilerleme",
+                  "56 video ders erişimi (bütün konular)",
+                  masteryLabel(masterLevel, false),
+                  "Kelime Arenası (12 tema)",
+                  "10 adet Goethe ve TELC uyumlu dijital deneme",
                   "Zirve materyal sistemi",
                   "12 ay erişim",
                 ]}
