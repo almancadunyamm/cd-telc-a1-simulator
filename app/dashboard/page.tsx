@@ -966,32 +966,6 @@ const getWeekIndex = () => {
 
   return week % 12;
 };
-const earnedBadges = [
-  {
-    key: "firstLesson",
-    title: "İlk Ders",
-    desc: "Bir ders açtın.",
-    earned: completedTasks.lesson,
-  },
-  {
-    key: "pdfWorker",
-    title: "PDF Çalışanı",
-    desc: "Bir PDF materyali açtın.",
-    earned: completedTasks.pdf,
-  },
-  {
-    key: "speakingCourage",
-    title: "Konuşma Cesareti",
-    desc: "Konuşma görevine başladın.",
-    earned: completedTasks.speaking,
-  },
-  {
-    key: "threeDayStreak",
-    title: "3 Günlük Seri",
-    desc: "3 günlük çalışma serisine ulaştın.",
-    earned: streak >= 3,
-  },
-];
   const router = useRouter();
 
   const [currentUser, setCurrentUser] = useState<LoggedUser | null>(null);
@@ -3447,7 +3421,6 @@ if (!currentUser) {
           "📚 Ustalık",
           "🎮 Kelime Arenası",
           "📊 İlerleme",
-          "🏆 Rozetler",
         ].map((item, index) => (
           <div
             key={index}
@@ -3777,7 +3750,6 @@ if (!currentUser) {
   ...(CLASS_LEAGUE_ENABLED && hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
-  { key: "badges", label: "Rozetler", icon: "🏆" },
   { key: "settings", label: "Ayarlar", icon: "⚙️" },
 ].map((item) => (
     <button
@@ -3839,7 +3811,6 @@ if (!currentUser) {
   ...(CLASS_LEAGUE_ENABLED && hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
-  { key: "badges", label: "Rozetler", icon: "🏆" },
   { key: "settings", label: "Ayarlar", icon: "⚙️" },
 ].map((item) => (
         <button
@@ -7139,41 +7110,7 @@ if (!isPreviousThemeCompleted) {
 </>
   );
 })()}
-{activeDashboardTab === "badges" && (
-  <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
-    <h2 className="text-xl font-bold text-slate-900">
-      Başarı Rozetlerin
-    </h2>
 
-    <p className="mt-1 text-sm text-slate-500">
-      Görevleri tamamladıkça rozetlerin açılır.
-    </p>
-
-    <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {earnedBadges.map((badge) => (
-        <div
-          key={badge.key}
-          className={`rounded-2xl border p-4 ${
-            badge.earned
-              ? "border-yellow-300 bg-yellow-50"
-              : "border-slate-200 bg-slate-50 opacity-60"
-          }`}
-        >
-          <div className="mb-3 text-3xl">
-            {badge.earned ? "🏆" : "🔒"}
-          </div>
-
-          <h3 className="font-bold text-slate-900">{badge.title}</h3>
-          <p className="mt-2 text-sm text-slate-500">{badge.desc}</p>
-
-          <p className="mt-3 text-xs font-semibold">
-            {badge.earned ? "Kazanıldı" : "Kilitli"}
-          </p>
-        </div>
-      ))}
-    </div>
-  </section>
-)}
     </div>
 
     <div className="hidden">
