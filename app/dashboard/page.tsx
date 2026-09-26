@@ -4931,6 +4931,17 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
 )}
       </div>
     </section>
+
+    {/* Mobil: ana sayfanın en altında çıkış (masaüstünde sol menüde var) */}
+    <div className="mb-6 lg:hidden">
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="w-full rounded-2xl border border-red-100 bg-white px-4 py-3 text-sm font-bold text-red-600 shadow-sm hover:bg-red-50"
+      >
+        Çıkış Yap
+      </button>
+    </div>
   </>
 )}
 {activeDashboardTab === "settings" && (
