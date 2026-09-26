@@ -329,7 +329,7 @@ return (
   </p>
 
   <a
-    href="/"
+    href="/register?adim=secim"
     className="mt-3 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white transition hover:bg-slate-800"
   >
     Paketleri İncele

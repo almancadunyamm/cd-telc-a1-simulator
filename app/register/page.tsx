@@ -97,8 +97,13 @@ const isFreeStarter =
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Giriş sayfasındaki "Paketleri İncele" butonu ?adim=secim ile gelir;
+  // bu durumda önceden seçilmiş bir paket olsa bile seçim ekranı gösterilir.
+  const forceSelect = searchParams.get("adim") === "secim";
   const [step, setStep] = useState<"select" | "form">(
-    getFreshSelectedSlug()
+    forceSelect
+      ? "select"
+      : getFreshSelectedSlug()
       ? "form"
       : searchParams.get("free") === "true"
       ? "form"
@@ -220,6 +225,15 @@ router.push("/payment/pending");
               <h2 className="text-xl font-black text-slate-900">Dijital Kurs</h2>
               <p className="mt-2 text-sm text-slate-500">Kendi hızında video dersler, TELC denemeleri ve dijital hazırlık sistemi. Başlangıç ücretsiz!</p>
             </button>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm">
+            <a href="/login" className="rounded-full border border-slate-200 bg-white px-5 py-2.5 font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
+              ← Giriş Sayfasına Dön
+            </a>
+            <a href="/" className="rounded-full border border-slate-200 bg-white px-5 py-2.5 font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
+              Ana Sayfa
+            </a>
           </div>
         </div>
       </main>
