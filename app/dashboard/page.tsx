@@ -536,6 +536,107 @@ function SpeakingClubAccessCard({
   );
 }
 
+// ── Seviye Belge Sınavı (altyapı) ────────────────────────────────────────
+// İlerleme %100 olduğunda öğrenci seviye belge sınavına girmeye hak kazanır.
+// Sınav soruları ve belge tasarımı daha sonra eklenecek; şimdilik giriş
+// ekranı ve %100'e ulaşınca bir kez otomatik açılan davet hazır.
+function CertificateExamCard({
+  level,
+  percent,
+  username,
+}: {
+  level: string;
+  percent: number;
+  username: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const eligible = percent >= 100;
+
+  useEffect(() => {
+    if (!eligible || !username) return;
+    const key = `certificate_exam_prompt_shown_${username}_${level}`;
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, new Date().toISOString());
+    } catch {
+      // tarayıcı depolaması kapalıysa davet yine de bir kez gösterilir
+    }
+    setOpen(true);
+  }, [eligible, username, level]);
+
+  return (
+    <>
+      {eligible ? (
+        <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-black text-emerald-800">
+              🎓 Tebrikler! {level} Belge Sınavı'na girmeye hak kazandın.
+            </p>
+            <p className="mt-1 text-sm text-emerald-700">
+              Sınavı başarıyla geçersen {level} belgen otomatik olarak oluşturulur.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="shrink-0 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700"
+          >
+            Belge Sınavına Gir
+          </button>
+        </div>
+      ) : (
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+          🎓 İlerlemen <strong>%100</strong> olduğunda <strong>{level} Belge Sınavı</strong>'na
+          girmeye hak kazanırsın. Sınavı geçersen {level} belgen otomatik olarak oluşturulur.
+        </div>
+      )}
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${level} Belge Sınavı`}
+        >
+          <div className="w-full max-w-lg rounded-[32px] bg-white p-8 text-center shadow-2xl">
+            <div className="text-5xl">🎓</div>
+            <p className="mt-4 text-xs font-black uppercase tracking-widest text-emerald-700">
+              {level} Belge Sınavı
+            </p>
+            <h3 className="mt-2 text-2xl font-black text-slate-900">
+              {level} seviyesini %100 tamamladın!
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Ustalık testleri, Kelime Arenası ve Konuşma Kulübü'nü bitirdin. Şimdi
+              kelime, gramer ve konuşma becerilerini ölçen genel belge sınavına
+              girebilirsin. Başarılı olursan {level} belgen otomatik olarak oluşturulur.
+            </p>
+            <div className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm font-semibold text-amber-800">
+              Belge sınavı çok yakında burada açılacak. Hazır olduğunda sana haber vereceğiz.
+            </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex-1 rounded-2xl border-2 border-slate-200 py-3 text-sm font-black text-slate-600 hover:bg-slate-50"
+              >
+                Kapat
+              </button>
+              <button
+                type="button"
+                disabled
+                className="flex-1 cursor-not-allowed rounded-2xl bg-slate-300 py-3 text-sm font-black text-white"
+              >
+                Sınava Başla (yakında)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function DashboardPage() {
   const [pwaPrompt, setPwaPrompt] = useState<any>(null);
   const [speakingTab, setSpeakingTab] = useState<"durum" | "gorev" | "partner" | "talep">("durum");
@@ -920,6 +1021,10 @@ const earnedBadges = [
   // Ustalık testleri (mastery_progress), Kelime Arenası (word_progress) ve
   // panel aktivitesi (user_activity_ping, panel açıkken ~90 sn'de bir kayıt).
   const WORD_ARENA_THEMES_PER_LEVEL = 12;
+  const SPEAKING_CLUB_THEMES_PER_LEVEL = 12;
+  // Konuşma Kulübü içeriği şu an yalnızca A1'de açık; A2/B1 açıldığında
+  // buraya eklenince o seviyelerin ilerlemesine de otomatik dahil olur.
+  const SPEAKING_CLUB_PROGRESS_LEVELS: Level[] = ["A1"];
   // İlerleme sekmesinde gösterilen seviye (panelin genel seçili seviyesinden bağımsız)
   const [progressLevel, setProgressLevel] = useState<Level | null>(null);
   const [progressStats, setProgressStats] = useState<{
@@ -6777,9 +6882,29 @@ if (!isPreviousThemeCompleted) {
   const wordTotal = WORD_ARENA_THEMES_PER_LEVEL;
   const masteryDone = statsReady ? Math.min(progressStats.masteryDone, masteryTotal) : 0;
   const wordDone = statsReady ? Math.min(progressStats.wordDone, wordTotal) : 0;
-  const overallTotal = masteryTotal + wordTotal;
+
+  // Konuşma Kulübü: içeriği açık olan seviyelerde ilerlemeye dahil edilir.
+  // Canlı öğrenci otomatik üyedir; dijital öğrenci için ayrı üyelik gerekir.
+  // Üye olmayan dijital öğrenci bu bölümü tamamlayamadığı için %100'e ulaşamaz.
+  const speakingCounted = SPEAKING_CLUB_PROGRESS_LEVELS.includes(shownLevel);
+  const speakingMember = speakingEntitledLevels.includes(shownLevel);
+  const speakingTotal = speakingCounted ? SPEAKING_CLUB_THEMES_PER_LEVEL : 0;
+  const speakingRow = allSpeakingProgress.find((row: any) => row.level === shownLevel);
+  const speakingDone = !speakingCounted || !speakingMember || !speakingRow
+    ? 0
+    : isSpeakingLevelCompleted(shownLevel)
+    ? speakingTotal
+    : Math.min(speakingTotal, Math.max(0, Number(speakingRow.current_tema || 1) - 1));
+
+  const overallTotal = masteryTotal + wordTotal + speakingTotal;
   const overallPercent =
-    overallTotal > 0 ? Math.round(((masteryDone + wordDone) / overallTotal) * 100) : 0;
+    overallTotal > 0
+      ? Math.round(((masteryDone + wordDone + speakingDone) / overallTotal) * 100)
+      : 0;
+  const otherStepsDone =
+    statsReady && masteryDone === masteryTotal && wordDone === wordTotal;
+  const showSpeakingNudge =
+    speakingCounted && !speakingMember && otherStepsDone;
   const maxMinutes = Math.max(30, ...progressStats.activityDays.map((day) => day.minutes));
   const weekTotalMinutes = progressStats.activityDays.reduce((sum, day) => sum + day.minutes, 0);
   const todayTasksDone = Object.values(completedTasks).filter(Boolean).length;
@@ -6830,12 +6955,49 @@ if (!isPreviousThemeCompleted) {
     </div>
 
     <p className="mt-3 text-sm text-slate-500">
-      Ustalık testleri ve Kelime Arenası temalarının birlikte tamamlanma oranı.
+      {speakingCounted
+        ? "Ustalık testleri, Kelime Arenası ve Konuşma Kulübü temalarının birlikte tamamlanma oranı. Gerçek sınavdaki gibi kelime, gramer ve konuşmanın hepsi ölçülür."
+        : "Ustalık testleri ve Kelime Arenası temalarının birlikte tamamlanma oranı."}
     </p>
+
+    {speakingCounted && !speakingMember && !showSpeakingNudge && (
+      <p className="mt-2 text-xs text-slate-500">
+        Konuşma Kulübü üyeliğin olmadığı için konuşma bölümü henüz ilerlemene eklenmiyor.
+      </p>
+    )}
+
+    {showSpeakingNudge && (
+      <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-black text-amber-900">
+            🎙️ Harika! Ustalık testlerini ve Kelime Arenası'nı tamamladın.
+          </p>
+          <p className="mt-1 text-sm text-amber-800">
+            %100'e ulaşmak ve belge sınavına girebilmek için son adım konuşma.
+            Konuşma Kulübü'ne katıl, bir partnerle pratik yaparak konuşma becerini tamamla.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setActiveDashboardTab("speaking")}
+          className="shrink-0 rounded-xl bg-amber-500 px-5 py-3 text-sm font-black text-slate-950 hover:bg-amber-400"
+        >
+          Konuşma Kulübü'ne Göz At
+        </button>
+      </div>
+    )}
+
+    {statsReady && (
+      <CertificateExamCard
+        level={shownLevel}
+        percent={overallPercent}
+        username={String(currentUser?.username || "").trim().toLowerCase()}
+      />
+    )}
   </section>
 
   {/* AYRINTILAR */}
-  <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <section className={`mb-8 grid gap-4 sm:grid-cols-2 ${speakingCounted ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
     <div className="rounded-3xl bg-white p-6 shadow-lg">
       <p className="text-sm text-slate-500">Geçilen Ustalık Testi</p>
       <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
@@ -6851,6 +7013,18 @@ if (!isPreviousThemeCompleted) {
       </h2>
       <p className="mt-1 text-xs text-slate-400">{shownLevel} tamamlanan tema</p>
     </div>
+
+    {speakingCounted && (
+      <div className="rounded-3xl bg-white p-6 shadow-lg">
+        <p className="text-sm text-slate-500">Konuşma Kulübü Teması</p>
+        <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
+          {speakingMember ? `${speakingDone}/${speakingTotal}` : "—"}
+        </h2>
+        <p className="mt-1 text-xs text-slate-400">
+          {speakingMember ? `${shownLevel} tamamlanan tema` : "Üyelik gerekli"}
+        </p>
+      </div>
+    )}
 
     <div className="rounded-3xl bg-white p-6 shadow-lg">
       <p className="text-sm text-slate-500">Bugünkü Görevler</p>
