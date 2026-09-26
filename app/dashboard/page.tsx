@@ -1016,6 +1016,28 @@ const getWeekIndex = () => {
   const [selectedLevel, setSelectedLevel] = useState<Level>("A1");
   const [activeDashboardTab, setActiveDashboardTab] = useState("home");
 
+  // Telefonun / tarayıcının geri tuşu: panel sekmeleri tarayıcı geçmişine
+  // eklenir; geri tuşu panelden çıkmak yerine önceki sekmeye (en sonunda
+  // Ana Sayfa'ya) döner.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const currentState = window.history.state || {};
+    if (activeDashboardTab === "home") return;
+    if (currentState.dashboardTab === activeDashboardTab) return;
+    window.history.pushState({ ...currentState, dashboardTab: activeDashboardTab }, "");
+  }, [activeDashboardTab]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onPopState = (event: PopStateEvent) => {
+      const tab = event.state?.dashboardTab;
+      setActiveDashboardTab(typeof tab === "string" ? tab : "home");
+      window.scrollTo({ top: 0 });
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   // ── İlerleme sekmesi: gerçek veriler (Supabase) ────────────────────────
   // Ustalık testleri (mastery_progress), Kelime Arenası (word_progress) ve
   // panel aktivitesi (user_activity_ping, panel açıkken ~90 sn'de bir kayıt).
@@ -3924,6 +3946,24 @@ if (!currentUser) {
 <div className="pointer-events-none absolute right-0 top-0 h-full w-20 rounded-r-2xl bg-gradient-to-l from-white via-white/80 to-transparent" />
 </div>
 <div className="w-full min-w-0 overflow-hidden">
+{activeDashboardTab !== "home" && (
+  <div className="mb-4 flex justify-end">
+    <button
+      type="button"
+      onClick={() => {
+        const state = window.history.state || {};
+        if (state.dashboardTab) {
+          window.history.replaceState({ ...state, dashboardTab: undefined }, "");
+        }
+        setActiveDashboardTab("home");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }}
+      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50"
+    >
+      🏠 Ana Sayfaya Dön
+    </button>
+  </div>
+)}
 <section
   className={`grid gap-6 lg:grid-cols-[1.6fr_0.9fr] ${
     activeDashboardTab === "lessons" ? "block" : "hidden"
