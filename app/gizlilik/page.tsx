@@ -222,6 +222,15 @@ export default function PrivacyPolicyPage() {
           </p>
         </div>
       </article>
+
+      <div className="mx-auto mt-8 flex max-w-4xl justify-center">
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-black text-white transition hover:border-white/30 hover:bg-white/10"
+        >
+          ← Ana Sayfa
+        </a>
+      </div>
     </main>
   );
 }
