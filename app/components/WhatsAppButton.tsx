@@ -9,10 +9,55 @@ const STUDENT_PANEL_PREFIXES = ["/dashboard"];
 // Öğretmen ve admin panellerinde buton hiç gösterilmez.
 const STAFF_PANEL_PREFIXES = ["/teacher", "/admin"];
 
+const GENERAL_MESSAGE =
+  "Merhaba, Almanca kurslarınız hakkında bilgi almak istiyorum.";
+
+// Butona hangi sayfada basıldıysa, WhatsApp'ta o sayfaya uygun hazır mesaj açılır.
+const PAGE_MESSAGES: { prefixes: string[]; message: string }[] = [
+  {
+    prefixes: ["/academy-live"],
+    message:
+      "Merhaba, Canlı Akademi (öğretmenle canlı Almanca dersleri) hakkında bilgi almak istiyorum. Seviyeler, ders saatleri ve fiyatlar nasıl?",
+  },
+  {
+    prefixes: ["/digital-simulation"],
+    message:
+      "Merhaba, Dijital Kurs ve TELC sınav simülatörü hakkında bilgi almak istiyorum.",
+  },
+  {
+    prefixes: ["/konusma-kulubu"],
+    message: "Merhaba, Konuşma Kulübü hakkında bilgi almak istiyorum.",
+  },
+  {
+    prefixes: ["/almanca-seviye-tespit-sinavi"],
+    message:
+      "Merhaba, Almanca seviye tespit sınavı ve bana uygun kurs hakkında bilgi almak istiyorum.",
+  },
+  {
+    prefixes: ["/login", "/register", "/payment", "/pay", "/checkout", "/odeme", "/packages"],
+    message: "Merhaba, kayıt / ödeme konusunda yardım almak istiyorum.",
+  },
+  {
+    prefixes: ["/dashboard"],
+    message: "Merhaba, öğrenci panelimle ilgili bir sorum var.",
+  },
+];
+
+function messageForPath(pathname: string) {
+  const match = PAGE_MESSAGES.find((item) =>
+    item.prefixes.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+    )
+  );
+  return match ? match.message : GENERAL_MESSAGE;
+}
+
 export function WhatsAppLink() {
+  const pathname = usePathname() || "";
+  const text = encodeURIComponent(messageForPath(pathname));
   return (
     <a
-      href="https://wa.me/905013434419"
+      href={`https://wa.me/905013434419?text=${text}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="WhatsApp ile iletişime geç"
