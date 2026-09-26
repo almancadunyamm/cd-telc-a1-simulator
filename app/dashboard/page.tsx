@@ -920,13 +920,16 @@ const earnedBadges = [
   // Ustalık testleri (mastery_progress), Kelime Arenası (word_progress) ve
   // panel aktivitesi (user_activity_ping, panel açıkken ~90 sn'de bir kayıt).
   const WORD_ARENA_THEMES_PER_LEVEL = 12;
+  // İlerleme sekmesinde gösterilen seviye (panelin genel seçili seviyesinden bağımsız)
+  const [progressLevel, setProgressLevel] = useState<Level | null>(null);
   const [progressStats, setProgressStats] = useState<{
+    level: Level | null;
     masteryDone: number;
     wordDone: number;
     activityDays: { key: string; label: string; minutes: number }[];
     activityStreak: number;
     loaded: boolean;
-  }>({ masteryDone: 0, wordDone: 0, activityDays: [], activityStreak: 0, loaded: false });
+  }>({ level: null, masteryDone: 0, wordDone: 0, activityDays: [], activityStreak: 0, loaded: false });
 
   useEffect(() => {
     const username = String(currentUser?.username || "").trim().toLowerCase();
@@ -942,19 +945,21 @@ const earnedBadges = [
       return `${y}-${m}-${d}`;
     }
 
+    const statsLevel: Level = progressLevel || selectedLevel;
+
     async function loadProgressStats() {
       const [{ data: masteryRows }, { data: wordRows }] = await Promise.all([
         supabase
           .from("mastery_progress")
           .select("theme_id")
           .eq("student_key", username)
-          .eq("level", selectedLevel)
+          .eq("level", statsLevel)
           .eq("status", "completed"),
         supabase
           .from("word_progress")
           .select("tema_key, tamamlandi")
           .eq("user_email", username)
-          .eq("level", selectedLevel)
+          .eq("level", statsLevel)
           .eq("tamamlandi", true),
       ]);
 
@@ -1013,7 +1018,7 @@ const earnedBadges = [
       }
 
       if (!cancelled) {
-        setProgressStats({ masteryDone, wordDone, activityDays, activityStreak, loaded: true });
+        setProgressStats({ level: statsLevel, masteryDone, wordDone, activityDays, activityStreak, loaded: true });
         setStreak(activityStreak);
       }
     }
@@ -1022,7 +1027,7 @@ const earnedBadges = [
     return () => {
       cancelled = true;
     };
-  }, [currentUser?.username, selectedLevel, activeDashboardTab]);
+  }, [currentUser?.username, selectedLevel, progressLevel, activeDashboardTab]);
   type MasteryQuestion = {
   id: number;
   themeId: number;
@@ -6757,34 +6762,86 @@ if (!isPreviousThemeCompleted) {
   </section>
 )}
 {activeDashboardTab === "progress" && (() => {
+  const progressLevels = (["A1", "A2", "B1"] as Level[]).filter((level) =>
+    activeAccessLevels.includes(level)
+  );
+  const shownLevel: Level = progressLevel || selectedLevel;
+  const statsReady = progressStats.loaded && progressStats.level === shownLevel;
+
   const masteryTotal =
-    selectedLevel === "A1"
+    shownLevel === "A1"
       ? masteryThemes.length
-      : selectedLevel === "A2"
+      : shownLevel === "A2"
       ? a2MasteryThemes.length
       : 0;
   const wordTotal = WORD_ARENA_THEMES_PER_LEVEL;
-  const masteryDone = Math.min(progressStats.masteryDone, masteryTotal);
-  const wordDone = Math.min(progressStats.wordDone, wordTotal);
+  const masteryDone = statsReady ? Math.min(progressStats.masteryDone, masteryTotal) : 0;
+  const wordDone = statsReady ? Math.min(progressStats.wordDone, wordTotal) : 0;
   const overallTotal = masteryTotal + wordTotal;
   const overallPercent =
     overallTotal > 0 ? Math.round(((masteryDone + wordDone) / overallTotal) * 100) : 0;
-  const masteryPercent = masteryTotal > 0 ? Math.round((masteryDone / masteryTotal) * 100) : 0;
-  const wordPercent = Math.round((wordDone / wordTotal) * 100);
   const maxMinutes = Math.max(30, ...progressStats.activityDays.map((day) => day.minutes));
   const weekTotalMinutes = progressStats.activityDays.reduce((sum, day) => sum + day.minutes, 0);
   const todayTasksDone = Object.values(completedTasks).filter(Boolean).length;
 
   return (
   <>
-  {/* ÜST KPI KARTLARI */}
+  {/* GENEL İLERLEME */}
+  <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h2 className="text-xl font-bold text-slate-900">
+        {shownLevel} Genel İlerleme
+      </h2>
+
+      {progressLevels.length > 1 && (
+        <div className="flex gap-2" role="tablist" aria-label="Seviye seç">
+          {progressLevels.map((level) => (
+            <button
+              key={level}
+              type="button"
+              role="tab"
+              aria-selected={shownLevel === level}
+              onClick={() => setProgressLevel(level)}
+              className={`rounded-full px-4 py-2 text-sm font-black transition ${
+                shownLevel === level
+                  ? "bg-blue-600 text-white shadow"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {level}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div className="mt-5 flex items-baseline gap-2">
+      <p className="text-4xl font-extrabold text-slate-900">
+        {statsReady ? `%${overallPercent}` : "…"}
+      </p>
+      <p className="text-sm text-slate-500">tamamlandı</p>
+    </div>
+
+    <div className="mt-3 h-4 w-full rounded-full bg-slate-200">
+      <div
+        className="h-4 rounded-full bg-blue-500 transition-all duration-700"
+        style={{ width: `${statsReady ? overallPercent : 0}%` }}
+      />
+    </div>
+
+    <p className="mt-3 text-sm text-slate-500">
+      Ustalık testleri ve Kelime Arenası temalarının birlikte tamamlanma oranı.
+    </p>
+  </section>
+
+  {/* AYRINTILAR */}
   <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <div className="rounded-3xl bg-white p-6 shadow-lg">
       <p className="text-sm text-slate-500">Geçilen Ustalık Testi</p>
       <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
         {masteryTotal > 0 ? `${masteryDone}/${masteryTotal}` : "—"}
       </h2>
-      <p className="mt-1 text-xs text-slate-400">{selectedLevel} temaları</p>
+      <p className="mt-1 text-xs text-slate-400">{shownLevel} temaları</p>
     </div>
 
     <div className="rounded-3xl bg-white p-6 shadow-lg">
@@ -6792,7 +6849,7 @@ if (!isPreviousThemeCompleted) {
       <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
         {wordDone}/{wordTotal}
       </h2>
-      <p className="mt-1 text-xs text-slate-400">{selectedLevel} tamamlanan tema</p>
+      <p className="mt-1 text-xs text-slate-400">{shownLevel} tamamlanan tema</p>
     </div>
 
     <div className="rounded-3xl bg-white p-6 shadow-lg">
@@ -6863,59 +6920,6 @@ if (!isPreviousThemeCompleted) {
         ))}
       </div>
     )}
-  </section>
-
-  {/* GENEL İLERLEME */}
-  <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
-    <div className="flex flex-wrap items-baseline justify-between gap-2">
-      <h2 className="text-xl font-bold text-slate-900">
-        {selectedLevel} Genel İlerleme
-      </h2>
-      <p className="text-2xl font-extrabold text-slate-900">%{overallPercent}</p>
-    </div>
-
-    <div className="mt-4 h-4 w-full rounded-full bg-slate-200">
-      <div
-        className="h-4 rounded-full bg-blue-500 transition-all duration-700"
-        style={{ width: `${overallPercent}%` }}
-      />
-    </div>
-
-    <p className="mt-3 text-sm text-slate-500">
-      Ustalık testleri ve Kelime Arenası temalarının birlikte tamamlanma oranı.
-    </p>
-
-    <div className="mt-6 grid gap-5 sm:grid-cols-2">
-      <div>
-        <div className="flex items-baseline justify-between text-sm">
-          <span className="font-semibold text-slate-700">Ustalık Testleri</span>
-          <span className="text-slate-500">
-            {masteryTotal > 0 ? `${masteryDone}/${masteryTotal} · %${masteryPercent}` : "Bu seviyede yok"}
-          </span>
-        </div>
-        <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
-          <div
-            className="h-2 rounded-full bg-blue-500 transition-all duration-700"
-            style={{ width: `${masteryPercent}%` }}
-          />
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-baseline justify-between text-sm">
-          <span className="font-semibold text-slate-700">Kelime Arenası</span>
-          <span className="text-slate-500">
-            {wordDone}/{wordTotal} · %{wordPercent}
-          </span>
-        </div>
-        <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
-          <div
-            className="h-2 rounded-full bg-blue-500 transition-all duration-700"
-            style={{ width: `${wordPercent}%` }}
-          />
-        </div>
-      </div>
-    </div>
   </section>
 </>
   );
