@@ -639,7 +639,7 @@ const bugun = new Date().toISOString().split("T")[0];
   const kaydetGenelSinav = async () => {
     if (!currentUserEmail) return;
     onRoundComplete?.();
-    // Genel sınav başarılı ise A2 kilidini aç (word_progress'e özel kayıt)
+    // Genel sınav başarılı ise kayıt düş (Kelime Şampiyonu belgesi için)
     if (yanlis < 5) {
       await supabase.from("word_progress").upsert({
         user_email: currentUserEmail,
@@ -655,25 +655,32 @@ const bugun = new Date().toISOString().split("T")[0];
     }
   };
 
+  // Seviye kuralı (Ustalık testleriyle aynı): öğrencinin paketinin kapsadığı
+  // seviye doğrudan açıktır; önceki seviyeyi bitirme şartı yoktur. Seviye
+  // içindeki temalar yine sırayla açılır.
+  const hasLevelAccess = (level: "A1" | "A2" | "B1") => activeAccessLevels.includes(level);
+
   const seviyeDegistir = (level: "A1" | "A2" | "B1") => {
-    if (level === "B1" && !activeAccessLevels.includes("B1")) {
-  if (onUpsell) onUpsell();
-  return;
-}
-    if (level === "B1" && a2TamamlananTema.length < 12) {
-  setUyariMesaji("🔒 B1 Seviyesi\n\nB1 seviyesine geçmek için önce A2'deki tüm 12 temayı bitirmen gerekiyor.");
-  return;
-}
-    if (level === "A2" && a1TamamlananTema.length < 12) {
-      setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
+    if (!hasLevelAccess(level)) {
+      if (onUpsell) onUpsell();
       return;
     }
     setSelectedWordLevel(level);
   };
 
+  // Öğrencinin erişimi olmayan bir seviye seçiliyse ilk erişimli seviyeye geç
+  useEffect(() => {
+    if (activeAccessLevels.length === 0) return;
+    if (!activeAccessLevels.includes(selectedWordLevel)) {
+      const firstLevel = (["A1", "A2", "B1"] as const).find((lvl) => activeAccessLevels.includes(lvl));
+      if (firstLevel) setSelectedWordLevel(firstLevel);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeAccessLevels.join(",")]);
+
   const hemenBasla = () => {
-    if (selectedWordLevel === "A2" && a1TamamlananTema.length < 12) {
-      setUyariMesaji(`🎯 Önce A1'i Tamamla\n\nA2 seviyesine geçmek için A1'deki tüm 12 temayı bitirmen gerekiyor.\n\nŞu an: ${a1TamamlananTema.length}/12 tema tamamlandı.`);
+    if (!hasLevelAccess(selectedWordLevel)) {
+      if (onUpsell) onUpsell();
       return;
     }
     // Tüm temalar bittiyse seviye tamamlandı ekranına git
@@ -1106,7 +1113,7 @@ const temaNo = Number(String(tema).replace("tema", ""));
         {/* Seviye butonları */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
           {(["A1", "A2", "B1"] as const).map(level => {
-            const kilitli = (level === "B1" && a2TamamlananTema.length < 12) || (level === "A2" && a1TamamlananTema.length < 12);
+            const kilitli = !hasLevelAccess(level);
             return (
               <button key={level} onClick={() => seviyeDegistir(level)}
                 style={{ borderRadius: 99, padding: "8px 20px", fontSize: 14, fontWeight: 900, cursor: kilitli ? "not-allowed" : "pointer", border: "none", background: selectedWordLevel === level ? "#059669" : "#e2e8f0", color: selectedWordLevel === level ? "#fff" : "#64748b", opacity: kilitli ? 0.6 : 1 }}>
@@ -1191,8 +1198,7 @@ const temaNo = Number(String(tema).replace("tema", ""));
               {(Object.entries(aktifKelimeListesi) as [TemaKey, { ad: string; kelimeler: Kelime[] }][]).map(([key, val], i) => {
                 const temaNo = i + 1;
                 const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
-const hasB1Access = selectedWordLevel !== "B1" || activeAccessLevels.includes("B1");
-const hasAccess = (temaNo <= 6 || hasDev) && hasB1Access;
+const hasAccess = (temaNo <= 6 || hasDev) && hasLevelAccess(selectedWordLevel);
                 const prevDone = temaNo === 1 || completedWordThemes.includes(temaNo - 1);
                 const isLocked = !hasAccess || !prevDone;
                 const isCompleted = completedWordThemes.includes(temaNo);
@@ -1200,6 +1206,7 @@ const hasAccess = (temaNo <= 6 || hasDev) && hasB1Access;
                 const temaYuzde = Math.min(100, Math.round((temaLearned.length / val.kelimeler.length) * 100));
                 return (
                   <button key={key} onClick={() => {
+                    if (!hasLevelAccess(selectedWordLevel)) { if (onUpsell) onUpsell(); return; }
                     if (!hasAccess) { setUyariMesaji("🔒 Bu Tema Kilitli\n\nBu temaya erişmek için Gelişim Paketi gerekiyor."); return; }
                     if (!prevDone) { setUyariMesaji(`🎯 Sıradaki Tema Kilitli\n\nÖnce Tema ${temaNo - 1}'i tamamlamalısın.`); return; }
                     setTema(key); setEkran("mod");

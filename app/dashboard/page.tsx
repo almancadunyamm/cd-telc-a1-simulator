@@ -2404,6 +2404,17 @@ const isFutureLiveCourseLevel =
   return allLevels.length > 0 ? allLevels : [selectedLevel];
 }, [currentUser, selectedLevel, dbActiveOrders, accessibleClassIds, classes]);
 
+// Ustalık testleri: öğrencinin paketinin kapsadığı seviye doğrudan açıktır
+// (önceki seviyeyi bitirme şartı yok). Erişim bilgisi yüklendiğinde seçili
+// Ustalık seviyesi erişimi olmayan bir seviyeyse ilk erişimli seviyeye geçilir.
+useEffect(() => {
+  if (!activeAccessLevels.includes(selectedMasteryLevel)) {
+    const firstLevel = (["A1", "A2", "B1"] as const).find((lvl) => activeAccessLevels.includes(lvl));
+    if (firstLevel) setSelectedMasteryLevel(firstLevel);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [activeAccessLevels.join(",")]);
+
   const hasAnyLiveCourseOrder =
   // Canlı kurs öğrencisi olup olmadığı yalnızca gerçek verilere göre
   // belirlenir: canlı sınıf ataması veya tamamlanmış canlı kurs siparişi.
@@ -4436,7 +4447,9 @@ const isOpen =
       {
         icon: "🏆",
         title: "Ustalık Testi Çöz",
-        desc: completedMasteryThemes.length > 0 ? `${completedMasteryThemes.length}/12 tema bitti` : "Henüz başlanmadı",
+        desc: completedMasteryThemes.length > 0
+          ? `${completedMasteryThemes.length}/${selectedMasteryLevel === "A2" ? a2MasteryThemes.length : masteryThemes.length} tema bitti`
+          : "Henüz başlanmadı",
         color: "bg-yellow-50 border-yellow-200",
         iconBg: "bg-yellow-100",
         action: () => setActiveDashboardTab("vocabulary"),
@@ -5768,8 +5781,8 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
 </h2>
 
         <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-          Bir sonraki temanın kilidini açmak için Ustalık Testini geç! Her dersten 5 soru gelir.
-          İlerlemek için her bölümde en az 3 doğru cevap vermelisin.
+          Bir sonraki temanın kilidini açmak için Ustalık Testini geç! Her temada 15 soru
+          gelir (her dersten 5). 3 canın var; temayı geçmek için en az 11 doğru cevap vermelisin.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
   {(["A1", "A2", "B1"] as const).map((levelItem) => {
