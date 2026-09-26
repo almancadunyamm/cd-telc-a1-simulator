@@ -122,6 +122,9 @@ export default function AdminHomePage() {
   const [time, setTime] = useState("");
   const [onlineStats, setOnlineStats] = useState<OnlineStats | null>(null);
   const [statsError, setStatsError] = useState(false);
+  const [statsErrorDetail, setStatsErrorDetail] = useState("");
+  // Bugün hiç aktivite kaydı yoksa: öğrenci panelinden kayıt yazılamıyor olabilir
+  const [noActivityToday, setNoActivityToday] = useState(false);
 
   useEffect(() => {
     const raw = localStorage.getItem("mock_logged_user");
@@ -156,10 +159,14 @@ export default function AdminHomePage() {
       if (cancelled) return;
 
       if (onlineError || todayError) {
-        // Tablo henüz oluşturulmamış olabilir — sessizce hata durumuna geç.
+        // Tablo yok ya da okuma izni yok
         setStatsError(true);
+        setStatsErrorDetail(String((onlineError || todayError)?.message || ""));
         return;
       }
+
+      setStatsErrorDetail("");
+      setNoActivityToday((todayPings || []).length === 0);
 
       const onlineUsernames = Array.from(new Set((onlinePings || []).map((p: any) => p.username)));
       const todayUsernames = new Set((todayPings || []).map((p: any) => p.username));
@@ -286,9 +293,27 @@ export default function AdminHomePage() {
           </div>
         </div>
         {statsError && (
-          <p className="-mt-6 mb-8 text-xs text-amber-700">
-            Sayaç verisi okunamadı — Supabase'de <code className="rounded bg-amber-100 px-1">user_activity_ping</code> tablosunun oluşturulduğundan emin ol.
-          </p>
+          <div className="-mt-4 mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            <p className="font-black">⚠️ Aktivite takibi okunamıyor</p>
+            <p className="mt-1">
+              Online sayacı ve öğrencilerin İlerleme sekmesindeki aktif süre/seri çalışmıyor.
+              Supabase'de <code className="rounded bg-amber-100 px-1">user_activity_ping</code> tablosunu
+              ve okuma iznini (select policy) kontrol et.
+            </p>
+            {statsErrorDetail && (
+              <p className="mt-1 text-xs text-amber-700">Hata: {statsErrorDetail}</p>
+            )}
+          </div>
+        )}
+        {!statsError && noActivityToday && (
+          <div className="-mt-4 mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            <p className="font-black">⚠️ Bugün hiç aktivite kaydı gelmedi</p>
+            <p className="mt-1">
+              Bugün öğrenci paneline giren olduysa, panel aktivite kaydı yazamıyor olabilir.
+              Supabase'de <code className="rounded bg-amber-100 px-1">user_activity_ping</code> tablosunun
+              ekleme iznini (insert policy) kontrol et. Öğrencilere bu uyarı gösterilmez.
+            </p>
+          </div>
         )}
 
         {/* KARTLAR */}

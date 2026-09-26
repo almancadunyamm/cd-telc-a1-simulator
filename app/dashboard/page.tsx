@@ -1005,8 +1005,19 @@ const earnedBadges = [
     const username = currentUser?.username;
     if (!username) return;
 
+    // Hata öğrenciye gösterilmez; yalnızca geliştirici konsoluna bir kez yazılır.
+    // (Sorun admin panelinde "aktivite kaydı gelmedi" uyarısı olarak görünür.)
+    let warned = false;
     const ping = () => {
-      supabase.from("user_activity_ping").insert({ username }).then(() => {});
+      supabase
+        .from("user_activity_ping")
+        .insert({ username })
+        .then(({ error }) => {
+          if (error && !warned) {
+            warned = true;
+            console.warn("[aktivite] user_activity_ping kaydı yazılamadı:", error.message);
+          }
+        });
     };
 
     ping();
