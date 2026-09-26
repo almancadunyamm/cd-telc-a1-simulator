@@ -1,6 +1,7 @@
 "use client";
 import { supabase } from "@/lib/supabase";
 import PaytrCheckoutModal from "@/components/PaytrCheckoutModal";
+import PackagePickerModal from "@/components/PackagePickerModal";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -657,6 +658,8 @@ const [speakingEslesmeler, setSpeakingEslesmeler] = useState<any[]>([]);
 const [allSpeakingProgress, setAllSpeakingProgress] = useState<any[]>([]);
 const hasAutoSelectedLevelRef = useRef(false);
 const [paytrCheckoutSlug, setPaytrCheckoutSlug] = useState<string | null>(null);
+// Paket seçim ekranı (dijital: Gelişim/Zirve, canlı: Canlı Akademi paketleri)
+const [packagePicker, setPackagePicker] = useState<{ mode: "digital" | "live"; level: Level } | null>(null);
 
 function openPaytrCheckout(slug: string) {
   setPaytrCheckoutSlug(slug);
@@ -4137,7 +4140,7 @@ window.open(worksheet.url, "_blank");
 
           <button
   type="button"
-  onClick={() => openPaytrCheckout(`live-${selectedLevel.toLowerCase()}`)}
+  onClick={() => setPackagePicker({ mode: "live", level: selectedLevel })}
   className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
 >
   🎓 {selectedLevel} Canlı Kursunu İncele
@@ -4673,31 +4676,24 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
         {isDigitalStarterStudent ? (
   <div className="space-y-3">
     {[
-  "Kişisel günlük çalışma planı",
-  "PDF ve çalışma kağıdı erişimi",
-  "TELC deneme sınavları",
+  "Ders videolarının tamamına erişim",
+  "PDF ve çalışma materyallerinin tamamına erişim",
+  "TELC ve Goethe ile uyumlu orijinal sınavlar",
   "İlerleme takibi ve görev sistemi",
 ].map((item) => (
       <div
         key={item}
-        className="flex items-center justify-between rounded-2xl bg-slate-50 p-3"
+        className="flex items-center rounded-2xl bg-slate-50 p-3"
       >
-        <span className="text-sm font-medium text-slate-500">
+        <span className="text-sm font-medium text-slate-600">
           {item}
-        </span>
-
-        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-black text-yellow-700">
-          🔒 Premium
         </span>
       </div>
     ))}
 
     <button
       type="button"
-      onClick={() => {
-        setUpsellPackage("practice");
-        setShowUpsell(true);
-      }}
+      onClick={() => setPackagePicker({ mode: "digital", level: selectedLevel })}
       className="mt-2 w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
     >
       🚀 Gelişim Paketini İncele
@@ -4753,7 +4749,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
     {!hasAnyLiveCourseOrder && (
     <button
       type="button"
-      onClick={() => openPaytrCheckout(`live-${selectedLevel.toLowerCase()}`)}
+      onClick={() => setPackagePicker({ mode: "live", level: selectedLevel })}
       className="mt-5 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-sm font-bold text-white hover:from-purple-700 hover:to-blue-700"
     >
       🎓 {selectedLevel} Canlı Programını Keşfet
@@ -5745,7 +5741,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
   currentUserName={currentUser?.name || ""}
   activeAccessLevels={activeAccessLevels}
   onUpsell={() => { setUpsellPackage("practice"); setShowUpsell(true); }}
-  onB1Live={() => openPaytrCheckout("live-b1")}
+  onB1Live={() => setPackagePicker({ mode: "live", level: "B1" })}
   onRoundComplete={() => completeDailyTask("pdf")}
 />
   </section>
@@ -5830,7 +5826,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
 
   <button
     type="button"
-    onClick={() => openPaytrCheckout(`live-${selectedMasteryLevel.toLowerCase()}`)}
+    onClick={() => setPackagePicker({ mode: "live", level: selectedMasteryLevel })}
     className="rounded-xl border border-amber-300 bg-white px-4 py-3 text-sm font-black text-amber-700 hover:bg-amber-50"
   >
     🎓 {selectedMasteryLevel} Canlı Kursunu İncele
@@ -6571,7 +6567,7 @@ if (!isPreviousThemeCompleted) {
 
           <button
   type="button"
-  onClick={() => openPaytrCheckout(`live-${selectedLevel.toLowerCase()}`)}
+  onClick={() => setPackagePicker({ mode: "live", level: selectedLevel })}
   className="mt-5 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-sm font-bold text-white hover:from-purple-700 hover:to-blue-700"
 >
   🎓 {selectedLevel} Canlı Programını Keşfet
@@ -7471,6 +7467,18 @@ if (!isPreviousThemeCompleted) {
     window.location.reload();
   }}
 />
+{packagePicker && (
+  <PackagePickerModal
+    mode={packagePicker.mode}
+    defaultLevel={packagePicker.level}
+    currentDigitalPackage={effectivePackageType}
+    onClose={() => setPackagePicker(null)}
+    onSelect={(slug) => {
+      setPackagePicker(null);
+      openPaytrCheckout(slug);
+    }}
+  />
+)}
 {showWhatsAppButton && <WhatsAppLink />}
 </main>
   );
