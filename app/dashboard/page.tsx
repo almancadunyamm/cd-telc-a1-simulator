@@ -176,7 +176,7 @@ function getUpgradeOffers(packageType?: PackageType) {
       {
         type: "practice" as PackageType,
         title: "Gelişim’e geç",
-        text: "5 TELC deneme, 36 ders offline anlatım ve daha fazla PDF içerik açılır.",
+        text: "2 TELC deneme, 36 ders offline anlatım ve daha fazla PDF içerik açılır.",
       },
       {
         type: "master" as PackageType,
@@ -3732,7 +3732,7 @@ if (!currentUser) {
       ✓ Daha fazla deneme
     </p>
     <p className="text-xs text-slate-500">
-      Gerçek sınavla birebir uyumlu 5 dijital deneme hakkı kazan.
+      Gerçek sınavla birebir uyumlu 2 dijital deneme hakkı kazan.
     </p>
   </div>
 
@@ -6902,23 +6902,26 @@ if (!isPreviousThemeCompleted) {
     <div className="mt-6 grid gap-4 md:grid-cols-3">
       {[
   {
-    title: "Başlangıç Denemeleri",
+    title: "Gelişim Denemeleri",
     count: "2 deneme",
-    tier: "starter" as PackageType,
-    desc: "Goethe ve TELC formatında örnek A1 sınavları.",
+    tier: "practice" as PackageType,
+    desc: "Goethe ve TELC formatında resmi örnek sınavlar. Gelişim, Zirve ve Canlı Akademi öğrencilerine açık.",
     href: `/exams/${selectedLevel.toLowerCase()}/list?tier=starter`,
   },
   {
-    title: "Premium Denemeleri",
-    count: "10 deneme",
+    title: "Zirve Denemeleri",
+    count: "+8 deneme (Zirve'de toplam 10)",
     tier: "master" as PackageType,
-    desc: "Gerçek sınav formatıyla birebir aynı ileri seviye denemeler.",
+    desc: "Gerçek sınav formatıyla birebir aynı ileri seviye denemeler. Sadece Zirve paketinde.",
     href: `/exams/${selectedLevel.toLowerCase()}/list?tier=premium`,
   },
 ].map((examGroup) => {
+  // Deneme erişimi seçili seviyedeki pakete göre belirlenir:
+  // Başlangıç → yok, Gelişim / Canlı Akademi → 2 deneme, Zirve → 10 deneme.
   const isOpen =
     selectedLevelHasAccess &&
-    canAccessLessonPackage(effectivePackageType, examGroup.tier) &&
+    canAccessLessonPackage(levelPackages[selectedLevel] ?? undefined, examGroup.tier) &&
+    !!levelPackages[selectedLevel] &&
     !accessExpired;
 
   return (
@@ -6948,10 +6951,14 @@ if (!isPreviousThemeCompleted) {
         onClick={() => {
   if (isOpen) {
     router.push(examGroup.href);
-  } else if (examGroup.tier === "master") {
+  } else if (
+    examGroup.tier === "master" &&
+    levelPackages[selectedLevel] === "practice" &&
+    !accessExpired
+  ) {
     setShowUpgradeModal(true);
   } else {
-    setShowExamNotice(true);
+    setPackagePicker({ mode: "digital", level: selectedLevel });
   }
 }}
         className={`mt-5 w-full rounded-2xl px-4 py-3 text-sm font-black ${
@@ -6969,13 +6976,14 @@ if (!isPreviousThemeCompleted) {
 
     <div className="mt-6 rounded-3xl border border-blue-100 bg-blue-50 p-5">
       <h3 className="text-lg font-black text-slate-900">
-        Denemeler kurs sürecinde açılacak
+        Hangi pakette kaç deneme var?
       </h3>
 
-      <p className="mt-2 text-sm leading-6 text-slate-600">
-        Okuma, dinleme, yazma ve konuşma bölümlerinden oluşan TELC deneme
-        sınavları, eğitim ilerledikçe bu merkezden erişilebilir hale gelecektir.
-      </p>
+      <ul className="mt-2 space-y-1 text-sm leading-6 text-slate-600">
+        <li>• <strong>Dijital Başlangıç:</strong> deneme sınavı içermez.</li>
+        <li>• <strong>Gelişim ve Canlı Akademi:</strong> 2 deneme sınavı.</li>
+        <li>• <strong>Zirve:</strong> 10 deneme sınavı.</li>
+      </ul>
     </div>
 
     {showExamNotice && (

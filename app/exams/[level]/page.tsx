@@ -16,13 +16,11 @@ function normalizeLevel(value: string): LevelCode | null {
 function hasExamAccess(productSlug: string): boolean {
   const slug = productSlug.toLowerCase();
   return (
-    slug.includes("starter") ||
     slug.includes("practice") ||
     slug.includes("master") ||
     slug.includes("live") ||
     slug.includes("gelisim") ||
-    slug.includes("zirve") ||
-    slug.includes("baslangic")
+    slug.includes("zirve")
   );
 }
 

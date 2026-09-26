@@ -46,11 +46,9 @@ export default function TelcA1Page() {
           const hasValidOrder = orders.some((order: { product_slug: string }) => {
             const slug = order.product_slug?.toLowerCase() || "";
             return (
-              slug.includes("starter") ||
               slug.includes("practice") ||
               slug.includes("master") ||
               slug.includes("live") ||
-              slug.includes("baslangic") ||
               slug.includes("gelisim") ||
               slug.includes("zirve")
             );
@@ -88,7 +86,7 @@ export default function TelcA1Page() {
           <div className="text-5xl mb-4">🔒</div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">Erişim Yok</h2>
           <p className="text-gray-500 text-sm mb-6">
-            Bu deneme sınavına erişmek için bir paket satın almanız gerekiyor.
+            Deneme sınavları Gelişim, Zirve ve Canlı Akademi paketlerinde yer alır.
           </p>
           <button
             onClick={() => router.push("/dashboard")}

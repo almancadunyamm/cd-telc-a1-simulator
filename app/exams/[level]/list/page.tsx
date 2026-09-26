@@ -53,7 +53,7 @@ function ExamListContent() {
   ];
 
   const exams = tier === "premium" ? premiumExams : starterExams;
-  const tierTitle = tier === "premium" ? "Premium Denemeler" : "Başlangıç Denemeler";
+  const tierTitle = tier === "premium" ? "Zirve Denemeleri" : "Gelişim Denemeleri";
   const tierDesc = tier === "premium"
     ? "Gerçek sınav formatıyla birebir aynı ileri seviye denemeler."
     : "Goethe ve TELC formatında resmi örnek sınavlar.";
@@ -70,7 +70,7 @@ function ExamListContent() {
             ← Geri
           </button>
           <p className="text-xs font-black uppercase tracking-widest text-blue-600">
-            {level} · {tier === "premium" ? "Premium" : "Başlangıç"}
+            {level} · {tier === "premium" ? "Zirve" : "Gelişim"}
           </p>
           <h1 className="mt-1 text-3xl font-black text-slate-900">{tierTitle}</h1>
           <p className="mt-2 text-sm text-slate-500">{tierDesc}</p>
