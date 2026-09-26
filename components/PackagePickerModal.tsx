@@ -139,19 +139,33 @@ function PlanCard({
   );
 }
 
+type LevelPackage = "starter" | "practice" | "master" | null;
+const PACKAGE_RANK: Record<"starter" | "practice" | "master", number> = {
+  starter: 1,
+  practice: 2,
+  master: 3,
+};
+
 export default function PackagePickerModal({
   mode,
   defaultLevel,
-  currentDigitalPackage,
+  levelPackages,
   onSelect,
+  onFreeStart,
   onClose,
 }: {
-  mode: "digital" | "live";
+  // "choose": önce "Dijital paketle aç" / "Canlı kursu incele" seçimi sorulur
+  mode: "digital" | "live" | "choose";
   defaultLevel: Level;
-  currentDigitalPackage?: "starter" | "practice" | "master";
+  // Öğrencinin her seviyedeki mevcut paketi (canlı kurs = practice sayılır)
+  levelPackages?: Partial<Record<Level, LevelPackage>>;
   onSelect: (slug: string) => void;
+  // Paketi olmayan seviyede ücretsiz Başlangıç'ı açar
+  onFreeStart?: (level: Level) => void;
   onClose: () => void;
 }) {
+  const [step, setStep] = useState<"digital" | "live" | "choose">(mode);
+  const [starterLevel, setStarterLevel] = useState<Level>(defaultLevel);
   const [practiceLevel, setPracticeLevel] = useState<Level>(defaultLevel);
   const [masterLevel, setMasterLevel] = useState<Level>(defaultLevel);
   const [singleLevel, setSingleLevel] = useState<Level>(defaultLevel);
@@ -170,12 +184,79 @@ export default function PackagePickerModal({
   const levels: Level[] = ["A1", "A2", "B1"];
   const doubleSlug = doubleLevel === "A1+A2" ? "live-a1-a2" : "live-a2-b1";
 
+  // Seçilen seviyede öğrencinin paketi bu kartın paketini zaten kapsıyor mu?
+  function ownsAtLeast(level: Level, tier: "starter" | "practice" | "master") {
+    const owned = levelPackages?.[level];
+    return !!owned && PACKAGE_RANK[owned] >= PACKAGE_RANK[tier];
+  }
+
+  function ownedLabel(level: Level, tier: "starter" | "practice" | "master") {
+    return levelPackages?.[level] === tier ? "Mevcut Paketin" : "Paketine Dahil";
+  }
+
+  if (step === "choose") {
+    return (
+      <div
+        className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/50 px-4 py-8 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${defaultLevel} seviyesi kilitli`}
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-2xl rounded-[32px] border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-2xl sm:p-8"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-xs font-black uppercase tracking-widest text-amber-700">
+              🔒 {defaultLevel} seviyesi kilitli
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Kapat"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-base font-black text-slate-600 shadow hover:bg-slate-100"
+            >
+              ✕
+            </button>
+          </div>
+
+          <h3 className="mt-2 text-2xl font-black text-slate-900">
+            {defaultLevel} seviyesi seni bekliyor
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Bu seviye şu anda hesabında açık değil. {defaultLevel} dijital paketiyle kendi
+            hızında başlayabilir ya da {defaultLevel} canlı kursuna katılarak öğretmenle
+            ilerleyebilirsin.
+          </p>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => setStep("digital")}
+              className="flex-1 rounded-2xl bg-slate-900 px-5 py-4 text-sm font-black text-white hover:bg-slate-800"
+            >
+              🚀 Dijital Paketle Aç
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep("live")}
+              className="flex-1 rounded-2xl border border-amber-300 bg-white px-5 py-4 text-sm font-black text-amber-700 hover:bg-amber-50"
+            >
+              🎓 {defaultLevel} Canlı Kursunu İncele
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-[60] overflow-y-auto bg-black/50 px-4 py-8 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
-      aria-label={mode === "digital" ? "Dijital paket seç" : "Canlı kurs paketi seç"}
+      aria-label={step === "digital" ? "Dijital paket seç" : "Canlı kurs paketi seç"}
       onClick={onClose}
     >
       <div
@@ -185,10 +266,10 @@ export default function PackagePickerModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.25em] text-orange-600">
-              {mode === "digital" ? "Dijital Paketler" : "Canlı Akademi"}
+              {step === "digital" ? "Dijital Paketler" : "Canlı Akademi"}
             </p>
             <h2 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
-              {mode === "digital"
+              {step === "digital"
                 ? "Sana uygun dijital paketi seç"
                 : "Sana uygun canlı kurs paketini seç"}
             </h2>
@@ -207,13 +288,14 @@ export default function PackagePickerModal({
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          {mode === "digital" ? (
+          {step === "digital" ? (
             <>
               <PlanCard
-                label={`${defaultLevel} Başlangıç`}
+                label={`${starterLevel} Başlangıç`}
                 name="Başlangıç"
                 price="Ücretsiz"
-                subtitle={`${defaultLevel} dijital başlangıç ücretsiz`}
+                subtitle={`${starterLevel} dijital başlangıç ücretsiz`}
+                toggle={<LevelToggle options={levels} value={starterLevel} onChange={setStarterLevel} />}
                 features={[
                   "Tema bazlı ilerleme",
                   "18 video ders erişimi",
@@ -222,8 +304,13 @@ export default function PackagePickerModal({
                   "Temel TELC hazırlık alanı",
                   "3 ay erişim",
                 ]}
-                cta={currentDigitalPackage === "starter" ? "Mevcut Paketin" : "Başlangıç"}
-                disabled
+                cta={
+                  ownsAtLeast(starterLevel, "starter")
+                    ? ownedLabel(starterLevel, "starter")
+                    : "Ücretsiz Başla"
+                }
+                disabled={ownsAtLeast(starterLevel, "starter") || !onFreeStart}
+                onSelect={() => onFreeStart?.(starterLevel)}
               />
               <PlanCard
                 label={`${practiceLevel} Gelişim`}
@@ -242,7 +329,8 @@ export default function PackagePickerModal({
                   "Kelime Arenası",
                   "6 ay erişim",
                 ]}
-                cta="Paketi Seç"
+                cta={ownsAtLeast(practiceLevel, "practice") ? ownedLabel(practiceLevel, "practice") : "Paketi Seç"}
+                disabled={ownsAtLeast(practiceLevel, "practice")}
                 onSelect={() => onSelect(`${practiceLevel.toLowerCase()}-practice`)}
               />
               <PlanCard
@@ -259,7 +347,8 @@ export default function PackagePickerModal({
                   "Zirve materyal sistemi",
                   "12 ay erişim",
                 ]}
-                cta="Paketi Seç"
+                cta={ownsAtLeast(masterLevel, "master") ? ownedLabel(masterLevel, "master") : "Paketi Seç"}
+                disabled={ownsAtLeast(masterLevel, "master")}
                 onSelect={() => onSelect(`${masterLevel.toLowerCase()}-master`)}
               />
             </>

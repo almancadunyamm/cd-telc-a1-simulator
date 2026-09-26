@@ -659,7 +659,7 @@ const [allSpeakingProgress, setAllSpeakingProgress] = useState<any[]>([]);
 const hasAutoSelectedLevelRef = useRef(false);
 const [paytrCheckoutSlug, setPaytrCheckoutSlug] = useState<string | null>(null);
 // Paket seçim ekranı (dijital: Gelişim/Zirve, canlı: Canlı Akademi paketleri)
-const [packagePicker, setPackagePicker] = useState<{ mode: "digital" | "live"; level: Level } | null>(null);
+const [packagePicker, setPackagePicker] = useState<{ mode: "digital" | "live" | "choose"; level: Level } | null>(null);
 
 function openPaytrCheckout(slug: string) {
   setPaytrCheckoutSlug(slug);
@@ -3342,6 +3342,80 @@ async function handleSpeakingBildirim() {
   setTimeout(() => setSpeakingBildirimGonderildi(false), 4000);
 }
 
+// ── Öğrencinin seviye bazında paketi (paket seçim ekranı için) ───────────
+// Dijital siparişler (starter/practice/master) ve canlı kurs (= Gelişim).
+const levelPackages = (() => {
+  const result: Partial<Record<Level, "starter" | "practice" | "master">> = {};
+  const rank = { starter: 1, practice: 2, master: 3 } as const;
+  const username = String(currentUser?.username || "").trim().toLowerCase();
+
+  dbActiveOrders.forEach((order: any) => {
+    const slug = String(order.product_slug || order.productSlug || "").toLowerCase();
+    if (String(order.username || "").trim().toLowerCase() !== username) return;
+    if (!["completed", "active"].includes(order.status)) return;
+    if (slug.startsWith("konusma-") || slug.startsWith("ozel-test")) return;
+
+    const tier: "starter" | "practice" | "master" | null = slug.includes("master")
+      ? "master"
+      : isLiveCourseSlug(slug) || slug.includes("practice")
+      ? "practice"
+      : slug.includes("starter")
+      ? "starter"
+      : null;
+    if (!tier) return;
+
+    getLevelsFromSlug(slug).forEach((lvl) => {
+      const current = result[lvl];
+      if (!current || rank[tier] > rank[current]) result[lvl] = tier;
+    });
+  });
+
+  // Canlı sınıfa atanmış seviyeler de Gelişim sayılır
+  userClasses
+    .filter((item) => item.classType === "live")
+    .forEach((item) => {
+      const lvl = item.level as Level;
+      if (!result[lvl] || rank[result[lvl]!] < rank.practice) result[lvl] = "practice";
+    });
+
+  return result;
+})();
+
+// Paketi olmayan seviyede ücretsiz Başlangıç'ı açar (kayıt sayfasındaki
+// ücretsiz başlangıçla aynı kayıt: 0 TL, tamamlanmış sipariş → 3 ay erişim).
+async function handleFreeStarterStart(level: Level) {
+  const username = String(currentUser?.username || "").trim().toLowerCase();
+  if (!username) return;
+  const slug = `${level.toLowerCase()}-starter`;
+
+  const { data: existing } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("username", username)
+    .eq("product_slug", slug)
+    .in("status", ["completed", "active"])
+    .limit(1);
+
+  if (!existing || existing.length === 0) {
+    const { error } = await supabase.from("orders").insert({
+      username,
+      product_slug: slug,
+      level,
+      status: "completed",
+      is_activated: true,
+    });
+
+    if (error) {
+      alert("Başlangıç paketi açılamadı. Lütfen tekrar dene.");
+      return;
+    }
+  }
+
+  setPackagePicker(null);
+  alert(`${level} Başlangıç paketin açıldı! 🎉`);
+  window.location.reload();
+}
+
 // ── Seviye genel ilerlemesi (İlerleme sekmesi ve Kalan Süre kartı ortak) ──
 // Ustalık testleri + Kelime Arenası + (içeriği açık seviyelerde) Konuşma Kulübü.
 function computeLevelProgress(level: Level) {
@@ -4141,8 +4215,8 @@ window.open(worksheet.url, "_blank");
           <button
   type="button"
   onClick={() => {
-    setUpsellPackage("practice");
-    setShowUpsell(true);
+    setPackagePicker({ mode: "digital", level: selectedLevel });
+
   }}
   className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
 >
@@ -5766,7 +5840,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
   onB1Live={() => setPackagePicker({ mode: "live", level: "B1" })}
   onRoundComplete={() => completeDailyTask("pdf")}
   onLevelLocked={(level) =>
-    setPackagePicker({ mode: hasAnyLiveCourseOrder ? "live" : "digital", level })
+    setPackagePicker({ mode: "choose", level })
   }
 />
   </section>
@@ -5800,6 +5874,8 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
           setSelectedMasteryLevel(levelItem);
 
           if (!hasAccess) {
+            // Kilitli seviye: önce "Dijital paketle aç / Canlı kursu incele" sorulur
+            setPackagePicker({ mode: "choose", level: levelItem });
             return;
           }
 
@@ -5841,8 +5917,8 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
   <button
     type="button"
     onClick={() => {
-      setUpsellPackage("practice");
-      setShowUpsell(true);
+      setPackagePicker({ mode: "digital", level: selectedMasteryLevel });
+
     }}
     className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
   >
@@ -6582,8 +6658,8 @@ if (!isPreviousThemeCompleted) {
           <button
             type="button"
             onClick={() => {
-              setUpsellPackage("practice");
-              setShowUpsell(true);
+              setPackagePicker({ mode: "digital", level: selectedLevel });
+
             }}
             className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-black text-white hover:bg-slate-800"
           >
@@ -7496,7 +7572,8 @@ if (!isPreviousThemeCompleted) {
   <PackagePickerModal
     mode={packagePicker.mode}
     defaultLevel={packagePicker.level}
-    currentDigitalPackage={effectivePackageType}
+    levelPackages={levelPackages}
+    onFreeStart={handleFreeStarterStart}
     onClose={() => setPackagePicker(null)}
     onSelect={(slug) => {
       setPackagePicker(null);
