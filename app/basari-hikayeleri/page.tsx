@@ -51,11 +51,6 @@ export default function BasariHikayeleriPage() {
             </div>
           ))}
         </div>
-
-        <p className="mt-10 text-sm leading-6 text-slate-600">
-          Sınav sonuçlarına ve öğrenci deneyimlerine dair paylaşımlarımızı
-          önümüzdeki dönemde bu sayfada güncelleyeceğiz.
-        </p>
       </article>
     </CorporateShell>
   );
