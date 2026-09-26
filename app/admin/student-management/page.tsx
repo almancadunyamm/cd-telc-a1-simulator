@@ -114,6 +114,20 @@ if (!selectedClassId) {
     return;
   }
 
+  const selectedClass = classes.find((cls: any) => cls.id === selectedClassId);
+
+  if (!selectedClass) {
+    alert("Seçilen sınıf bulunamadı.");
+    return;
+  }
+
+  if (!newStudentLevels.includes(selectedClass.level)) {
+    alert(
+      `Seçilen sınıf ${selectedClass.level} seviyesinde. Seviye olarak ${selectedClass.level} de işaretli olmalı.`
+    );
+    return;
+  }
+
   const { data: existingUsers } = await supabase
     .from("users")
     .select("*")
@@ -171,14 +185,46 @@ if (!selectedClassId) {
       }
     }
   }
-  await supabase.from("student_classes").delete().eq("student_email", email);
+  // Öğrenci paneli sınıf erişimini "student_class_access" tablosundan okur.
+  // Aynı seviyedeki eski sınıf ataması (varsa) yenisiyle değiştirilir;
+  // diğer seviyelerin atamaları korunur.
+  const { data: existingAccess } = await supabase
+    .from("student_class_access")
+    .select("*")
+    .eq("username", email);
 
-await supabase.from("student_classes").insert({
-  student_email: email,
-  class_id: selectedClassId,
-});
+  const sameLevelAccessIds = (existingAccess || [])
+    .filter((item: any) => {
+      const relatedClass = classes.find((cls: any) => cls.id === item.main_class_id);
+      return relatedClass?.level === selectedClass.level;
+    })
+    .map((item: any) => item.id);
 
-  alert("Canlı öğrenci başarıyla eklendi.");
+  if (sameLevelAccessIds.length > 0) {
+    await supabase
+      .from("student_class_access")
+      .delete()
+      .in("id", sameLevelAccessIds);
+  }
+
+  const { error: accessError } = await supabase
+    .from("student_class_access")
+    .insert({
+      username: email,
+      main_class_id: selectedClassId,
+      extra_class_access: [],
+    });
+
+  if (accessError) {
+    alert(
+      "Öğrenci ve sipariş oluşturuldu ancak sınıfa atanamadı: " +
+        accessError.message +
+        " — Öğrenciler sayfasından sınıfa atayabilirsin."
+    );
+    return;
+  }
+
+  alert("Canlı öğrenci başarıyla eklendi ve sınıfa atandı.");
   window.location.reload();
 }
 return (
@@ -252,7 +298,7 @@ return (
 
   {classes.map((cls) => (
     <option key={cls.id} value={cls.id}>
-      {cls.name}
+      {cls.name} ({cls.level}{(cls.class_type || "live") === "digital" ? " · dijital" : ""})
     </option>
   ))}
 </select>

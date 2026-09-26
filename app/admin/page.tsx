@@ -55,13 +55,6 @@ const adminCards = [
     accent: "#ef4444",
   },
   {
-    title: "Manuel Erişim Ver",
-    description: "Ödeme almadan (hediye/telafi vb.) bir öğrenciye elle paket erişimi tanımla.",
-    href: "/admin/manual-activate",
-    icon: "🎁",
-    accent: "#eab308",
-  },
-  {
     title: "SSS Yönetimi",
     description: "Ana sayfadaki sık sorulan soruları düzenle.",
     href: "/admin/faqs",
