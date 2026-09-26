@@ -915,6 +915,114 @@ const earnedBadges = [
 
   const [selectedLevel, setSelectedLevel] = useState<Level>("A1");
   const [activeDashboardTab, setActiveDashboardTab] = useState("home");
+
+  // ── İlerleme sekmesi: gerçek veriler (Supabase) ────────────────────────
+  // Ustalık testleri (mastery_progress), Kelime Arenası (word_progress) ve
+  // panel aktivitesi (user_activity_ping, panel açıkken ~90 sn'de bir kayıt).
+  const WORD_ARENA_THEMES_PER_LEVEL = 12;
+  const [progressStats, setProgressStats] = useState<{
+    masteryDone: number;
+    wordDone: number;
+    activityDays: { key: string; label: string; minutes: number }[];
+    activityStreak: number;
+    loaded: boolean;
+  }>({ masteryDone: 0, wordDone: 0, activityDays: [], activityStreak: 0, loaded: false });
+
+  useEffect(() => {
+    const username = String(currentUser?.username || "").trim().toLowerCase();
+    if (!username) return;
+    if (activeDashboardTab !== "progress" && activeDashboardTab !== "home") return;
+
+    let cancelled = false;
+
+    function localDayKey(date: Date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    async function loadProgressStats() {
+      const [{ data: masteryRows }, { data: wordRows }] = await Promise.all([
+        supabase
+          .from("mastery_progress")
+          .select("theme_id")
+          .eq("student_key", username)
+          .eq("level", selectedLevel)
+          .eq("status", "completed"),
+        supabase
+          .from("word_progress")
+          .select("tema_key, tamamlandi")
+          .eq("user_email", username)
+          .eq("level", selectedLevel)
+          .eq("tamamlandi", true),
+      ]);
+
+      const masteryDone = new Set((masteryRows || []).map((row: any) => row.theme_id)).size;
+      const wordDone = new Set(
+        (wordRows || [])
+          .map((row: any) => String(row.tema_key || ""))
+          .filter((key: string) => /^tema\d+$/.test(key))
+      ).size;
+
+      // Son 30 günün aktivite kayıtları (sayfalı okunur)
+      const since = new Date();
+      since.setHours(0, 0, 0, 0);
+      since.setDate(since.getDate() - 30);
+
+      const pingsPerDay: Record<string, number> = {};
+      for (let page = 0; page < 10; page++) {
+        const { data: pings, error } = await supabase
+          .from("user_activity_ping")
+          .select("seen_at")
+          .eq("username", username)
+          .gte("seen_at", since.toISOString())
+          .order("seen_at", { ascending: false })
+          .range(page * 1000, page * 1000 + 999);
+
+        if (error || !pings || pings.length === 0) break;
+
+        pings.forEach((row: any) => {
+          const key = localDayKey(new Date(row.seen_at));
+          pingsPerDay[key] = (pingsPerDay[key] || 0) + 1;
+        });
+
+        if (pings.length < 1000) break;
+      }
+
+      const dayLabels = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cts"];
+      const activityDays = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - index));
+        const key = localDayKey(date);
+        return {
+          key,
+          label: index === 6 ? "Bugün" : dayLabels[date.getDay()],
+          minutes: Math.round((pingsPerDay[key] || 0) * 1.5),
+        };
+      });
+
+      // Günlük seri: bugünden (bugün henüz kayıt yoksa dünden) geriye
+      // kesintisiz aktif gün sayısı
+      let activityStreak = 0;
+      const cursor = new Date();
+      if (!pingsPerDay[localDayKey(cursor)]) cursor.setDate(cursor.getDate() - 1);
+      while (pingsPerDay[localDayKey(cursor)]) {
+        activityStreak += 1;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+
+      if (!cancelled) {
+        setProgressStats({ masteryDone, wordDone, activityDays, activityStreak, loaded: true });
+        setStreak(activityStreak);
+      }
+    }
+
+    loadProgressStats();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser?.username, selectedLevel, activeDashboardTab]);
   type MasteryQuestion = {
   id: number;
   themeId: number;
@@ -6648,73 +6756,170 @@ if (!isPreviousThemeCompleted) {
 )}
   </section>
 )}
-{activeDashboardTab === "progress" && (
+{activeDashboardTab === "progress" && (() => {
+  const masteryTotal =
+    selectedLevel === "A1"
+      ? masteryThemes.length
+      : selectedLevel === "A2"
+      ? a2MasteryThemes.length
+      : 0;
+  const wordTotal = WORD_ARENA_THEMES_PER_LEVEL;
+  const masteryDone = Math.min(progressStats.masteryDone, masteryTotal);
+  const wordDone = Math.min(progressStats.wordDone, wordTotal);
+  const overallTotal = masteryTotal + wordTotal;
+  const overallPercent =
+    overallTotal > 0 ? Math.round(((masteryDone + wordDone) / overallTotal) * 100) : 0;
+  const masteryPercent = masteryTotal > 0 ? Math.round((masteryDone / masteryTotal) * 100) : 0;
+  const wordPercent = Math.round((wordDone / wordTotal) * 100);
+  const maxMinutes = Math.max(30, ...progressStats.activityDays.map((day) => day.minutes));
+  const weekTotalMinutes = progressStats.activityDays.reduce((sum, day) => sum + day.minutes, 0);
+  const todayTasksDone = Object.values(completedTasks).filter(Boolean).length;
+
+  return (
   <>
   {/* ÜST KPI KARTLARI */}
-  <section className="mb-8 grid gap-6 lg:grid-cols-3">
+  <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <div className="rounded-3xl bg-white p-6 shadow-lg">
-      <p className="text-sm text-slate-500">Toplam Ders</p>
+      <p className="text-sm text-slate-500">Geçilen Ustalık Testi</p>
       <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
-        {openedLessonCount}
+        {masteryTotal > 0 ? `${masteryDone}/${masteryTotal}` : "—"}
       </h2>
+      <p className="mt-1 text-xs text-slate-400">{selectedLevel} temaları</p>
     </div>
 
     <div className="rounded-3xl bg-white p-6 shadow-lg">
-      <p className="text-sm text-slate-500">Tamamlanan Görev</p>
+      <p className="text-sm text-slate-500">Kelime Arenası Teması</p>
       <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
-        {completedCount}
+        {wordDone}/{wordTotal}
       </h2>
+      <p className="mt-1 text-xs text-slate-400">{selectedLevel} tamamlanan tema</p>
+    </div>
+
+    <div className="rounded-3xl bg-white p-6 shadow-lg">
+      <p className="text-sm text-slate-500">Bugünkü Görevler</p>
+      <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
+        {todayTasksDone}/{dailyTasks.length}
+      </h2>
+      <p className="mt-1 text-xs text-slate-400">Her gün yenilenir</p>
     </div>
 
     <div className="rounded-3xl bg-white p-6 shadow-lg">
       <p className="text-sm text-slate-500">Günlük Seri</p>
       <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
-        {streak} 🔥
+        {progressStats.activityStreak} 🔥
       </h2>
+      <p className="mt-1 text-xs text-slate-400">Üst üste aktif gün</p>
     </div>
   </section>
 
-  {/* GRAFİK */}
+  {/* HAFTALIK AKTİVİTE */}
   <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
-    <h2 className="text-xl font-bold text-slate-900">
-      Haftalık İlerleme
-    </h2>
-
-    <div className="mt-6 flex items-end gap-3 h-40">
-      {[20, 40, 60, 30, 70, 50, progressPercent].map((val, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center">
-          <div
-            className="w-full rounded-xl bg-gradient-to-t from-blue-500 to-indigo-400 transition-all duration-500"
-            style={{ height: `${val}%` }}
-          />
-          <p className="mt-2 text-xs text-slate-400">
-            {["Pzt","Sal","Çar","Per","Cum","Cts","Paz"][i]}
-          </p>
-        </div>
-      ))}
+    <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <h2 className="text-xl font-bold text-slate-900">
+        Son 7 Gün · Panelde Aktif Süre
+      </h2>
+      <p className="text-sm text-slate-500">
+        Toplam {weekTotalMinutes} dk
+      </p>
     </div>
+
+    {!progressStats.loaded ? (
+      <p className="mt-6 text-sm text-slate-400">Yükleniyor...</p>
+    ) : (
+      <div className="mt-6 flex h-44 items-end gap-3 border-b border-slate-200">
+        {progressStats.activityDays.map((day) => {
+          const heightPercent = day.minutes > 0 ? Math.max(4, (day.minutes / maxMinutes) * 100) : 0;
+          const isToday = day.label === "Bugün";
+
+          return (
+            <div key={day.key} className="group relative flex h-full flex-1 flex-col items-center justify-end">
+              <div className="pointer-events-none absolute -top-2 left-1/2 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-xs font-semibold text-white opacity-0 shadow transition group-hover:opacity-100">
+                {day.minutes} dk
+              </div>
+              {isToday && day.minutes > 0 && (
+                <p className="mb-1 text-xs font-bold text-slate-700">{day.minutes} dk</p>
+              )}
+              <div
+                className="w-full max-w-[44px] rounded-t-[4px] bg-blue-500 transition-all duration-500"
+                style={{ height: `${heightPercent}%` }}
+              />
+            </div>
+          );
+        })}
+      </div>
+    )}
+
+    {progressStats.loaded && (
+      <div className="mt-2 flex gap-3">
+        {progressStats.activityDays.map((day) => (
+          <p
+            key={day.key}
+            className={`flex-1 text-center text-xs ${
+              day.label === "Bugün" ? "font-bold text-slate-700" : "text-slate-400"
+            }`}
+          >
+            {day.label}
+          </p>
+        ))}
+      </div>
+    )}
   </section>
 
   {/* GENEL İLERLEME */}
   <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
-    <h2 className="mb-4 text-xl font-bold text-slate-900">
-      Genel İlerleme
-    </h2>
+    <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <h2 className="text-xl font-bold text-slate-900">
+        {selectedLevel} Genel İlerleme
+      </h2>
+      <p className="text-2xl font-extrabold text-slate-900">%{overallPercent}</p>
+    </div>
 
-    <div className="h-4 w-full rounded-full bg-slate-200">
+    <div className="mt-4 h-4 w-full rounded-full bg-slate-200">
       <div
-        className="h-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-700"
-        style={{ width: `${progressPercent}%` }}
+        className="h-4 rounded-full bg-blue-500 transition-all duration-700"
+        style={{ width: `${overallPercent}%` }}
       />
     </div>
 
     <p className="mt-3 text-sm text-slate-500">
-      %{progressPercent} tamamlandı
+      Ustalık testleri ve Kelime Arenası temalarının birlikte tamamlanma oranı.
     </p>
+
+    <div className="mt-6 grid gap-5 sm:grid-cols-2">
+      <div>
+        <div className="flex items-baseline justify-between text-sm">
+          <span className="font-semibold text-slate-700">Ustalık Testleri</span>
+          <span className="text-slate-500">
+            {masteryTotal > 0 ? `${masteryDone}/${masteryTotal} · %${masteryPercent}` : "Bu seviyede yok"}
+          </span>
+        </div>
+        <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
+          <div
+            className="h-2 rounded-full bg-blue-500 transition-all duration-700"
+            style={{ width: `${masteryPercent}%` }}
+          />
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-baseline justify-between text-sm">
+          <span className="font-semibold text-slate-700">Kelime Arenası</span>
+          <span className="text-slate-500">
+            {wordDone}/{wordTotal} · %{wordPercent}
+          </span>
+        </div>
+        <div className="mt-2 h-2 w-full rounded-full bg-slate-200">
+          <div
+            className="h-2 rounded-full bg-blue-500 transition-all duration-700"
+            style={{ width: `${wordPercent}%` }}
+          />
+        </div>
+      </div>
+    </div>
   </section>
 </>
-)}
-
+  );
+})()}
 {activeDashboardTab === "badges" && (
   <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
     <h2 className="text-xl font-bold text-slate-900">
