@@ -104,6 +104,7 @@ export default function TrialPanel({ lead }: { lead: TrialLead }) {
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null);
   const [worksheetLessons, setWorksheetLessons] = useState<LessonRow[]>([]);
   const [openTheme, setOpenTheme] = useState<number | null>(1);
+  const [recordingLevel, setRecordingLevel] = useState<"A1" | "A2" | "B1">("A1");
 
   const firstName = lead.name.split(" ")[0] || lead.name;
 
@@ -330,40 +331,40 @@ export default function TrialPanel({ lead }: { lead: TrialLead }) {
               </div>
 
               <div className="rounded-3xl bg-white p-5 shadow-lg sm:p-6">
-                <div className="flex flex-wrap items-end justify-between gap-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-widest text-blue-600">A1 Canlı Kurs Programı</p>
-                    <h2 className="mt-1 text-2xl font-black">12 tema · 36 ders</h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Canlı kursta tüm derslerin kayıtları, PDF&apos;leri ve ödevleri bu bölümde açılır.
-                    </p>
+                    <p className="text-xs font-black uppercase tracking-widest text-blue-600">Canlı Ders Kayıtları</p>
+                    <h2 className="mt-1 text-2xl font-black">Sınıfının ders kayıtları</h2>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">🔒 Kayıt sonrası açılır</span>
+                  <div className="flex gap-2" role="tablist" aria-label="Seviye">
+                    {(["A1", "A2", "B1"] as const).map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        role="tab"
+                        aria-selected={recordingLevel === level}
+                        onClick={() => setRecordingLevel(level)}
+                        className={`rounded-full px-4 py-2 text-sm font-black transition ${
+                          recordingLevel === level ? "bg-blue-600 text-white shadow" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-5 grid gap-3 md:grid-cols-2">
-                  {A1_SYLLABUS.map((theme) => (
-                    <div key={theme.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <p className="text-xs font-black text-blue-700">
-                        TEMA {theme.id} · {theme.germanTitle}
-                      </p>
-                      <p className="mt-1 font-black">{theme.title}</p>
-                      <div className="mt-3 space-y-1.5">
-                        {theme.lessons.map((lesson) => (
-                          <button
-                            key={lesson.number}
-                            type="button"
-                            onClick={() => lock(`${lesson.number}. Ders: ${lesson.title}`, "Bu dersin canlı kayıtları, PDF'leri ve ödevleri")}
-                            className="flex w-full items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-left text-sm font-semibold text-slate-600 hover:bg-yellow-50"
-                          >
-                            <span className="line-clamp-1">
-                              {lesson.number}. {lesson.title}
-                            </span>
-                            <span className="shrink-0 text-xs">🔒</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+
+                <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
+                  🎥 Öğretmenimizle canlı Zoom derslerimiz işlendikçe, her dersin kaydı ve materyalleri burada
+                  listelenir. Kaçırdığın dersi buradan tekrar izleyebilirsin.
+                </div>
+
+                <div className="mt-4 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
+                  <p className="text-4xl">📭</p>
+                  <p className="mt-3 font-black text-slate-800">{recordingLevel} sınıfında henüz ders kaydı yok</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Canlı kursa kayıt olduğunda sınıfının ders kayıtları burada görünür.
+                  </p>
                 </div>
               </div>
             </section>
