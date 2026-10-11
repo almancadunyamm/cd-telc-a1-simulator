@@ -13,6 +13,14 @@ const adminCards = [
     accent: "#10b981",
   },
   {
+    title: "Deneme Başvuruları",
+    description: "Ücretsiz deneme dersine ad ve telefon bırakanlar; ara, WhatsApp'tan yaz, durumunu işaretle.",
+    href: "/admin/deneme-basvurulari",
+    icon: "🎓",
+    accent: "#f97316",
+    tag: "Yeni",
+  },
+  {
     title: "Sınıf Yönetimi",
     description: "Sınıf oluştur, öğretmen ata, varsayılanı belirle.",
     href: "/admin/classes",

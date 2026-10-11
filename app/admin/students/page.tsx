@@ -39,7 +39,10 @@ export default function AdminStudentsPage() {
       return;
     }
 
-    const mappedClasses = (classesFromDb || []).map((item: any) => ({
+    const mappedClasses = (classesFromDb || [])
+      // Deneme Sınıfı'na öğrenci atanmaz.
+      .filter((item: any) => item.class_type !== "trial")
+      .map((item: any) => ({
       id: item.id,
       name: item.name,
       level: item.level,

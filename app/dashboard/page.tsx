@@ -5,6 +5,7 @@ import PackagePickerModal from "@/components/PackagePickerModal";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { getTrialClassIds } from "@/lib/trial";
 const KelimeOyunu = dynamic(() => import("@/components/KelimeOyunu"), { ssr: false });
 import ClassLeagueTab from "@/components/ClassLeagueTab";
 import {
@@ -807,7 +808,10 @@ const { data: lessonsFromDb } = await supabase
 );
 
 setLessons(
-  (lessonsFromDb || []).map((lesson: any) => ({
+  (lessonsFromDb || [])
+    // Deneme Sınıfı dersleri yalnızca /deneme-dersi panelinde görünür.
+    .filter((lesson: any) => !getTrialClassIds(classesFromDb).has(lesson.class_id))
+    .map((lesson: any) => ({
     id: lesson.id,
     title: lesson.title,
     videoUrl: lesson.video_url,
@@ -2083,7 +2087,10 @@ const { data: lessonsFromDb } = await supabase
 .order("created_at", { ascending: true });
 
 setLessons(
-  (lessonsFromDb || []).map((lesson: any) => ({
+  (lessonsFromDb || [])
+    // Deneme Sınıfı dersleri yalnızca /deneme-dersi panelinde görünür.
+    .filter((lesson: any) => !getTrialClassIds(classesFromDb).has(lesson.class_id))
+    .map((lesson: any) => ({
     id: lesson.id,
     title: lesson.title,
     videoUrl: lesson.video_url,

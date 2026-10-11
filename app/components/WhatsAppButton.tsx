@@ -25,6 +25,11 @@ const PAGE_MESSAGES: { prefixes: string[]; message: string }[] = [
       "Merhaba, Dijital Kurs ve TELC sınav simülatörü hakkında bilgi almak istiyorum.",
   },
   {
+    prefixes: ["/deneme-dersi"],
+    message:
+      "Merhaba, ücretsiz deneme dersini inceledim. Canlı kurs hakkında bilgi almak istiyorum.",
+  },
+  {
     prefixes: ["/konusma-kulubu"],
     message: "Merhaba, Konuşma Kulübü hakkında bilgi almak istiyorum.",
   },

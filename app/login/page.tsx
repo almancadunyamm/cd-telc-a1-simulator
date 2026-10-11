@@ -319,6 +319,21 @@ return (
               </button>
             </div>
 
+            <a
+              href="/deneme-dersi"
+              className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm transition hover:bg-emerald-100"
+            >
+              <span>
+                <span className="block font-black text-emerald-900">🎓 Ücretsiz Deneme Dersi</span>
+                <span className="mt-1 block text-emerald-800">
+                  Kayıt olmadan örnek dersi izle ve öğrenci panelini keşfet.
+                </span>
+              </span>
+              <span className="shrink-0 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white">
+                Başla →
+              </span>
+            </a>
+
             <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
   <p className="font-bold text-slate-900">
     Henüz öğrenci hesabın yok mu?

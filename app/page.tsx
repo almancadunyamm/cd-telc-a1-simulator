@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Footer from "./components/Footer";
+import { DIGITAL_SIMULATOR_VISIBLE } from "@/lib/site-flags";
 
 type LevelSlug = "a1" | "a2" | "b1";
 
@@ -160,7 +161,11 @@ export default function HomePage() {
     <img src="/images/logo.png" alt="Almanca Okulum" className="h-26 w-auto object-contain" />
   </div>
   <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-700 md:flex">
-    <a href="/digital-simulation" className="hover:text-blue-600 transition">Dijital Kurs</a>
+    {DIGITAL_SIMULATOR_VISIBLE ? (
+      <a href="/digital-simulation" className="hover:text-blue-600 transition">Dijital Kurs</a>
+    ) : (
+      <a href="/deneme-dersi" className="hover:text-orange-600 transition">Ücretsiz Deneme Dersi</a>
+    )}
     <a href="/academy-live" className="hover:text-blue-600 transition">{"Canlı Akademi"}</a>
     <a href="/register" className="hover:text-blue-600 transition">Kayıt Ol</a>
   </nav>
@@ -209,6 +214,7 @@ export default function HomePage() {
       </a>
     </div>
   </div>
+  {DIGITAL_SIMULATOR_VISIBLE ? (
   <div className="group relative overflow-hidden rounded-[40px] border border-blue-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(37,99,235,0.55)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-300 hover:shadow-[0_45px_120px_-32px_rgba(37,99,235,0.75)]">
     <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50 opacity-90" />
     <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-cyan-300/20 blur-3xl" />
@@ -268,6 +274,60 @@ export default function HomePage() {
 </div>
     </div>
   </div>
+  ) : (
+  <div className="group relative overflow-hidden rounded-[40px] border border-emerald-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(16,185,129,0.5)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-emerald-300 hover:shadow-[0_45px_120px_-32px_rgba(16,185,129,0.7)]">
+    <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-yellow-50 opacity-90" />
+    <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-emerald-300/20 blur-3xl" />
+
+    <div className="relative z-10 flex h-full flex-col">
+      <img
+        src="/images/digital-mini-ui.png"
+        alt="Almanca Okulum öğrenci paneli"
+        className="h-52 w-full rounded-[30px] object-cover shadow-2xl transition duration-500 group-hover:scale-[1.03]"
+      />
+
+      <div className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-700">
+        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+        Ücretsiz Deneme
+      </div>
+
+      <h2 className="mt-3 text-2xl font-black leading-tight text-slate-950">
+        Kayıt olmadan
+        <span className="block text-emerald-600">deneme dersine katıl</span>
+      </h2>
+
+      <p className="mt-2 text-sm leading-5 text-slate-600">
+        Öğretmenimizin örnek dersini izle, öğrenci panelini gez, Kelime Arenası&apos;nda
+        oyna ve ilk temaların çalışma sayfalarını indir.
+      </p>
+
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        {[
+          "✓ Örnek canlı ders",
+          "✓ Kelime Arenası",
+          "✓ Çalışma sayfaları",
+          "✓ Öğrenci paneli",
+        ].map((item) => (
+          <div
+            key={item}
+            className="rounded-full bg-emerald-50/90 px-4 py-2 text-xs font-black text-emerald-700 ring-1 ring-emerald-100"
+          >
+            {item}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6">
+        <a
+          href="/deneme-dersi"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:scale-[1.02] hover:bg-emerald-700"
+        >
+          {"🎓 Ücretsiz Deneme Dersine Başla"}
+        </a>
+      </div>
+    </div>
+  </div>
+  )}
 </div>
 
     <div className="mt-8 grid grid-cols-1 gap-0 overflow-hidden rounded-3xl border border-slate-200 bg-white/80 shadow-sm backdrop-blur md:grid-cols-2 xl:grid-cols-4">

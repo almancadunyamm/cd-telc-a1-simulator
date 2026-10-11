@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { DIGITAL_SIMULATOR_VISIBLE } from "@/lib/site-flags";
 
 type UserItem = {
   id: string;
@@ -219,12 +220,21 @@ router.push("/payment/pending");
               <h2 className="text-xl font-black text-slate-900">Canlı Akademi</h2>
               <p className="mt-2 text-sm text-slate-500">Öğretmenle canlı Zoom dersleri, konuşma kulübü ve mentor takip sistemi.</p>
             </button>
+            {DIGITAL_SIMULATOR_VISIBLE ? (
             <button type="button" onClick={() => window.location.href = "/digital-simulation#paketler"}
               className="rounded-3xl border-2 border-blue-200 bg-white p-6 text-left shadow-sm hover:border-blue-400 hover:shadow-md transition">
               <div className="text-3xl mb-3">💻</div>
               <h2 className="text-xl font-black text-slate-900">Dijital Kurs</h2>
               <p className="mt-2 text-sm text-slate-500">Kendi hızında video dersler, TELC denemeleri ve dijital hazırlık sistemi. Başlangıç ücretsiz!</p>
             </button>
+            ) : (
+            <button type="button" onClick={() => window.location.href = "/deneme-dersi"}
+              className="rounded-3xl border-2 border-emerald-200 bg-white p-6 text-left shadow-sm hover:border-emerald-400 hover:shadow-md transition">
+              <div className="text-3xl mb-3">🎓</div>
+              <h2 className="text-xl font-black text-slate-900">Ücretsiz Deneme Dersi</h2>
+              <p className="mt-2 text-sm text-slate-500">Kayıt olmadan örnek canlı dersi izle, öğrenci panelini keşfet.</p>
+            </button>
+            )}
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm">

@@ -296,7 +296,7 @@ return (
 >
   <option value="">Sınıf Seç</option>
 
-  {classes.map((cls) => (
+  {classes.filter((cls) => cls.class_type !== "trial").map((cls) => (
     <option key={cls.id} value={cls.id}>
       {cls.name} ({cls.level}{(cls.class_type || "live") === "digital" ? " · dijital" : ""})
     </option>

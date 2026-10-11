@@ -399,9 +399,14 @@ type Props = {
   // Paketi olmayan seviyeye (örn. A2/B1) tıklanınca çağrılır; panel dijital
   // paket seçim ekranını o seviye seçili olarak açar.
   onLevelLocked?: (level: "A1" | "A2" | "B1") => void;
+  // Ücretsiz deneme paneli: yalnızca ilk N tema açık (sıra şartı yok,
+  // ilerleme kaydedilmez). Kilitli temaya tıklanınca onTrialLocked çağrılır.
+  trialThemeLimit?: number;
+  onTrialLocked?: () => void;
 };
 
-export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [], onUpsell, onB1Live, onRoundComplete, onLevelLocked }: Props) {
+export default function KelimeOyunu({ effectivePackageType, hasAnyLiveCourseOrder, currentUserEmail, currentUserName, activeAccessLevels = [], onUpsell, onB1Live, onRoundComplete, onLevelLocked, trialThemeLimit, onTrialLocked }: Props) {
+  const isTrial = typeof trialThemeLimit === "number";
   const [ekran, setEkran] = useState<Ekran>("menu");
   const [tema, setTema] = useState<TemaKey | null>(null);
   const [mod, setMod] = useState<Mod>("de_to_tr");
@@ -696,6 +701,7 @@ const bugun = new Date().toISOString().split("T")[0];
     // En son kaldığı temayı bul
     const ilkAcik = (Object.keys(aktifKelimeListesi) as TemaKey[]).find((k, i) => {
       const no = i + 1;
+      if (isTrial) return no <= (trialThemeLimit as number);
       const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
       return (no <= 6 || hasDev) && !completedWordThemes.includes(no);
     });
@@ -991,6 +997,7 @@ const temaNo = Number(String(tema).replace("tema", ""));
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             {tamamlandi && sonrakiTemaVar ? (
               <button onClick={() => {
+                if (isTrial && temaNo + 1 > (trialThemeLimit as number)) { onTrialLocked?.(); return; }
                 const sonrakiTema = `tema${temaNo + 1}` as TemaKey;
                 setTema(sonrakiTema); setEkran("mod");
               }}
@@ -1206,8 +1213,8 @@ const temaNo = Number(String(tema).replace("tema", ""));
               {(Object.entries(aktifKelimeListesi) as [TemaKey, { ad: string; kelimeler: Kelime[] }][]).map(([key, val], i) => {
                 const temaNo = i + 1;
                 const hasDev = effectivePackageType === "practice" || effectivePackageType === "master" || hasAnyLiveCourseOrder;
-const hasAccess = (temaNo <= 6 || hasDev) && hasLevelAccess(selectedWordLevel);
-                const prevDone = temaNo === 1 || completedWordThemes.includes(temaNo - 1);
+const hasAccess = (isTrial ? temaNo <= (trialThemeLimit as number) : (temaNo <= 6 || hasDev)) && hasLevelAccess(selectedWordLevel);
+                const prevDone = isTrial || temaNo === 1 || completedWordThemes.includes(temaNo - 1);
                 const isLocked = !hasAccess || !prevDone;
                 const isCompleted = completedWordThemes.includes(temaNo);
                 const temaLearned = temaLearnedWords[key] || [];
@@ -1215,6 +1222,7 @@ const hasAccess = (temaNo <= 6 || hasDev) && hasLevelAccess(selectedWordLevel);
                 return (
                   <button key={key} onClick={() => {
                     if (!hasLevelAccess(selectedWordLevel)) { openLockedLevel(selectedWordLevel); return; }
+                    if (!hasAccess && isTrial && onTrialLocked) { onTrialLocked(); return; }
                     if (!hasAccess) { setUyariMesaji("🔒 Bu Tema Kilitli\n\nBu temaya erişmek için Gelişim Paketi gerekiyor."); return; }
                     if (!prevDone) { setUyariMesaji(`🎯 Sıradaki Tema Kilitli\n\nÖnce Tema ${temaNo - 1}'i tamamlamalısın.`); return; }
                     setTema(key); setEkran("mod");

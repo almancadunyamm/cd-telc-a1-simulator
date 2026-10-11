@@ -11,7 +11,7 @@ type ClassItem = {
   teacherId: string;
   teacherName: string;
   isDefaultSalesClass: boolean;
-  classType?: "live" | "digital";
+  classType?: "live" | "digital" | "trial";
 };
 
 export default function AdminClassesPage() {
@@ -36,7 +36,7 @@ useEffect(() => {
   const [teacherName, setTeacherName] = useState("");
   const [teacherId, setTeacherId] = useState("");
   const [isDefaultSalesClass, setIsDefaultSalesClass] = useState(false);
-  const [classType, setClassType] = useState<"live" | "digital">("live");
+  const [classType, setClassType] = useState<"live" | "digital" | "trial">("live");
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
   
 
@@ -81,6 +81,10 @@ useEffect(() => {
 
 const digitalClasses = classes.filter(
   (classItem) => classItem.classType === "digital"
+);
+
+const trialClasses = classes.filter(
+  (classItem) => classItem.classType === "trial"
 );
   async function handleAddClass() {
     if (!name || !teacherName || !teacherId) {
@@ -234,6 +238,11 @@ setEditingClassId(null);
 
   if (!targetClass) return;
 
+  if (targetClass.classType === "trial") {
+    alert("Deneme sınıfı satış sınıfı olamaz; yalnızca deneme dersi paneli içindir.");
+    return;
+  }
+
   const { error: resetError } = await supabase
     .from("classes")
     .update({ is_default_sales_class: false })
@@ -316,11 +325,16 @@ setEditingClassId(null);
             </select>
             <select
   value={classType}
-  onChange={(e) => setClassType(e.target.value as "live" | "digital")}
+  onChange={(e) => {
+    const nextType = e.target.value as "live" | "digital" | "trial";
+    setClassType(nextType);
+    if (nextType === "trial") setIsDefaultSalesClass(false);
+  }}
   className="rounded-xl border border-slate-300 px-4 py-3 text-sm"
 >
   <option value="live">Canlı kurs sınıfı</option>
   <option value="digital">Dijital paket sınıfı</option>
+  <option value="trial">Deneme sınıfı (ücretsiz deneme dersi paneli)</option>
 </select>
 
             <input
@@ -341,6 +355,7 @@ setEditingClassId(null);
               <input
                 type="checkbox"
                 checked={isDefaultSalesClass}
+                disabled={classType === "trial"}
                 onChange={(e) => setIsDefaultSalesClass(e.target.checked)}
               />
               <span>
@@ -387,6 +402,18 @@ setEditingClassId(null);
       onDelete={handleDeleteClass}
       onMakeDefault={handleMakeDefault}
     />
+
+    <div className="lg:col-span-2">
+      <ClassColumn
+        title="Deneme Sınıfı"
+        desc="Buraya yüklenen dersler yalnızca /deneme-dersi sayfasındaki ücretsiz deneme panelinde örnek ders olarak görünür. Öğrenci panelinde kimseye gösterilmez; bu sınıfa öğrenci atanmaz."
+        classes={trialClasses}
+        emptyText="Henüz deneme sınıfı yok. Yukarıdan sınıf türü olarak 'Deneme sınıfı' seçip uzman öğretmeni atayarak oluşturabilirsiniz."
+        onEdit={handleEditClass}
+        onDelete={handleDeleteClass}
+        onMakeDefault={handleMakeDefault}
+      />
+    </div>
   </div>
 )}
         </div>
@@ -436,10 +463,12 @@ function ClassColumn({
                   className={`rounded-full px-2 py-1 text-[10px] font-bold ${
                     classItem.classType === "digital"
                       ? "bg-purple-100 text-purple-700"
+                      : classItem.classType === "trial"
+                      ? "bg-emerald-100 text-emerald-700"
                       : "bg-orange-100 text-orange-700"
                   }`}
                 >
-                  {classItem.classType === "digital" ? "DİJİTAL" : "CANLI"}
+                  {classItem.classType === "digital" ? "DİJİTAL" : classItem.classType === "trial" ? "DENEME" : "CANLI"}
                 </span>
 
                 {classItem.isDefaultSalesClass && (

@@ -1,4 +1,5 @@
 import CorporateShell from "@/app/components/CorporateShell";
+import { DIGITAL_SIMULATOR_VISIBLE } from "@/lib/site-flags";
 
 const resources = [
   {
@@ -11,11 +12,17 @@ const resources = [
     desc: "Eğitmen eşliğinde canlı ders programımızı incele.",
     href: "/academy-live",
   },
-  {
-    title: "Dijital Simülasyon",
-    desc: "Gerçek sınav formatına uygun dijital deneme sistemini keşfet.",
-    href: "/digital-simulation",
-  },
+  DIGITAL_SIMULATOR_VISIBLE
+    ? {
+        title: "Dijital Simülasyon",
+        desc: "Gerçek sınav formatına uygun dijital deneme sistemini keşfet.",
+        href: "/digital-simulation",
+      }
+    : {
+        title: "Ücretsiz Deneme Dersi",
+        desc: "Kayıt olmadan örnek canlı dersi izle, öğrenci panelini keşfet.",
+        href: "/deneme-dersi",
+      },
   {
     title: "Konuşma Kulübü",
     desc: "Sadece konuşma pratiği yapmak istiyorsan, ayrı paketleri incele.",
@@ -75,6 +82,7 @@ export default function KaynaklarPage() {
             </p>
           </div>
 
+          {DIGITAL_SIMULATOR_VISIBLE ? (
           <div>
             <p className="font-bold text-slate-950">Kendi hızımda çalışmak istiyorum</p>
             <p className="mt-1 text-slate-600">
@@ -88,6 +96,21 @@ export default function KaynaklarPage() {
               .
             </p>
           </div>
+          ) : (
+          <div>
+            <p className="font-bold text-slate-950">Önce denemek istiyorum</p>
+            <p className="mt-1 text-slate-600">
+              Kayıt olmadan örnek dersi izlemek ve öğrenci panelini görmek için{" "}
+              <a
+                href="/deneme-dersi"
+                className="font-bold text-orange-600 hover:text-orange-600"
+              >
+                ücretsiz deneme dersine başla
+              </a>
+              .
+            </p>
+          </div>
+          )}
         </div>
       </article>
     </CorporateShell>

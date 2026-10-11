@@ -23,6 +23,7 @@ type ClassItem = {
   teacherName?: string;
   teacher_id?: string;
   teacher_name?: string;
+  classType?: string;
 };
 
 type LessonItem = {
@@ -593,9 +594,18 @@ setWorksheets(
       {classes.map((classItem) => (
         <option key={classItem.id} value={classItem.id}>
           {classItem.name} — {classItem.teacherName}
+          {classItem.classType === "trial" ? " (Deneme dersi)" : ""}
         </option>
       ))}
     </select>
+
+    {classes.find((classItem) => classItem.id === selectedClassId)?.classType === "trial" && (
+      <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+        🎓 <b>Deneme Sınıfı:</b> buraya yüklediğiniz ders, /deneme-dersi sayfasındaki ücretsiz deneme panelinde
+        örnek ders olarak gösterilir. Öğrenci panelinde hiçbir öğrenciye görünmez. Dersin PDF ve çalışma sayfaları
+        da deneme panelinde açık olur.
+      </p>
+    )}
 
     <input
       value={title}
