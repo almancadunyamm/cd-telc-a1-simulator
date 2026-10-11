@@ -8,6 +8,7 @@ import {
   LESSONS_PER_THEME,
   TRIAL_SIGNUP_URL,
   TRIAL_WORD_THEME_LIMIT,
+  TRIAL_LEAD_STORAGE_KEY,
   TRIAL_WORKSHEET_THEME_LIMIT,
 } from "@/lib/trial";
 import { A1_SYLLABUS } from "./syllabus";
@@ -174,6 +175,13 @@ export default function TrialPanel({ lead }: { lead: TrialLead }) {
     setLockInfo({ title, desc });
   }
 
+  function handleExit() {
+    try {
+      localStorage.removeItem(TRIAL_LEAD_STORAGE_KEY);
+    } catch {}
+    window.location.href = "/";
+  }
+
   function goTab(tab: TabKey) {
     setActiveTab(tab);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -192,12 +200,22 @@ export default function TrialPanel({ lead }: { lead: TrialLead }) {
               Deneme Paneli
             </span>
           </div>
-          <a
-            href={TRIAL_SIGNUP_URL}
-            className="shrink-0 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-black text-white shadow-md shadow-orange-500/30 hover:bg-orange-400"
-          >
-            Canlı Kursa Kayıt Ol
-          </a>
+          <div className="flex shrink-0 items-center gap-2">
+            <a
+              href={TRIAL_SIGNUP_URL}
+              className="rounded-xl bg-orange-500 px-3 py-2.5 text-sm font-black text-white shadow-md shadow-orange-500/30 hover:bg-orange-400 sm:px-4"
+            >
+              <span className="sm:hidden">Kayıt Ol</span>
+              <span className="hidden sm:inline">Canlı Kursa Kayıt Ol</span>
+            </a>
+            <button
+              type="button"
+              onClick={handleExit}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+            >
+              Çıkış
+            </button>
+          </div>
         </div>
 
         {/* Mobil menü */}
@@ -259,6 +277,13 @@ export default function TrialPanel({ lead }: { lead: TrialLead }) {
               Paketleri gör →
             </a>
           </div>
+          <button
+            type="button"
+            onClick={handleExit}
+            className="mt-4 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50"
+          >
+            🚪 Çıkış Yap
+          </button>
         </aside>
 
         <div className="min-w-0 space-y-6">
