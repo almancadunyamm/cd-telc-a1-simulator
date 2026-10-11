@@ -110,15 +110,19 @@ export default function TrialPanel({ lead }: { lead: TrialLead }) {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [{ data: classRows }, { data: lessonRows }] = await Promise.all([
-        supabase.from("classes").select("id, class_type, teacher_name"),
+      // Öğrenci paneliyle aynı şekilde "*" ile okunur: belirli sütun adı
+      // istemek, tabloda olmayan bir sütun yüzünden tüm sorguyu düşürüyordu.
+      const [{ data: classRows, error: classError }, { data: lessonRows, error: lessonError }] = await Promise.all([
+        supabase.from("classes").select("*"),
         supabase
           .from("teacher_lessons")
-          .select("id, title, video_url, class_id, level, content_type, pdf_title, pdf_url, worksheets, worksheet_title, worksheet_url, lesson_order, created_at")
+          .select("*")
           .order("lesson_order", { ascending: true, nullsFirst: false })
           .order("created_at", { ascending: true }),
       ]);
       if (cancelled) return;
+      if (classError) console.warn("[deneme-dersi] sınıflar okunamadı", classError);
+      if (lessonError) console.warn("[deneme-dersi] dersler okunamadı", lessonError);
 
       const trialIds = getTrialClassIds(classRows as { id: string; class_type?: string | null }[] | null);
       const rows = (lessonRows || []) as LessonRow[];
