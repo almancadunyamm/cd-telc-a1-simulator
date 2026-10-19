@@ -49,7 +49,7 @@ const T = {
     level: "Seviye",
     mode: "Eğitim Şekli",
     modeLive: "Canlı çevrim içi ders",
-    modeDigital: "Çevrim içi dijital kurs (video dersler)",
+    modeDigital: "Çevrim içi dijital kurs",
     start: "Başlangıç Tarihi",
     end: "Bitiş Tarihi",
     weekly: "Haftalık Ders",
@@ -82,7 +82,7 @@ const T = {
     level: "Kursniveau",
     mode: "Unterrichtsform",
     modeLive: "Live-Online-Unterricht",
-    modeDigital: "Digitaler Online-Kurs (Videolektionen)",
+    modeDigital: "Digitaler Online-Kurs",
     start: "Kursbeginn",
     end: "Kursende",
     weekly: "Umfang",
@@ -102,7 +102,6 @@ const T = {
 
 const SIGNER_NAME = "Sultan Sağlam";
 const CONTACT_EMAIL = "info@almancaokulum.com";
-const CONTACT_PHONE = "+90 542 695 44 19";
 const CONTACT_WEB = "almancaokulum.com/belge-dogrula";
 
 type Fonts = { serif: PDFFont; serifBold: PDFFont; serifBlack: PDFFont; sans: PDFFont; sansSemi: PDFFont; sansBold: PDFFont };
@@ -235,12 +234,6 @@ function drawEnvelopeIcon(page: PDFPage, cx: number, cy: number) {
   page.drawRectangle({ x: cx - 6, y: cy - 4, width: 12, height: 8, borderColor: rgb(1, 1, 1), borderWidth: 1.1 });
   page.drawLine({ start: { x: cx - 6, y: cy + 4 }, end: { x: cx, y: cy - 0.5 }, thickness: 1.1, color: rgb(1, 1, 1) });
   page.drawLine({ start: { x: cx + 6, y: cy + 4 }, end: { x: cx, y: cy - 0.5 }, thickness: 1.1, color: rgb(1, 1, 1) });
-}
-
-function drawPhoneIcon(page: PDFPage, cx: number, cy: number) {
-  page.drawCircle({ x: cx, y: cy, size: 11, color: TEAL });
-  page.drawRectangle({ x: cx - 3.6, y: cy - 6, width: 7.2, height: 12, borderColor: rgb(1, 1, 1), borderWidth: 1.1 });
-  page.drawLine({ start: { x: cx - 1.2, y: cy - 4 }, end: { x: cx + 1.2, y: cy - 4 }, thickness: 1, color: rgb(1, 1, 1) });
 }
 
 export async function renderStudentDocumentPdf(data: DocumentPdfData): Promise<Uint8Array> {
@@ -386,10 +379,8 @@ export async function renderStudentDocumentPdf(data: DocumentPdfData): Promise<U
   page.drawText(CONTACT_WEB, { x: M + 14, y: cy - 1, size: 8.6, font: f.sansBold, color: TEAL });
 
   page.drawLine({ start: { x: M + 266, y: boxY + 12 }, end: { x: M + 266, y: boxY + boxH - 12 }, thickness: 0.6, color: rgb(0.75, 0.8, 0.86) });
-  drawEnvelopeIcon(page, M + 290, boxY + 51);
-  page.drawText(CONTACT_EMAIL, { x: M + 308, y: boxY + 47.5, size: 9.5, font: f.sans, color: NAVY });
-  drawPhoneIcon(page, M + 290, boxY + 24);
-  page.drawText(CONTACT_PHONE, { x: M + 308, y: boxY + 20.5, size: 9.5, font: f.sans, color: NAVY });
+  drawEnvelopeIcon(page, M + 290, boxY + boxH / 2);
+  page.drawText(CONTACT_EMAIL, { x: M + 308, y: boxY + boxH / 2 - 3.5, size: 9.5, font: f.sans, color: NAVY });
 
   const qrSize = 62;
   const qrX = W - M - qrSize - 8;
