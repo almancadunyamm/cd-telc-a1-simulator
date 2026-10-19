@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { DIGITAL_SIMULATOR_VISIBLE } from "@/lib/site-flags";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -319,6 +320,7 @@ return (
               </button>
             </div>
 
+            {!DIGITAL_SIMULATOR_VISIBLE && (
             <a
               href="/deneme-dersi"
               className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm transition hover:bg-emerald-100"
@@ -333,6 +335,7 @@ return (
                 Başla →
               </span>
             </a>
+            )}
 
             <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
   <p className="font-bold text-slate-900">
