@@ -13,6 +13,14 @@ const adminCards = [
     accent: "#10b981",
   },
   {
+    title: "Öğrenci Belgeleri",
+    description: "Ücretli alınan belgeleri gör, istediğin öğrenciye ücretsiz belge oluştur, indir veya iptal et.",
+    href: "/admin/belgeler",
+    icon: "📄",
+    accent: "#0F274E",
+    tag: "Yeni",
+  },
+  {
     title: "Deneme Başvuruları",
     description: "Ücretsiz deneme dersine ad ve telefon bırakanlar; ara, WhatsApp'tan yaz, durumunu işaretle.",
     href: "/admin/deneme-basvurulari",

@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { buildCallbackHash, getPaytrCredentials } from "@/lib/billing/paytr";
 import { grantOrderAccess } from "@/lib/billing/grant-access";
+import { DOCUMENT_MERCHANT_OID_PREFIX } from "@/lib/documents/config";
+import { getServiceSupabase, isDocumentSystemConfigured } from "@/lib/documents/server";
 
 export const runtime = "nodejs";
 
@@ -43,6 +45,11 @@ export async function POST(req: NextRequest) {
     return new Response("PAYTR notification failed: bad hash", { status: 400 });
   }
 
+  // Öğrenci belgesi siparişleri (BLG...) ayrı tabloda; paket siparişlerinden bağımsız işlenir.
+  if (merchantOid.startsWith(DOCUMENT_MERCHANT_OID_PREFIX)) {
+    return handleDocumentPayment({ merchantOid, status, totalAmount });
+  }
+
   const { data: order, error: findError } = await supabase
     .from("orders")
     .select("*")
@@ -81,5 +88,45 @@ export async function POST(req: NextRequest) {
     await supabase.from("orders").update({ status: "cancelled" }).eq("id", order.id);
   }
 
+  return new Response("OK");
+}
+
+// Öğrenci belgesi ödemesi: hash zaten doğrulandı. Belge kaydı "issued" olur
+// (başarısızsa "cancelled"). Erişim/sipariş tablolarına dokunulmaz.
+async function handleDocumentPayment(params: { merchantOid: string; status: string; totalAmount: string }) {
+  if (!isDocumentSystemConfigured()) {
+    console.error("[paytr/callback] belge ödemesi geldi ama SUPABASE_SERVICE_ROLE_KEY yok", params.merchantOid);
+    return new Response("PAYTR notification failed: document system not configured", { status: 500 });
+  }
+  const db = getServiceSupabase();
+  const { data: doc, error } = await db
+    .from("student_documents")
+    .select("id, status, amount")
+    .eq("merchant_oid", params.merchantOid)
+    .maybeSingle();
+
+  if (error || !doc) {
+    console.error("[paytr/callback] belge kaydı bulunamadı", { merchantOid: params.merchantOid, error });
+    return new Response("PAYTR notification failed: document not found", { status: 404 });
+  }
+  if (doc.status !== "pending_payment") return new Response("OK"); // tekrar gelen bildirim
+
+  if (params.status === "success") {
+    if (Number(params.totalAmount) < Number(doc.amount)) {
+      console.error("[paytr/callback] belge tutarı eksik", params);
+      return new Response("PAYTR notification failed: amount mismatch", { status: 400 });
+    }
+    const { error: updErr } = await db
+      .from("student_documents")
+      .update({ status: "issued", issued_at: new Date().toISOString() })
+      .eq("id", doc.id)
+      .eq("status", "pending_payment");
+    if (updErr) {
+      console.error("[paytr/callback] belge güncellenemedi", updErr);
+      return new Response("PAYTR notification failed: could not update document", { status: 500 });
+    }
+  } else {
+    await db.from("student_documents").update({ status: "cancelled" }).eq("id", doc.id).eq("status", "pending_payment");
+  }
   return new Response("OK");
 }

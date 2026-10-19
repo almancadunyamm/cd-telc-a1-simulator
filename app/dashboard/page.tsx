@@ -1,6 +1,7 @@
 "use client";
 import { supabase } from "@/lib/supabase";
 import PaytrCheckoutModal from "@/components/PaytrCheckoutModal";
+import StudentDocumentCard from "@/components/dashboard/StudentDocumentCard";
 import PackagePickerModal from "@/components/PackagePickerModal";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -7171,6 +7172,11 @@ if (!isPreviousThemeCompleted) {
         username={String(currentUser?.username || "").trim().toLowerCase()}
       />
     )}
+
+    <StudentDocumentCard
+      username={String(currentUser?.username || "").trim().toLowerCase()}
+      onUpgrade={() => setPackagePicker({ mode: "choose", level: selectedLevel })}
+    />
   </section>
 
   {/* AYRINTILAR */}
