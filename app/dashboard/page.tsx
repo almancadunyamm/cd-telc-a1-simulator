@@ -2223,34 +2223,41 @@ if (allClassIds.length > 0) {
     return prog.current_tema > maxTema || (prog.current_tema === maxTema && prog.current_gorev > 3);
   }
 
+  // Konuşma Kulübü'nün üstündeki A1/A2/B1 sekmeleri: yalnızca Konuşma Kulübü'nü etkiler.
+  // Panelin genel seviyesi değişince sekme de o seviyeye geçer.
+  const [speakingViewLevel, setSpeakingViewLevel] = useState<Level>(selectedLevel);
+  useEffect(() => {
+    setSpeakingViewLevel(selectedLevel);
+  }, [selectedLevel]);
+
   const speakingAccessStatus: SpeakingAccessStatus = useMemo(() => {
-    if (!speakingEntitledLevels.includes(selectedLevel)) return "purchase";
+    if (!speakingEntitledLevels.includes(speakingViewLevel)) return "purchase";
     // Önceki seviyeyi bitirmek ŞART DEĞİL (29 Ekim 2026, kullanıcı kararı);
     // yalnızca tavsiye edilir (bkz. speakingRecommendedLevel).
-    return SPEAKING_CLUB_CONTENT_LEVELS.includes(selectedLevel) ? "open" : "soon";
-  }, [speakingEntitledLevels, selectedLevel, allSpeakingProgress]);
+    return SPEAKING_CLUB_CONTENT_LEVELS.includes(speakingViewLevel) ? "open" : "soon";
+  }, [speakingEntitledLevels, speakingViewLevel, allSpeakingProgress]);
 
   const speakingBlockingLevel: Level | null = useMemo(() => {
-    const idx = SPEAKING_LEVEL_ORDER.indexOf(selectedLevel);
+    const idx = SPEAKING_LEVEL_ORDER.indexOf(speakingViewLevel);
     for (let i = 0; i < idx; i++) {
       if (!isSpeakingLevelCompleted(SPEAKING_LEVEL_ORDER[i])) return SPEAKING_LEVEL_ORDER[i];
     }
     return null;
-  }, [selectedLevel, allSpeakingProgress]);
+  }, [speakingViewLevel, allSpeakingProgress]);
 
   // Tavsiye: öğrencinin hakkı olan ama henüz bitirmediği önceki seviye (örn. A1+A2 paketinde A2'deyken A1).
   const speakingRecommendedLevel: Level | null = useMemo(() => {
-    const idx = SPEAKING_LEVEL_ORDER.indexOf(selectedLevel);
+    const idx = SPEAKING_LEVEL_ORDER.indexOf(speakingViewLevel);
     for (let i = 0; i < idx; i++) {
       const lvl = SPEAKING_LEVEL_ORDER[i];
       if (speakingEntitledLevels.includes(lvl) && !isSpeakingLevelCompleted(lvl)) return lvl;
     }
     return null;
-  }, [selectedLevel, speakingEntitledLevels, allSpeakingProgress]);
+  }, [speakingViewLevel, speakingEntitledLevels, allSpeakingProgress]);
 
   // Konuşma Kulübü'nün çalıştığı seviye: panelde seçili seviye (içeriği hazırsa).
-  const speakingLevel: Level = SPEAKING_CLUB_CONTENT_LEVELS.includes(selectedLevel)
-    ? selectedLevel
+  const speakingLevel: Level = SPEAKING_CLUB_CONTENT_LEVELS.includes(speakingViewLevel)
+    ? speakingViewLevel
     : "A1";
   const speakingPatternsForLevel = getSpeakingPatterns(speakingLevel);
   const speakingThemeTitles: Record<number, string> = Object.fromEntries(
@@ -2283,11 +2290,11 @@ if (allClassIds.length > 0) {
   // Örn: hiçbir şeyi yokken B1 seçiliyse → ["A1","A2","B1"] → slug: konusma-a1-a2-b1
   //      A1'i zaten varken A2 seçiliyse → ["A2"] → slug: konusma-a2
   const speakingMissingLevelsForSelected: Level[] = useMemo(() => {
-    const idx = SPEAKING_LEVEL_ORDER.indexOf(selectedLevel);
+    const idx = SPEAKING_LEVEL_ORDER.indexOf(speakingViewLevel);
     return SPEAKING_LEVEL_ORDER.slice(0, idx + 1).filter(
       (lvl) => !speakingEntitledLevels.includes(lvl)
     );
-  }, [selectedLevel, speakingEntitledLevels]);
+  }, [speakingViewLevel, speakingEntitledLevels]);
 
   function handleSpeakingClubRegister() {
     if (!currentUser || speakingMissingLevelsForSelected.length === 0) return;
@@ -5211,14 +5218,45 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
     </div>
   </div>
 )}
+    {/* Konuşma Kulübü seviye sekmeleri */}
+    <div className="mb-4 flex flex-wrap gap-2">
+      {SPEAKING_LEVEL_ORDER.map((lvl) => {
+        const active = speakingViewLevel === lvl;
+        const hasAccess = speakingEntitledLevels.includes(lvl);
+        const hasContent = SPEAKING_CLUB_CONTENT_LEVELS.includes(lvl);
+        const done = isSpeakingLevelCompleted(lvl);
+        return (
+          <button
+            key={lvl}
+            type="button"
+            onClick={() => setSpeakingViewLevel(lvl)}
+            className={`flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-black transition ${
+              active
+                ? "bg-emerald-600 text-white shadow"
+                : "border border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
+            }`}
+          >
+            <span>{lvl} Konuşma Kulübü</span>
+            {!hasContent ? (
+              <span className={`rounded-full px-2 py-0.5 text-[10px] ${active ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>Yakında</span>
+            ) : done ? (
+              <span aria-label="Tamamlandı">✅</span>
+            ) : !hasAccess ? (
+              <span aria-label="Kilitli">🔒</span>
+            ) : null}
+          </button>
+        );
+      })}
+    </div>
+
     {/* Konuşma Kulübü seviye erişim kilidi */}
     {speakingAccessStatus !== "open" ? (
       <SpeakingClubAccessCard
         status={speakingAccessStatus}
-        level={selectedLevel}
+        level={speakingViewLevel}
         blockingLevel={speakingBlockingLevel}
         onSelectPackage={handleSpeakingPackageSelect}
-        onGoToLevel={(lvl) => setSelectedLevel(lvl)}
+        onGoToLevel={(lvl) => setSpeakingViewLevel(lvl)}
       />
     ) : (
       <div className="rounded-[2rem] bg-gradient-to-br from-emerald-50 via-teal-50 to-white">
@@ -5240,12 +5278,12 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
             </p>
             <p className="mt-1 text-sm leading-6 text-amber-900/80">
               Konuşma Kulübü kümülatif ilerler: her seviye, bir önceki seviyede kazandığın cümle kalıplarının
-              üzerine kurulur. Bu yüzden {speakingRecommendedLevel} Konuşma Kulübünü bitirip {selectedLevel}
-              {selectedLevel === "B1" ? "'e" : "'ye"} geçmeni öneririz. İstersen doğrudan {selectedLevel} ile de başlayabilirsin.
+              üzerine kurulur. Bu yüzden {speakingRecommendedLevel} Konuşma Kulübünü bitirip {speakingViewLevel}
+              {speakingViewLevel === "B1" ? "'e" : "'ye"} geçmeni öneririz. İstersen doğrudan {speakingViewLevel} ile de başlayabilirsin.
             </p>
             <button
               type="button"
-              onClick={() => setSelectedLevel(speakingRecommendedLevel)}
+              onClick={() => setSpeakingViewLevel(speakingRecommendedLevel)}
               className="mt-3 rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white hover:bg-amber-600"
             >
               {speakingRecommendedLevel} Konuşma Kulübüne Git
