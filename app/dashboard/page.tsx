@@ -365,6 +365,17 @@ function isSpeakingProgressFinished(prog: any): boolean {
   return tema > max || (tema >= max && gorev > 3);
 }
 
+// WhatsApp numarasını wa.me biçimine çevirir (yalnızca rakam, ülke koduyla).
+// "0532 123 45 67", "+90 532...", "5321234567" → "905321234567". Geçersizse "".
+function normalizeWhatsappNumber(raw: string): string {
+  let d = String(raw || "").replace(/\D/g, "");
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.length === 11 && d.startsWith("0")) d = "90" + d.slice(1); // 0532... (Türkiye)
+  if (d.length === 10 && d.startsWith("5")) d = "90" + d; // 532... (Türkiye)
+  if (d.startsWith("90")) return d.length === 12 ? d : "";
+  return d.length >= 10 && d.length <= 15 ? d : ""; // yurt dışı numara (ülke koduyla)
+}
+
 // Konuşma final sınavı süresi: dakikada 15 cümle (A1/A2 12. temada 180 cümle = 12 dk).
 function getSpeakingExamMinutes(sentenceCount: number): number {
   return Math.max(1, Math.ceil(sentenceCount / 15));
@@ -6121,13 +6132,30 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                             />
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-slate-500 mb-1">WhatsApp Numaranız</p>
+                            <p className="text-xs font-bold text-slate-500 mb-1">
+                              WhatsApp Numaranız{" "}
+                              <span className="font-semibold text-emerald-700">
+                                (başında 90, boşluksuz yazın: <span className="font-black tracking-wide">905321234567</span>)
+                              </span>
+                            </p>
                             <input
                               value={speakingTelefon}
                               onChange={e => setSpeakingTelefon(e.target.value)}
-                              placeholder="905xxxxxxxxx"
+                              inputMode="tel"
+                              autoComplete="tel"
+                              placeholder="905321234567"
                               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
                             />
+                            {speakingTelefon && (() => {
+                              const duzgun = normalizeWhatsappNumber(speakingTelefon);
+                              return duzgun ? (
+                                <p className="mt-1 text-xs font-bold text-emerald-700">✓ Kaydedilecek numara: {duzgun}</p>
+                              ) : (
+                                <p className="mt-1 text-xs font-bold text-amber-700">
+                                  Numara eksik ya da hatalı görünüyor. Örnek: 905321234567
+                                </p>
+                              );
+                            })()}
                           </div>
                           <div>
                             <p className="text-xs font-bold text-slate-500 mb-1">Cinsiyetin</p>
@@ -6161,9 +6189,10 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           </div>
                           <button
                             type="button"
-                            disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon || !speakingKendiCinsiyet}
+                            disabled={speakingYukleniyor || !speakingMusait || !normalizeWhatsappNumber(speakingTelefon) || !speakingKendiCinsiyet}
                             onClick={async () => {
-                              if (!currentUser || !speakingMusait || !speakingTelefon || !speakingKendiCinsiyet) return;
+                              const telefonDuzgun = normalizeWhatsappNumber(speakingTelefon);
+                              if (!currentUser || !speakingMusait || !telefonDuzgun || !speakingKendiCinsiyet) return;
                               setSpeakingYukleniyor(true);
                               const { error: talepHata } = await supabase.from("speaking_requests").insert({
                                 user_email: currentUser.username,
@@ -6174,7 +6203,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                                 cinsiyet: speakingKendiCinsiyet,
                                 cinsiyet_tercihi: speakingCinsiyet,
                                 musait_saat: speakingMusait,
-                                telefon: speakingTelefon,
+                                telefon: telefonDuzgun,
                                 durum: "bekliyor",
                               });
                               if (talepHata) {
