@@ -57,7 +57,7 @@ import { a2Tema9Questions } from "@/app/data/mastery-a2/tema9";
 import { a2Tema10Questions } from "@/app/data/mastery-a2/tema10";
 import { a2Tema11Questions } from "@/app/data/mastery-a2/tema11";
 import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
-import { speakingPatterns } from "@/app/data/speaking_patterns";
+import { getSpeakingPatterns } from "@/app/data/speaking_patterns";
 import AnnouncementPopup from "@/components/AnnouncementPopup";
 import { WhatsAppLink } from "@/app/components/WhatsAppButton";
 
@@ -353,6 +353,8 @@ const SPEAKING_LEVEL_SENTENCE_TARGET: Record<Level, number> = {
   B1: 400,
 };
 const SPEAKING_CLUB_TOTAL_SENTENCES = 760;
+// İçeriği hazır olan Konuşma Kulübü seviyeleri (B1 hazır olunca buraya eklenir).
+const SPEAKING_CLUB_CONTENT_LEVELS: Level[] = ["A1", "A2"];
 
 type SpeakingAccessStatus = "open" | "purchase" | "sequence" | "soon";
 
@@ -1048,9 +1050,9 @@ const getWeekIndex = () => {
   // panel aktivitesi (user_activity_ping, panel açıkken ~90 sn'de bir kayıt).
   const WORD_ARENA_THEMES_PER_LEVEL = 12;
   const SPEAKING_CLUB_THEMES_PER_LEVEL = 12;
-  // Konuşma Kulübü içeriği şu an yalnızca A1'de açık; A2/B1 açıldığında
-  // buraya eklenince o seviyelerin ilerlemesine de otomatik dahil olur.
-  const SPEAKING_CLUB_PROGRESS_LEVELS: Level[] = ["A1"];
+  // Konuşma Kulübü içeriği şu an A1 ve A2'de açık; B1 açıldığında
+  // buraya eklenince o seviyenin ilerlemesine de otomatik dahil olur.
+  const SPEAKING_CLUB_PROGRESS_LEVELS: Level[] = ["A1", "A2"];
   // İlerleme sekmesinde gösterilen seviye (panelin genel seçili seviyesinden bağımsız)
   const [progressLevel, setProgressLevel] = useState<Level | null>(null);
   const [progressStats, setProgressStats] = useState<{
@@ -2220,7 +2222,7 @@ if (allClassIds.length > 0) {
     for (let i = 0; i < idx; i++) {
       if (!isSpeakingLevelCompleted(SPEAKING_LEVEL_ORDER[i])) return "sequence";
     }
-    return selectedLevel === "A1" ? "open" : "soon";
+    return SPEAKING_CLUB_CONTENT_LEVELS.includes(selectedLevel) ? "open" : "soon";
   }, [speakingEntitledLevels, selectedLevel, allSpeakingProgress]);
 
   const speakingBlockingLevel: Level | null = useMemo(() => {
@@ -2230,6 +2232,37 @@ if (allClassIds.length > 0) {
     }
     return null;
   }, [selectedLevel, allSpeakingProgress]);
+
+  // Konuşma Kulübü'nün çalıştığı seviye: panelde seçili seviye (içeriği hazırsa).
+  const speakingLevel: Level = SPEAKING_CLUB_CONTENT_LEVELS.includes(selectedLevel)
+    ? selectedLevel
+    : "A1";
+  const speakingPatternsForLevel = getSpeakingPatterns(speakingLevel);
+  const speakingThemeTitles: Record<number, string> = Object.fromEntries(
+    speakingPatternsForLevel.map((t) => [t.temaId, t.temaAd])
+  );
+
+  // Konuşma temalarının kilidi, aynı seviyedeki Ustalık ilerlemesine göre açılır
+  // (Ustalık sekmesinde o an hangi seviye seçili olursa olsun).
+  const [speakingMasteryCompletedCount, setSpeakingMasteryCompletedCount] = useState(0);
+  useEffect(() => {
+    const username = String(currentUser?.username || "").trim().toLowerCase();
+    if (!username || !studentKey) return;
+    let cancelled = false;
+    supabase
+      .from("mastery_progress")
+      .select("theme_id")
+      .eq("student_key", studentKey)
+      .eq("level", speakingLevel)
+      .eq("status", "completed")
+      .then(({ data }) => {
+        if (cancelled) return;
+        setSpeakingMasteryCompletedCount(new Set((data || []).map((r: any) => r.theme_id)).size);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser, studentKey, speakingLevel, completedMasteryThemes.length]);
 
   // Seçili seviyeye kadar (dahil) sahip olmadığı seviyeler — kayıt olunca alınacak paket bundan çıkar.
   // Örn: hiçbir şeyi yokken B1 seçiliyse → ["A1","A2","B1"] → slug: konusma-a1-a2-b1
@@ -2871,11 +2904,12 @@ useEffect(() => {
   if (!currentUser) return;
   async function loadSpeakingProgress() {
     setSpeakingProgressLoading(true);
+    setPartnerTelefon("");
     const { data } = await supabase
       .from("speaking_progress")
       .select("*")
       .eq("username", currentUser!.username)
-      .eq("level", "A1")
+      .eq("level", speakingLevel)
       .maybeSingle();
 if (data) {
       let calismaData = data;
@@ -2911,7 +2945,7 @@ if (data) {
               .from("speaking_progress")
               .select("*")
               .eq("username", calismaData.partner_email)
-              .eq("level", "A1")
+              .eq("level", speakingLevel)
               .maybeSingle();
 
             if (partnerProg && partnerProg.current_tema > 1) {
@@ -2981,7 +3015,7 @@ if (data) {
   }
 
   loadSpeakingProgress();
-}, [currentUser, speakingBildirimGonderildi]);
+}, [currentUser, speakingBildirimGonderildi, speakingLevel]);
 
   const activePackageCount = userClasses.length;
   const upgradeOffers = getUpgradeOffers(effectivePackageType);
@@ -3193,7 +3227,7 @@ async function handleSpeakingBildirim() {
     .select("*")
     .eq("tema_no", currentTema)
     .eq("gorev_no", currentGorev)
-    .eq("level", "A1")
+    .eq("level", speakingLevel)
     .eq("onaylandi", false);
 
   const session = sessions?.find(s => {
@@ -3268,7 +3302,7 @@ async function handleSpeakingBildirim() {
         .from("speaking_progress")
         .select("*")
         .eq("username", partnerEmail)
-        .eq("level", "A1")
+        .eq("level", speakingLevel)
         .maybeSingle();
 
       if (partnerProg) {
@@ -3344,7 +3378,7 @@ async function handleSpeakingBildirim() {
       kullanici2_email: partnerEmail,
       konusan_email: benimEmail,
       dinleyen_email: partnerEmail,
-      level: "A1",
+      level: speakingLevel,
       tema_no: currentTema,
       gorev_no: currentGorev,
       kullanici1_bildirdi: true,
@@ -4595,7 +4629,7 @@ const isOpen =
         title: "Konuşma Kulübü",
         desc: speakingProgress
           ? `Tema ${speakingProgress.current_tema} — Görev ${speakingProgress.current_gorev}`
-          : completedMasteryThemes.length >= 3 ? "Başlat" : `${completedMasteryThemes.length}/3 tema gerek`,
+          : speakingMasteryCompletedCount >= 3 ? "Başlat" : `${speakingMasteryCompletedCount}/3 tema gerek`,
         color: "bg-emerald-50 border-emerald-200",
         iconBg: "bg-emerald-100",
         action: () => setActiveDashboardTab("speaking"),
@@ -5175,7 +5209,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
 
         {/* BAŞLIK */}
         <div className="px-6 pt-6 pb-4">
-          <p className="text-xs font-black uppercase tracking-widest text-emerald-700">A1 Konuşma Kulübü</p>
+          <p className="text-xs font-black uppercase tracking-widest text-emerald-700">{speakingLevel} Konuşma Kulübü</p>
           <h2 className="mt-1 text-2xl font-black text-slate-900">Her Gün Konuş, Her Gün Geliş</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600 max-w-2xl">
             Partner bulur, her gün arayıp kısa konuşma yaparsın. Dinleyici Türkçe söyler → Sen Almancasını söylersin.
@@ -5250,18 +5284,18 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                         <div className="flex-1 h-2 rounded-full bg-slate-200">
                           <div
                             className="h-2 rounded-full bg-emerald-500 transition-all"
-                            style={{ width: `${Math.min(100, (completedMasteryThemes.length / 3) * 100)}%` }}
+                            style={{ width: `${Math.min(100, (speakingMasteryCompletedCount / 3) * 100)}%` }}
                           />
                         </div>
-                        <span className="text-sm font-black text-slate-700">{completedMasteryThemes.length}/3</span>
+                        <span className="text-sm font-black text-slate-700">{speakingMasteryCompletedCount}/3</span>
                       </div>
                       <p className="text-xs text-slate-500 mt-2">
-                        {completedMasteryThemes.length >= 3
+                        {speakingMasteryCompletedCount >= 3
                           ? "✅ Konuşma Kulübü açılabilir! Partner talep et."
-                          : `${3 - completedMasteryThemes.length} tema daha tamamla`}
+                          : `${3 - speakingMasteryCompletedCount} tema daha tamamla`}
                       </p>
                     </div>
-                    {completedMasteryThemes.length >= 3 && (
+                    {speakingMasteryCompletedCount >= 3 && (
                       <button
                         type="button"
                         onClick={async () => {
@@ -5271,7 +5305,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
     .from("speaking_progress")
     .select("*")
     .eq("username", currentUser.username)
-    .eq("level", "A1")
+    .eq("level", speakingLevel)
     .maybeSingle();
 
   if (existing) {
@@ -5283,7 +5317,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
     .from("speaking_progress")
     .insert({
       username: currentUser.username,
-      level: "A1",
+      level: speakingLevel,
       current_tema: 1,
       current_gorev: 1,
       gorev_tarihleri: [],
@@ -5389,7 +5423,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                 <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Tema Haritası</p>
                 <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((temaNo) => {
-                    const speakingUnlocked = getSpeakingUnlockedThemeCount(completedMasteryThemes.length);
+                    const speakingUnlocked = getSpeakingUnlockedThemeCount(speakingMasteryCompletedCount);
                     const isStarterTheme = temaNo <= 6;
                     const hasDevelopmentAccess =
                       effectivePackageType === "practice" ||
@@ -5421,7 +5455,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           </div>
                           <div>
                             <p className="text-sm font-black text-slate-900">
-                              {masteryThemes.find(t => t.id === temaNo)?.title || `Tema ${temaNo}`}
+                              {speakingThemeTitles[temaNo] || `Tema ${temaNo}`}
                             </p>
                             <p className="text-xs text-slate-500">{temaNo * 15} soru</p>
                           </div>
@@ -5553,7 +5587,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                 </p>
                 <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
                   {Array.from({ length: speakingProgress?.current_tema || 1 }, (_, i) => i + 1).map((temaNo) => {
-                    const pattern = speakingPatterns.find(t => t.temaId === temaNo);
+                    const pattern = speakingPatternsForLevel.find(t => t.temaId === temaNo);
                     if (!pattern) return null;
                     return (
                       <div key={temaNo}>
@@ -5627,7 +5661,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           if (!currentUser) return;
                           await supabase.from("speaking_partner_requests").insert({
                             username: currentUser.username,
-                            level: "A1",
+                            level: speakingLevel,
                             mevcut_partner: speakingProgress.partner_email,
                             sebep: "diger",
                             durum: "bekliyor",
@@ -5700,6 +5734,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                                 user_email: currentUser.username,
                                 user_name: currentUser.name || currentUser.username,
                                 tema_id: speakingProgress.current_tema,
+                                level: speakingLevel,
                                 rol: "konusan",
                                 cinsiyet_tercihi: speakingCinsiyet,
                                 musait_saat: speakingMusait,
@@ -7676,7 +7711,7 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
       .select("*")
       .eq("username", currentUser.username)
       .eq("sinav_tema_no", speakingProgress.current_tema)
-      .eq("level", "A1")
+      .eq("level", speakingProgress.level || "A1")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -7738,7 +7773,7 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
                       .from("speaking_progress")
                       .select("*")
                       .eq("username", ogrenci)
-                      .eq("level", "A1")
+                      .eq("level", talep.level || "A1")
                       .maybeSingle();
 
                     if (ogrenciProg) {
@@ -7759,7 +7794,7 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
 
                     await supabase.from("speaking_exams").insert({
                       username: ogrenci,
-                      level: "A1",
+                      level: talep.level || "A1",
                       sinav_tema_no: talep.sinav_tema_no,
                       gecti: true,
                     });
@@ -7787,7 +7822,7 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
 
                     await supabase.from("speaking_exams").insert({
                       username: ogrenci,
-                      level: "A1",
+                      level: talep.level || "A1",
                       sinav_tema_no: talep.sinav_tema_no,
                       gecti: false,
                     });
@@ -7867,7 +7902,7 @@ const { data: reqData } = await supabase
 
 const { error } = await supabase.from("speaking_sinav_talepleri").insert({
   username: currentUser.username,
-  level: "A1",
+  level: speakingProgress.level || "A1",
   sinav_tema_no: speakingProgress.current_tema,
   durum: "bekliyor",
   ogrenci_telefon: reqData?.telefon || "",

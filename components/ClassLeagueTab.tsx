@@ -7,7 +7,7 @@ type Props = {
   currentUsername: string;
   currentUserName: string;
   mainClassId: string;
-  classes: { id: string; name: string; teacherName: string }[];
+  classes: { id: string; name: string; teacherName: string; level?: string }[];
   hasAnyLiveCourseOrder: boolean;
 };
 
@@ -53,6 +53,8 @@ export default function ClassLeagueTab({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const myClass = classes.find((c) => c.id === mainClassId);
+  // Lig, sınıfın seviyesine göre (A1 / A2) Ustalık ve Konuşma Kulübü ilerlemesini sayar.
+  const leagueLevel = myClass?.level === "A2" ? "A2" : "A1";
 
   useEffect(() => {
     if (!mainClassId) return;
@@ -91,7 +93,7 @@ export default function ClassLeagueTab({
       .from("mastery_progress")
       .select("student_key, theme_id")
 .in("student_key", usernames)
-      .eq("level", "A1")
+      .eq("level", leagueLevel)
       .eq("status", "completed");
 
     const masteryMap: Record<string, Set<number>> = {};
@@ -105,7 +107,7 @@ export default function ClassLeagueTab({
       .from("speaking_progress")
       .select("username, current_tema")
       .in("username", usernames)
-      .eq("level", "A1");
+      .eq("level", leagueLevel);
 
     const speakingMap: Record<string, number> = {};
     (speakingData || []).forEach((s: any) => {

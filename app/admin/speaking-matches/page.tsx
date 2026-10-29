@@ -34,6 +34,7 @@ type Talep = {
   konusma_temasi?: number;
   konusma_gorevi?: number;
   mevcut_partner?: string;
+  level?: string;
 };
 
 export default function SpeakingMatchesPage() {
@@ -48,6 +49,8 @@ export default function SpeakingMatchesPage() {
   const [aktifTab, setAktifTab] = useState<"bekleyen" | "eslesmis" | "degisiklik">("bekleyen");
   const [degisiklikTalepleri, setDegisiklikTalepleri] = useState<PartnerDegisiklikTalebi[]>([]);
   const [eslesmeler, setEslesmeler] = useState<any[]>([]);
+  // Konuşma Kulübü seviyesi: talepler, eşleşmeler ve kayıtlar bu seviyeye göre.
+  const [seviye, setSeviye] = useState<"A1" | "A2">("A1");
 
   useEffect(() => {
     const raw = localStorage.getItem("mock_logged_user");
@@ -59,6 +62,15 @@ export default function SpeakingMatchesPage() {
     setAllowed(true);
     loadData();
   }, [router]);
+
+  useEffect(() => {
+    if (!allowed) return;
+    setSecilenA(null);
+    setSecilenB(null);
+    setMesaj("");
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seviye]);
 
   async function loadData() {
     setYukleniyor(true);
@@ -73,9 +85,11 @@ export default function SpeakingMatchesPage() {
       .from("speaking_progress")
       .select("*");
 
-    const birlesik = (talepData || []).map((t: any) => {
+    const birlesik = (talepData || [])
+      .filter((t: any) => (t.level || "A1") === seviye)
+      .map((t: any) => {
       const prog = (progressData || []).find(
-        (p: any) => p.username === t.user_email && p.level === "A1"
+        (p: any) => p.username === t.user_email && p.level === seviye
       );
       return {
         ...t,
@@ -91,6 +105,7 @@ export default function SpeakingMatchesPage() {
       .from("speaking_progress")
       .select("*")
       .not("partner_email", "is", null)
+      .eq("level", seviye)
       .order("updated_at", { ascending: false });
 
     setEslesmeler(eslesmisData || []);
@@ -100,7 +115,9 @@ export default function SpeakingMatchesPage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    setDegisiklikTalepleri(degisiklikData || []);
+    setDegisiklikTalepleri(
+      (degisiklikData || []).filter((t: any) => (t.level || "A1") === seviye)
+    );
     setYukleniyor(false);
   }
 
@@ -114,20 +131,20 @@ export default function SpeakingMatchesPage() {
         .from("speaking_progress")
         .select("*")
         .eq("username", secilenA.user_email)
-        .eq("level", "A1")
+        .eq("level", seviye)
         .maybeSingle();
 
       const { data: progB } = await supabase
         .from("speaking_progress")
         .select("*")
         .eq("username", secilenB.user_email)
-        .eq("level", "A1")
+        .eq("level", seviye)
         .maybeSingle();
 
       if (!progA) {
         await supabase.from("speaking_progress").insert({
           username: secilenA.user_email,
-          level: "A1",
+          level: seviye,
           current_tema: 1,
           current_gorev: 1,
           partner_email: secilenB.user_email,
@@ -147,7 +164,7 @@ export default function SpeakingMatchesPage() {
       if (!progB) {
         await supabase.from("speaking_progress").insert({
           username: secilenB.user_email,
-          level: "A1",
+          level: seviye,
           current_tema: 1,
           current_gorev: 1,
           partner_email: secilenA.user_email,
@@ -168,6 +185,7 @@ export default function SpeakingMatchesPage() {
         konusan_email: secilenA.user_email,
         dinleyen_email: secilenB.user_email,
         tema_id: secilenA.tema_id || 1,
+        level: seviye,
         durum: "bekliyor",
       });
 
@@ -192,7 +210,8 @@ export default function SpeakingMatchesPage() {
     await supabase
       .from("speaking_progress")
       .update({ partner_email: null })
-      .eq("username", username);
+      .eq("username", username)
+      .eq("level", seviye);
     await loadData();
   }
 
@@ -236,6 +255,26 @@ export default function SpeakingMatchesPage() {
             {mesaj}
           </div>
         )}
+
+        {/* SEVİYE SEÇİMİ */}
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <span className="text-sm font-black text-slate-500">Seviye:</span>
+          {(["A1", "A2"] as const).map((lvl) => (
+            <button
+              key={lvl}
+              type="button"
+              onClick={() => setSeviye(lvl)}
+              className={
+                "rounded-full px-5 py-2 text-sm font-black transition " +
+                (seviye === lvl
+                  ? "bg-slate-900 text-white"
+                  : "border border-slate-200 bg-white text-slate-500 hover:text-slate-900")
+              }
+            >
+              {lvl} Konuşma Kulübü
+            </button>
+          ))}
+        </div>
 
         {/* TAB MENÜ */}
         <div className="mb-6 flex flex-wrap gap-3">
