@@ -28,6 +28,7 @@ type Talep = {
   tema_id: number;
   rol: string;
   cinsiyet_tercihi: string;
+  cinsiyet?: string | null;
   musait_saat: string;
   telefon: string;
   durum: string;
@@ -241,7 +242,8 @@ export default function SpeakingMatchesPage() {
           </p>
           <h1 className="mt-2 text-3xl font-black text-slate-900">Eşleştirme Merkezi</h1>
           <p className="mt-2 text-sm text-slate-500">
-            Partner talep eden öğrencileri eşleştir. Eşleşme sonrası her iki öğrencinin panelinde partner bilgisi görünür.
+            Uygun talepler (aynı seviye, aynı tema, cinsiyet tercihi uyumlu) sistem tarafından otomatik eşleştirilir.
+            Burada kalan talepler uygun eşi bulunamayanlardır; bunları elle eşleştirebilirsin.
           </p>
         </header>
 
@@ -404,6 +406,7 @@ export default function SpeakingMatchesPage() {
                             <p>{"📞 " + talep.telefon}</p>
                             <p>{"⏰ " + talep.musait_saat}</p>
                             <p>{"🎯 Tema " + talep.tema_id}</p>
+                            {talep.cinsiyet && <p>{"🙋 Cinsiyet: " + (talep.cinsiyet === "kadin" ? "Kadın" : "Erkek")}</p>}
                             <p>{"👥 Tercih: " + (talep.cinsiyet_tercihi === "fark_etmez" ? "Fark etmez" : talep.cinsiyet_tercihi)}</p>
                             {talep.konusma_temasi && (
                               <p className="text-teal-600 font-bold">

@@ -58,6 +58,7 @@ import { a2Tema10Questions } from "@/app/data/mastery-a2/tema10";
 import { a2Tema11Questions } from "@/app/data/mastery-a2/tema11";
 import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
 import { getSpeakingExplanation } from "@/app/data/speaking_explanations_b1";
+import { tryAutoMatchSpeakingPartner } from "@/lib/speaking/auto-match";
 import {
   getSpeakingPatterns,
   getSpeakingStepCount,
@@ -753,6 +754,14 @@ const [speakingBildirimGonderildi, setSpeakingBildirimGonderildi] = useState(fal
 const [speakingRol, setSpeakingRol] = useState<"konusan" | "dinleyen">("konusan");
 const [speakingTemaId, setSpeakingTemaId] = useState(1);
 const [speakingCinsiyet, setSpeakingCinsiyet] = useState("fark_etmez");
+// Öğrencinin kendi cinsiyeti (otomatik eşleştirmede karşı tarafın tercihine uyum için).
+const [speakingKendiCinsiyet, setSpeakingKendiCinsiyet] = useState("");
+// Otomatik eşleşme sonrası Konuşma Kulübü verilerini yeniden yüklemek için sayaç.
+const [speakingReloadKey, setSpeakingReloadKey] = useState(0);
+// "Partnerin bulundu" bildirimi (panele girişte gösterilir).
+const [partnerBildirimleri, setPartnerBildirimleri] = useState<
+  { level: Level; partnerEmail: string; partnerName: string }[]
+>([]);
 const [speakingMusait, setSpeakingMusait] = useState("");
 const [speakingTelefon, setSpeakingTelefon] = useState("");
 const [speakingGonderildi, setSpeakingGonderildi] = useState(false);
@@ -3027,7 +3036,7 @@ useEffect(() => {
     .then(({ data }) => {
       if (data) setAllSpeakingProgress(data);
     });
-}, [currentUser, speakingBildirimGonderildi]);
+}, [currentUser, speakingBildirimGonderildi, speakingReloadKey]);
 useEffect(() => {
   if (!currentUser) return;
   async function loadSpeakingProgress() {
@@ -3145,7 +3154,78 @@ if (data) {
   }
 
   loadSpeakingProgress();
-}, [currentUser, speakingBildirimGonderildi, speakingLevel]);
+}, [currentUser, speakingBildirimGonderildi, speakingLevel, speakingReloadKey]);
+
+// ── Otomatik partner eşleştirme: panele girişte bekleyen talep varsa uygun partner aranır ──
+useEffect(() => {
+  const username = String(currentUser?.username || "").trim();
+  if (!username) return;
+  let cancelled = false;
+  (async () => {
+    let eslesti = false;
+    for (const lvl of SPEAKING_CLUB_CONTENT_LEVELS) {
+      const sonuc = await tryAutoMatchSpeakingPartner(username, lvl);
+      if (sonuc.matched) eslesti = true;
+    }
+    if (!cancelled && eslesti) setSpeakingReloadKey((k) => k + 1);
+  })();
+  return () => {
+    cancelled = true;
+  };
+}, [currentUser?.username]);
+
+// ── "Partnerin bulundu" bildirimi: son 14 gün içinde eşleşip henüz görülmemiş partnerler ──
+useEffect(() => {
+  const username = String(currentUser?.username || "").trim().toLowerCase();
+  if (!username || allSpeakingProgress.length === 0) return;
+  const sinir = new Date();
+  sinir.setDate(sinir.getDate() - 14);
+  const sinirStr = sinir.toISOString().slice(0, 10);
+  const yeni = allSpeakingProgress.filter((row: any) => {
+    if (!row.partner_email || !row.esleme_tarihi || String(row.esleme_tarihi) < sinirStr) return false;
+    try {
+      return localStorage.getItem(`ak_partner_goruldu_${username}_${row.level}`) !== row.partner_email;
+    } catch {
+      return false;
+    }
+  });
+  if (yeni.length === 0) return;
+  let cancelled = false;
+  (async () => {
+    const liste = await Promise.all(
+      yeni.map(async (row: any) => {
+        const { data } = await supabase
+          .from("speaking_requests")
+          .select("user_name")
+          .eq("user_email", row.partner_email)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        return {
+          level: row.level as Level,
+          partnerEmail: row.partner_email as string,
+          partnerName: (data?.user_name as string) || row.partner_email,
+        };
+      })
+    );
+    if (!cancelled) setPartnerBildirimleri(liste);
+  })();
+  return () => {
+    cancelled = true;
+  };
+}, [currentUser?.username, allSpeakingProgress]);
+
+function partnerBildiriminiKapat() {
+  const username = String(currentUser?.username || "").trim().toLowerCase();
+  partnerBildirimleri.forEach((b) => {
+    try {
+      localStorage.setItem(`ak_partner_goruldu_${username}_${b.level}`, b.partnerEmail);
+    } catch {
+      /* tarayıcı depolaması kapalıysa bildirim bir sonraki girişte tekrar görünür */
+    }
+  });
+  setPartnerBildirimleri([]);
+}
 
   const activePackageCount = userClasses.length;
   const upgradeOffers = getUpgradeOffers(effectivePackageType);
@@ -3666,6 +3746,48 @@ if (!currentUser) {
     <main className="relative min-h-screen bg-slate-100">
       
       <AnnouncementPopup userEmail={currentUser?.username || ""} />
+      {partnerBildirimleri.length > 0 && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+            <div
+              className="px-6 pb-6 pt-7 text-center text-white"
+              style={{ background: SPEAKING_LEVEL_THEMES[partnerBildirimleri[0].level]?.hero }}
+            >
+              <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-white/15 text-3xl">🤝</div>
+              <h2 className="text-xl font-black">Konuşma partnerin bulundu!</h2>
+              <p className="mt-1 text-sm text-white/80">Hemen iletişime geçip ilk görevinizi planlayın.</p>
+            </div>
+            <div className="space-y-2 p-6">
+              {partnerBildirimleri.map((b) => (
+                <div key={b.level} className="rounded-2xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-black uppercase tracking-wider text-slate-500">{b.level} Konuşma Kulübü</p>
+                  <p className="mt-0.5 font-black text-slate-900">{b.partnerName}</p>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  const ilk = partnerBildirimleri[0];
+                  partnerBildiriminiKapat();
+                  setActiveDashboardTab("speaking");
+                  setSpeakingViewLevel(ilk.level);
+                  setSpeakingTab("partner" as any);
+                }}
+                className="mt-2 w-full rounded-2xl bg-slate-900 px-4 py-4 text-sm font-black text-white hover:bg-slate-800"
+              >
+                Partnerimi Gör
+              </button>
+              <button
+                type="button"
+                onClick={partnerBildiriminiKapat}
+                className="w-full rounded-2xl px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-800"
+              >
+                Sonra
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {hocaAtamaBildirimi.length > 0 && (
         <div className="fixed top-4 right-4 z-50 max-w-sm rounded-2xl bg-yellow-400 p-5 shadow-2xl">
           <p className="font-black text-slate-900">🎓 Sınav Hocası Olarak Atandınız!</p>
@@ -5977,8 +6099,8 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     <div className="text-4xl mb-3">🤝</div>
                     <h3 className="font-black text-slate-900">Henüz eşleşme yok</h3>
                     <p className="text-sm text-slate-500 mt-2 leading-6 max-w-xs mx-auto">
-                      Admin uygun bir partnerle seni eşleştirecek.
-                      Eşleşme sonrası burada görünecek.
+                      Partner talebi gönderdiğinde sistem aynı seviye ve temadaki uygun bir
+                      öğrenciyle seni otomatik eşleştirir. Eşleşince burada görünür.
                     </p>
                     {!speakingProgress && (
                       <p className="text-xs text-slate-400 mt-3">
@@ -6008,6 +6130,21 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                             />
                           </div>
                           <div>
+                            <p className="text-xs font-bold text-slate-500 mb-1">Cinsiyetin</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              {[["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
+                                <button
+                                  key={val}
+                                  type="button"
+                                  onClick={() => setSpeakingKendiCinsiyet(val)}
+                                  className={"rounded-2xl border py-2 text-xs font-black transition " + (speakingKendiCinsiyet === val ? "border-emerald-400 bg-emerald-100 text-emerald-700" : "border-slate-200 bg-white text-slate-600")}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
                             <p className="text-xs font-bold text-slate-500 mb-1">Partner Tercihi</p>
                             <div className="grid grid-cols-3 gap-2">
                               {[["fark_etmez", "Fark Etmez"], ["kadin", "Kadın"], ["erkek", "Erkek"]].map(([val, label]) => (
@@ -6024,23 +6161,31 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           </div>
                           <button
                             type="button"
-                            disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon}
+                            disabled={speakingYukleniyor || !speakingMusait || !speakingTelefon || !speakingKendiCinsiyet}
                             onClick={async () => {
-                              if (!currentUser || !speakingMusait || !speakingTelefon) return;
+                              if (!currentUser || !speakingMusait || !speakingTelefon || !speakingKendiCinsiyet) return;
                               setSpeakingYukleniyor(true);
-                              await supabase.from("speaking_requests").insert({
+                              const { error: talepHata } = await supabase.from("speaking_requests").insert({
                                 user_email: currentUser.username,
                                 user_name: currentUser.name || currentUser.username,
                                 tema_id: speakingProgress.current_tema,
                                 level: speakingLevel,
                                 rol: "konusan",
+                                cinsiyet: speakingKendiCinsiyet,
                                 cinsiyet_tercihi: speakingCinsiyet,
                                 musait_saat: speakingMusait,
                                 telefon: speakingTelefon,
                                 durum: "bekliyor",
                               });
+                              if (talepHata) {
+                                setSpeakingYukleniyor(false);
+                                alert("Talep gönderilemedi: " + talepHata.message);
+                                return;
+                              }
+                              const sonuc = await tryAutoMatchSpeakingPartner(currentUser.username, speakingLevel);
                               setSpeakingYukleniyor(false);
                               setSpeakingGonderildi(true);
+                              if (sonuc.matched) setSpeakingReloadKey((k) => k + 1);
                             }}
                             className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
                           >
@@ -6048,7 +6193,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           </button>
                           {speakingGonderildi && (
                             <div className="rounded-2xl bg-white border border-emerald-200 p-3 text-sm font-bold text-emerald-700 text-center">
-                              {"✅ Talebiniz alındı! Admin en kısa sürede eşleştirecek."}
+                              {"✅ Talebin alındı! Şu an uygun partner yok; aynı seviye ve temada biri talep gönderdiği anda otomatik eşleşeceksin ve panele girdiğinde bildirim alacaksın."}
                             </div>
                           )}
                         </div>
