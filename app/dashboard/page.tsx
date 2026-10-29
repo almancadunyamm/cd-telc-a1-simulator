@@ -57,6 +57,7 @@ import { a2Tema9Questions } from "@/app/data/mastery-a2/tema9";
 import { a2Tema10Questions } from "@/app/data/mastery-a2/tema10";
 import { a2Tema11Questions } from "@/app/data/mastery-a2/tema11";
 import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
+import { getSpeakingExplanation } from "@/app/data/speaking_explanations_b1";
 import {
   getSpeakingPatterns,
   getSpeakingStepCount,
@@ -741,6 +742,8 @@ function CertificateExamCard({
 export default function DashboardPage() {
   const [pwaPrompt, setPwaPrompt] = useState<any>(null);
   const [speakingTab, setSpeakingTab] = useState<"durum" | "gorev" | "partner" | "talep">("durum");
+  // Konuşma kalıpları listesinde açıklaması açık olan cümle ("tema-sıra").
+  const [acikAciklama, setAcikAciklama] = useState<string | null>(null);
 const [speakingProgress, setSpeakingProgress] = useState<any>(null);
 const [speakingProgressLoading, setSpeakingProgressLoading] = useState(true);
 const [speakingGorevBildiriliyor, setSpeakingGorevBildiriliyor] = useState(false);
@@ -5830,6 +5833,11 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                 </h3>
                 <p className="text-xs text-slate-500 mb-4">
                   Dinleyici Türkçe söyler → Sen Almancasını söylersin
+                  {speakingLevel === "B1" && (
+                    <span className="mt-1 block font-bold text-emerald-700">
+                      💡 Bir cümleye dokun: fiilin anlamı, hâl ekleri ve kelime sırası açıklansın.
+                    </span>
+                  )}
                 </p>
                 <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
                   {Array.from({ length: speakingProgress?.current_tema || 1 }, (_, i) => i + 1).map((temaNo) => {
@@ -5842,12 +5850,56 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                             {temaNo === (speakingProgress?.current_tema || 1) ? `🆕 Tema ${stepLabel(temaNo)} — Yeni Sorular` : `🔁 Tema ${stepLabel(temaNo)} — Tekrar`}
                           </p>
                         </div>
-                        {pattern.cumleler.map((c, i) => (
-                          <div key={i} className="rounded-2xl bg-slate-50 p-3 mb-2">
-                            <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
-                            <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
-                          </div>
-                        ))}
+                        {pattern.cumleler.map((c, i) => {
+                          const aciklama = getSpeakingExplanation(speakingLevel, c.de);
+                          if (!aciklama) {
+                            return (
+                              <div key={i} className="rounded-2xl bg-slate-50 p-3 mb-2">
+                                <div className="text-xs font-bold text-slate-500">👂 {c.tr}</div>
+                                <div className="text-sm font-black text-emerald-700 mt-1">🎤 {c.de}</div>
+                              </div>
+                            );
+                          }
+                          const anahtar = `${temaNo}-${i}`;
+                          const acik = acikAciklama === anahtar;
+                          return (
+                            <div
+                              key={i}
+                              className={`mb-2 rounded-2xl border transition ${
+                                acik ? "border-emerald-300 bg-white shadow-sm" : "border-transparent bg-slate-50 hover:border-emerald-200"
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => setAcikAciklama(acik ? null : anahtar)}
+                                aria-expanded={acik}
+                                className="flex w-full items-start justify-between gap-3 p-3 text-left"
+                              >
+                                <span className="min-w-0">
+                                  <span className="block text-xs font-bold text-slate-500">👂 {c.tr}</span>
+                                  <span className="mt-1 block text-sm font-black text-emerald-700">🎤 {c.de}</span>
+                                </span>
+                                <span
+                                  className={`mt-0.5 shrink-0 rounded-full px-2 py-1 text-[10px] font-black ${
+                                    acik ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-700"
+                                  }`}
+                                >
+                                  {acik ? "Kapat ▲" : "💡 Açıkla"}
+                                </span>
+                              </button>
+                              {acik && (
+                                <ul className="mx-3 mb-3 space-y-1.5 border-t border-emerald-100 pt-3 text-xs leading-5 text-slate-700">
+                                  {aciklama.map((madde, k) => (
+                                    <li key={k} className="flex gap-2">
+                                      <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                                      <span>{madde}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })}
