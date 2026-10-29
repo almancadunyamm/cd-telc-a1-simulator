@@ -57,7 +57,15 @@ import { a2Tema9Questions } from "@/app/data/mastery-a2/tema9";
 import { a2Tema10Questions } from "@/app/data/mastery-a2/tema10";
 import { a2Tema11Questions } from "@/app/data/mastery-a2/tema11";
 import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
-import { getSpeakingPatterns } from "@/app/data/speaking_patterns";
+import {
+  getSpeakingPatterns,
+  getSpeakingStepCount,
+  getSpeakingStepLabel,
+  getSpeakingThemeNumber,
+  getSpeakingStepSentenceCount,
+  getSpeakingCumulativeCount,
+  isSpeakingSplitLevel,
+} from "@/app/data/speaking_patterns";
 import AnnouncementPopup from "@/components/AnnouncementPopup";
 import { WhatsAppLink } from "@/app/components/WhatsAppButton";
 
@@ -346,12 +354,18 @@ const speakingTasksB1 = [
 ];
 
 // ── Konuşma Kulübü — seviye erişim mantığı ──────────────────────────────
-// Seviye bitti mi: 12. temanın 3 görevi onaylandı (12/4) ya da final sınavı geçildi (tema 13+).
+// Seviye bitti mi: son adımın 3 görevi onaylandı (örn. A1 12/4, B1 24/4) ya da final sınavı geçildi (son adım + 1).
 function isSpeakingProgressFinished(prog: any): boolean {
   if (!prog) return false;
+  const max = getSpeakingStepCount(String(prog.level || "A1"));
   const tema = Number(prog.current_tema || 0);
   const gorev = Number(prog.current_gorev || 0);
-  return tema > 12 || (tema >= 12 && gorev > 3);
+  return tema > max || (tema >= max && gorev > 3);
+}
+
+// Konuşma final sınavı süresi: dakikada 15 cümle (A1/A2 12. temada 180 cümle = 12 dk).
+function getSpeakingExamMinutes(sentenceCount: number): number {
+  return Math.max(1, Math.ceil(sentenceCount / 15));
 }
 const SPEAKING_LEVEL_ORDER: Level[] = ["A1", "A2", "B1"];
 const SPEAKING_LEVEL_SENTENCE_TARGET: Record<Level, number> = {
@@ -2293,7 +2307,7 @@ if (allClassIds.length > 0) {
   function isSpeakingLevelCompleted(lvl: Level) {
     const prog = allSpeakingProgress.find((p: any) => p.level === lvl);
     if (!prog) return false;
-    const maxTema = 12;
+    const maxTema = getSpeakingStepCount(lvl);
     return prog.current_tema > maxTema || (prog.current_tema === maxTema && prog.current_gorev > 3);
   }
 
@@ -2337,6 +2351,13 @@ if (allClassIds.length > 0) {
   const speakingNeedsMastery = SPEAKING_MASTERY_GATED_LEVELS.includes(speakingLevel);
   const speakingTheme = SPEAKING_LEVEL_THEMES[speakingViewLevel];
   const speakingSentenceTotal = speakingPatternsForLevel.reduce((sum, t) => sum + t.cumleler.length, 0);
+  // Adım sistemi: A1/A2 12 adım (= tema); B1 24 adım (her tema A/B).
+  const speakingStepTotal = speakingPatternsForLevel.length;
+  const speakingIsSplit = isSpeakingSplitLevel(speakingLevel);
+  const stepLabel = (step: number) => getSpeakingStepLabel(speakingLevel, step);
+  const stepThemeNo = (step: number) => getSpeakingThemeNumber(speakingLevel, step);
+  const stepCount = (step: number) => getSpeakingStepSentenceCount(speakingLevel, step);
+  const stepCumulative = (step: number) => getSpeakingCumulativeCount(speakingLevel, step);
   const speakingThemeTitles: Record<number, string> = Object.fromEntries(
     speakingPatternsForLevel.map((t) => [t.temaId, t.temaAd])
   );
@@ -3075,8 +3096,9 @@ if (data) {
       }
 
       if (calismaData.current_gorev > 3) {
-        const finalTemaTamamlandi = calismaData.current_tema >= 12;
-        const yeniTema = finalTemaTamamlandi ? 12 : calismaData.current_tema + 1;
+        const sonAdim = getSpeakingStepCount(speakingLevel);
+        const finalTemaTamamlandi = calismaData.current_tema >= sonAdim;
+        const yeniTema = finalTemaTamamlandi ? sonAdim : calismaData.current_tema + 1;
         const duzeltilmis = {
           ...calismaData,
           current_tema: yeniTema,
@@ -3092,7 +3114,7 @@ if (data) {
           .eq("id", calismaData.id);
         setSpeakingProgress(duzeltilmis);
       } else {
-        if (calismaData.sinav_bekleniyor && calismaData.current_tema < 12) {
+        if (calismaData.sinav_bekleniyor && calismaData.current_tema < getSpeakingStepCount(speakingLevel)) {
           await supabase.from("speaking_progress")
             .update({ sinav_bekleniyor: false })
             .eq("id", calismaData.id);
@@ -3310,9 +3332,8 @@ function getSinavSuresi(temaNo: number): number {
   return (temaNo / 3) * 180; // Her 3 temada 180 saniye (3 dk)
 }
 
-function getSinavSuresiLabel(temaNo: number): string {
-  const dakika = (temaNo / 3) * 3;
-  return dakika + " dakika";
+function getSinavSuresiLabel(sentenceCount: number): string {
+  return getSpeakingExamMinutes(sentenceCount) + " dakika";
 }
 
 async function handleSpeakingBildirim() {
@@ -3386,8 +3407,9 @@ async function handleSpeakingBildirim() {
     if (digerBildirdi) {
       const yeniGorev = currentGorev + 1;
       const temaTamamlandi = yeniGorev > 3;
-      const finalTemaTamamlandi = temaTamamlandi && currentTema >= 12;
-      const yeniTema = finalTemaTamamlandi ? 12 : temaTamamlandi ? currentTema + 1 : currentTema;
+      const sonAdim = getSpeakingStepCount(speakingLevel);
+      const finalTemaTamamlandi = temaTamamlandi && currentTema >= sonAdim;
+      const yeniTema = finalTemaTamamlandi ? sonAdim : temaTamamlandi ? currentTema + 1 : currentTema;
       const sonrakiGorev = finalTemaTamamlandi ? 4 : temaTamamlandi ? 1 : yeniGorev;
 
       const progressUpdate: any = {
@@ -3435,7 +3457,7 @@ async function handleSpeakingBildirim() {
         setSpeakingTeşvikMesaj({
           icon: "🎊",
           baslik: "Tema Tamamlandı!",
-          mesaj: `Bravo! Tema ${currentTema} başarıyla bitti. Tema ${yeniTema} şimdi açıldı, devam edin!`,
+          mesaj: `Bravo! Tema ${getSpeakingStepLabel(speakingLevel, currentTema)} başarıyla bitti. Tema ${getSpeakingStepLabel(speakingLevel, yeniTema)} şimdi açıldı, devam edin!`,
           renk: "from-emerald-500 to-teal-500",
         });
       } else if (yeniGorev === 3) {
@@ -3603,7 +3625,11 @@ function computeLevelProgress(level: Level) {
     ? 0
     : isSpeakingLevelCompleted(level)
     ? speakingTotal
-    : Math.min(speakingTotal, Math.max(0, Number(speakingRow.current_tema || 1) - 1));
+    : Math.floor(
+        (Math.min(getSpeakingStepCount(level), Math.max(0, Number(speakingRow.current_tema || 1) - 1)) *
+          speakingTotal) /
+          getSpeakingStepCount(level)
+      );
 
   const overallTotal = masteryTotal + wordTotal + speakingTotal;
   const overallPercent =
@@ -3643,7 +3669,7 @@ if (!currentUser) {
           {hocaAtamaBildirimi.map((talep: any) => (
             <div key={talep.id} className="mt-3 rounded-xl bg-white/80 p-3 text-sm text-slate-800">
               <p className="font-bold">👤 Öğrenci: {talep.username}</p>
-              <p className="mt-1">📚 Tema {talep.sinav_tema_no} sınavını yapacaksınız</p>
+              <p className="mt-1">📚 {talep.level || "A1"} · Tema {getSpeakingStepLabel(talep.level || "A1", talep.sinav_tema_no)} sınavını yapacaksınız</p>
               <p className="mt-2 text-xs leading-5">Öğrenciyle görüntülü arama başlatın. Türkçe soruları sorun, öğrenci Almancaya çevirsin. Sınav sonunda Konuşma Kulübü → Sınav tabından sonucu bildirin.</p>
             </div>
           ))}
@@ -4736,7 +4762,7 @@ const isOpen =
         icon: "🎙️",
         title: "Konuşma Kulübü",
         desc: speakingProgress
-          ? `Tema ${speakingProgress.current_tema} — Görev ${speakingProgress.current_gorev}`
+          ? `Tema ${getSpeakingStepLabel(speakingProgress.level || "A1", speakingProgress.current_tema)} — Görev ${speakingProgress.current_gorev}`
           : speakingMasteryCompletedCount >= 3 ? "Başlat" : `${speakingMasteryCompletedCount}/3 tema gerek`,
         color: "bg-emerald-50 border-emerald-200",
         iconBg: "bg-emerald-100",
@@ -5384,7 +5410,9 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
           </p>
           <div className="relative mt-5 flex flex-wrap gap-2 text-xs font-black">
             {[
-              `${speakingPatternsForLevel.length} tema`,
+              speakingIsSplit
+                ? `${stepThemeNo(speakingStepTotal)} tema · ${speakingStepTotal} adım`
+                : `${speakingStepTotal} tema`,
               `${speakingSentenceTotal} cümle kalıbı`,
               "Kişisel konuşma partneri",
               "Final sınavı ve rozet",
@@ -5444,7 +5472,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
             ["gorev", "🎯 Görev"],
             ["partner", "🤝 Partner"],
             ["sinav", "🎓 Final Sınavı"],
-          ] as const).filter(([key]) => key !== "sinav" || (speakingProgress?.current_tema >= 12 && speakingProgress?.current_gorev > 3)).map(([key, label]) => (
+          ] as const).filter(([key]) => key !== "sinav" || isSpeakingProgressFinished(speakingProgress)).map(([key, label]) => (
             <button
               key={key}
               type="button"
@@ -5568,16 +5596,16 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     <div className="rounded-2xl bg-slate-50 p-4 mb-4">
                       <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Bu Görevde Sorulacak</p>
                       <p className="text-2xl font-black text-slate-900">
-                        {speakingProgress.current_tema * 15} soru
+                        {stepCumulative(speakingProgress.current_tema)} soru
                       </p>
                       <p className="text-xs text-slate-500 mt-1">
                         {speakingProgress.current_tema > 1 && (
                           <span>
-                            {(speakingProgress.current_tema - 1) * 15} eski +{" "}
-                            15 yeni (Tema {speakingProgress.current_tema})
+                            {stepCumulative(speakingProgress.current_tema - 1)} eski +{" "}
+                            {stepCount(speakingProgress.current_tema)} yeni (Tema {stepLabel(speakingProgress.current_tema)})
                           </span>
                         )}
-                        {speakingProgress.current_tema === 1 && "Tema 1 soruları"}
+                        {speakingProgress.current_tema === 1 && `Tema ${stepLabel(1)} soruları`}
                       </p>
                     </div>
 
@@ -5605,7 +5633,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     {/* Tema ilerleme çubuğu */}
                     <div className="mb-4">
                       <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
-                        <span>Tema {speakingProgress.current_tema} İlerlemesi</span>
+                        <span>Tema {stepLabel(speakingProgress.current_tema)} İlerlemesi</span>
                         <span>{Math.min(speakingProgress.current_gorev - 1, 3)}/3 görev tamamlandı{speakingProgress.current_gorev <= 3 ? ` · ${speakingProgress.current_gorev}. görev devam ediyor` : ""}</span>
                       </div>
                       <div className="h-2 rounded-full bg-slate-200">
@@ -5633,9 +5661,11 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
               <div className="rounded-2xl bg-white p-6 shadow-sm">
                 <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-4">Tema Haritası</p>
                 <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((temaNo) => {
-                    const speakingUnlocked = getSpeakingUnlockedThemeCount(speakingMasteryCompletedCount);
-                    const isStarterTheme = temaNo <= 6;
+                  {Array.from({ length: speakingStepTotal }, (_, i) => i + 1).map((temaNo) => {
+                    const speakingUnlocked = speakingNeedsMastery
+                      ? getSpeakingUnlockedThemeCount(speakingMasteryCompletedCount)
+                      : speakingStepTotal;
+                    const isStarterTheme = stepThemeNo(temaNo) <= 6;
                     const hasDevelopmentAccess =
                       effectivePackageType === "practice" ||
                       effectivePackageType === "master" ||
@@ -5662,13 +5692,18 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                             isCurrent ? "bg-emerald-200 text-emerald-800" :
                             "bg-slate-200 text-slate-500"
                           }`}>
-                            {isCompleted ? "✓" : temaNo}
+                            {isCompleted ? "✓" : stepLabel(temaNo)}
                           </div>
                           <div>
                             <p className="text-sm font-black text-slate-900">
-                              {speakingThemeTitles[temaNo] || `Tema ${temaNo}`}
+                              {speakingThemeTitles[temaNo] || `Tema ${stepLabel(temaNo)}`}
+                              {speakingIsSplit && (
+                                <span className="ml-1.5 text-xs font-bold text-slate-400">
+                                  {temaNo % 2 === 1 ? "· 1. bölüm" : "· 2. bölüm"}
+                                </span>
+                              )}
                             </p>
-                            <p className="text-xs text-slate-500">{speakingPatternsForLevel.filter((t) => t.temaId <= temaNo).reduce((sum, t) => sum + t.cumleler.length, 0)} soru</p>
+                            <p className="text-xs text-slate-500">{stepCount(temaNo)} yeni · toplam {stepCumulative(temaNo)} soru</p>
                           </div>
                         </div>
                         <span className={`rounded-full px-2 py-1 text-xs font-black ${
@@ -5710,14 +5745,14 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                       <div>
                         <p className="text-xs font-black text-emerald-700 uppercase tracking-wider">Aktif Görev</p>
                         <h3 className="mt-1 text-xl font-black text-slate-900">
-                          Tema {speakingProgress.current_tema} — Görev {speakingProgress.current_gorev}
+                          Tema {stepLabel(speakingProgress.current_tema)} — Görev {speakingProgress.current_gorev}
                         </h3>
                         <p className="text-sm text-slate-500 mt-1">
-                          Toplam {speakingProgress.current_tema * 15} soru sorulacak
+                          Toplam {stepCumulative(speakingProgress.current_tema)} soru sorulacak
                         </p>
                       </div>
                       <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-center">
-                        <p className="text-2xl font-black text-emerald-700">{speakingProgress.current_tema * 15}</p>
+                        <p className="text-2xl font-black text-emerald-700">{stepCumulative(speakingProgress.current_tema)}</p>
                         <p className="text-xs font-bold text-slate-500">Soru</p>
                       </div>
                     </div>
@@ -5729,14 +5764,14 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                         {Array.from({ length: speakingProgress.current_tema }, (_, i) => i + 1).map((t) => (
                           <div key={t} className="flex items-center justify-between">
                             <span className="text-xs font-bold text-slate-700">
-                              Tema {t} — {masteryThemes.find(m => m.id === t)?.title}
+                              Tema {stepLabel(t)} — {speakingThemeTitles[t]}
                             </span>
                             <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
                               t < speakingProgress.current_tema
                                 ? "bg-slate-200 text-slate-600"
                                 : "bg-emerald-100 text-emerald-700"
                             }`}>
-                              {t < speakingProgress.current_tema ? "15 hızlı" : "15 yeni"}
+                              {t < speakingProgress.current_tema ? `${stepCount(t)} hızlı` : `${stepCount(t)} yeni`}
                             </span>
                           </div>
                         ))}
@@ -5791,7 +5826,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
               {/* Sağ: Konuşma kalıpları */}
               <div className="rounded-2xl bg-white p-6 shadow-sm">
                 <h3 className="font-black text-slate-900 mb-1">
-                  Tema {speakingProgress?.current_tema || 1} Konuşma Kalıpları
+                  Tema {stepLabel(speakingProgress?.current_tema || 1)} Konuşma Kalıpları
                 </h3>
                 <p className="text-xs text-slate-500 mb-4">
                   Dinleyici Türkçe söyler → Sen Almancasını söylersin
@@ -5804,7 +5839,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                       <div key={temaNo}>
                         <div className={`rounded-xl px-3 py-2 mb-2 ${temaNo === (speakingProgress?.current_tema || 1) ? "bg-emerald-100" : "bg-slate-100"}`}>
                           <p className={`text-xs font-black uppercase tracking-wider ${temaNo === (speakingProgress?.current_tema || 1) ? "text-emerald-700" : "text-slate-500"}`}>
-                            {temaNo === (speakingProgress?.current_tema || 1) ? `🆕 Tema ${temaNo} — Yeni Sorular` : `🔁 Tema ${temaNo} — Tekrar`}
+                            {temaNo === (speakingProgress?.current_tema || 1) ? `🆕 Tema ${stepLabel(temaNo)} — Yeni Sorular` : `🔁 Tema ${stepLabel(temaNo)} — Tekrar`}
                           </p>
                         </div>
                         {pattern.cumleler.map((c, i) => (
@@ -5839,8 +5874,8 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           <a
                             href={"https://wa.me/" + partnerTelefon + "?text=" + encodeURIComponent(
   "Merhaba! Ben " + (currentUser?.name || currentUser?.username) + ". Almanca Okulum Konuşma Kulübü'nde eşleştik 🎙️\n\n" +
-  "Tema " + (speakingProgress?.current_tema || 1) + ", Görev " + (speakingProgress?.current_gorev || 1) + " üzerindeyiz.\n\n" +
-  "Bu görevde toplam " + ((speakingProgress?.current_tema || 1) * 15) + " soru var.\n\n" +
+  speakingLevel + " · Tema " + stepLabel(speakingProgress?.current_tema || 1) + ", Görev " + (speakingProgress?.current_gorev || 1) + " üzerindeyiz.\n\n" +
+  "Bu görevde toplam " + stepCumulative(speakingProgress?.current_tema || 1) + " soru var.\n\n" +
   "Bu görevde ikimiz de hem konuşucu hem dinleyici rolünü yapacağız." +
   "\n\nUygun bir zaman ayarlayalım mı? 😊"
 )}
@@ -5980,12 +6015,12 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
               <div className="rounded-2xl bg-white p-6 shadow-sm">
                 {!speakingProgress ? (
                   <p className="text-sm text-slate-500">Önce Konuşma Kulübünü başlat.</p>
-                ) : !(speakingProgress.current_tema >= 12 && speakingProgress.current_gorev > 3) ? (
+                ) : !isSpeakingProgressFinished(speakingProgress) ? (
                   <div className="text-center py-8">
                     <div className="text-4xl mb-3">{"📚"}</div>
                     <h3 className="font-black text-slate-900">Sınav henüz yok</h3>
                     <p className="text-sm text-slate-500 mt-2 leading-6">
-                      {"Ara temalarda sınav yok. Şu an Tema " + speakingProgress.current_tema + " üzerindesin."}
+                      {"Ara temalarda sınav yok. Şu an Tema " + stepLabel(speakingProgress.current_tema) + " üzerindesin."}
                     </p>
                     <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-left space-y-2 text-sm text-slate-600">
                       <p>{"🥉 Tema 3 → Bronz Konuşmacı"}</p>
@@ -5999,27 +6034,27 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     <div className="rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 p-5 mb-5 text-center">
                       <p className="text-2xl font-black text-slate-900">{"🎓 SINAV ZAMANI!"}</p>
                       <p className="text-sm font-bold text-slate-800 mt-1">
-                        {"Tema " + speakingProgress.current_tema + " Genel Sınavı"}
+                        {speakingLevel + " Genel Sınavı (Tema 1–" + stepThemeNo(speakingStepTotal) + ")"}
                       </p>
                     </div>
 
                     <div className="space-y-3 mb-5">
                       <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
                         <span className="text-sm font-bold text-slate-600">Toplam Soru</span>
-                        <span className="text-sm font-black text-slate-900">{speakingProgress.current_tema * 15 + " soru"}</span>
+                        <span className="text-sm font-black text-slate-900">{speakingSentenceTotal + " soru"}</span>
                       </div>
                       <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
                         <span className="text-sm font-bold text-slate-600">Süre</span>
-                        <span className="text-sm font-black text-slate-900">{getSinavSuresiLabel(speakingProgress.current_tema)}</span>
+                        <span className="text-sm font-black text-slate-900">{getSinavSuresiLabel(speakingSentenceTotal)}</span>
                       </div>
                       <div className="flex justify-between rounded-2xl bg-slate-50 px-4 py-3">
                         <span className="text-sm font-bold text-slate-600">Kazanılacak Rozet</span>
                         <span className="text-sm font-black text-slate-900">
-                          {speakingProgress.current_tema >= 12
+                          {stepThemeNo(speakingProgress.current_tema) >= 12
                             ? "🏆 Konuşma Şampiyonu"
-                            : speakingProgress.current_tema >= 9
+                            : stepThemeNo(speakingProgress.current_tema) >= 9
                             ? "🥇 Altın Konuşmacı"
-                            : speakingProgress.current_tema >= 6
+                            : stepThemeNo(speakingProgress.current_tema) >= 6
                             ? "🥈 Gümüş Konuşmacı"
                             : "🥉 Bronz Konuşmacı"}
                         </span>
@@ -6036,14 +6071,14 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                         <p>{"1. Partnerinle görüntülü arama başlat"}</p>
                         <p>{"2. Dinleyici Türkçe soruları sırayla sorar"}</p>
                         <p>{"3. Sen kameraya bakarak Almancasını söylersin"}</p>
-                        <p>{"4. Süre dolmadan " + (speakingProgress.current_tema * 15) + " soruyu bitirirsen geçersin"}</p>
+                        <p>{"4. Süre dolmadan " + speakingSentenceTotal + " soruyu bitirirsen geçersin"}</p>
                         <p>{"5. Sınav sonrası dinleyici buradan sonucu bildirir"}</p>
                       </div>
                     </div>
 
                     </div>
                 )}
-                {speakingProgress && speakingProgress.current_tema >= 12 && speakingProgress.current_gorev > 3 && (
+                {speakingProgress && isSpeakingProgressFinished(speakingProgress) && (
                   <SinavHocasiPanel
                     currentUser={currentUser}
                     speakingProgress={speakingProgress}
@@ -6072,7 +6107,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     {speakingProgress?.rozet || "🎤 Aday"}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    {"Tema " + (speakingProgress?.current_tema || 1) + " üzerinde"}
+                    {"Tema " + stepLabel(Math.min(speakingProgress?.current_tema || 1, speakingStepTotal)) + " üzerinde"}
                   </p>
                 </div>
 
@@ -6085,8 +6120,8 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                       { tema: 9, rozet: "🥇 Altın Konuşmacı" },
                       { tema: 12, rozet: "🏆 Konuşma Şampiyonu" },
                     ].map((item) => {
-                      const kazanildi = (speakingProgress?.son_sinav_tema || 0) >= item.tema;
-                      const aktif = speakingProgress?.current_tema === item.tema && speakingProgress?.sinav_bekleniyor;
+                      const kazanildi = stepThemeNo(speakingProgress?.son_sinav_tema || 0) >= item.tema;
+                      const aktif = stepThemeNo(speakingProgress?.current_tema || 0) === item.tema && speakingProgress?.sinav_bekleniyor;
                       return (
                         <div
                           key={item.tema}
@@ -7959,7 +7994,7 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
           {hocaOlarakAtananlar.map((talep) => (
             <div key={talep.id} className="rounded-2xl bg-white border border-yellow-100 p-4 mb-3">
               <p className="font-black text-slate-900 mb-1">👤 {talep.username}</p>
-              <p className="text-xs text-slate-500 mb-2">Tema {talep.sinav_tema_no} sınavı</p>
+              <p className="text-xs text-slate-500 mb-2">{talep.level || "A1"} · Tema {getSpeakingStepLabel(talep.level || "A1", talep.sinav_tema_no)} sınavı</p>
               {talep.ogrenci_telefon && (
                 <button
                   type="button"
@@ -7974,10 +8009,11 @@ function SinavHocasiPanel({ currentUser, speakingProgress, setSpeakingTeşvikMes
                   type="button"
                   onClick={async () => {
                     const ogrenci = talep.username;
+                    const sinavTemaNo = getSpeakingThemeNumber(talep.level || "A1", talep.sinav_tema_no);
                     const rozet =
-                      talep.sinav_tema_no >= 12 ? "🏆 Konuşma Şampiyonu"
-                      : talep.sinav_tema_no >= 9 ? "🥇 Altın Konuşmacı"
-                      : talep.sinav_tema_no >= 6 ? "🥈 Gümüş Konuşmacı"
+                      sinavTemaNo >= 12 ? "🏆 Konuşma Şampiyonu"
+                      : sinavTemaNo >= 9 ? "🥇 Altın Konuşmacı"
+                      : sinavTemaNo >= 6 ? "🥈 Gümüş Konuşmacı"
                       : "🥉 Bronz Konuşmacı";
 
                     const { data: ogrenciProg } = await supabase

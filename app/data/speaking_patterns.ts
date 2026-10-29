@@ -511,7 +511,9 @@ export const speakingPatternsA2 = [
 ];
 
 // ── B1 Konuşma Kulübü kalıpları ─────────────────────────────────────────
-// 12 tema (B1 konuşma görevleriyle aynı sıra), toplam 400 cümle.
+// 12 tema, toplam 400 cümle. Bir günde ezberlenecek cümle sayısı fazla olmasın diye
+// her tema iki adıma bölünür (Tema 1A, Tema 1B, ...): toplam 24 adım, adım başına 16–17 cümle.
+// temaId = adım numarası (1–24); etiket getSpeakingStepLabel ile üretilir.
 export const speakingPatternsB1 = [
   {
     temaId: 1,
@@ -534,6 +536,12 @@ export const speakingPatternsB1 = [
       { tr: "En iyi arkadaşımla okulda tanıştım.", de: "Ich habe meinen besten Freund in der Schule kennengelernt." },
       { tr: "Onu yirmi yıldır tanıyorum.", de: "Ich kenne ihn seit zwanzig Jahren." },
       { tr: "Ona her şeyi anlatabilirim.", de: "Ich kann ihm alles erzählen." },
+    ],
+  },
+  {
+    temaId: 2,
+    temaAd: "Aile ve İnsan İlişkileri",
+    cumleler: [
       { tr: "Yeni insanlarla tanışmakta zorlanır mısın?", de: "Fällt es dir schwer, neue Leute kennenzulernen?" },
       { tr: "Başta biraz utangacım ama sonra açılırım.", de: "Am Anfang bin ich etwas schüchtern, aber dann werde ich offener." },
       { tr: "Komşularımızla iyi bir ilişkimiz var.", de: "Wir haben ein gutes Verhältnis zu unseren Nachbarn." },
@@ -554,7 +562,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 2,
+    temaId: 3,
     temaAd: "Günlük Hayat ve Rutinler",
     cumleler: [
       { tr: "Sıradan bir günün nasıl geçiyor?", de: "Wie sieht ein normaler Tag bei dir aus?" },
@@ -574,6 +582,12 @@ export const speakingPatternsB1 = [
       { tr: "Hafta sonları rutinim tamamen farklı.", de: "Am Wochenende ist meine Routine ganz anders." },
       { tr: "Cumartesi sabahları geç kalkıp uzun bir kahvaltı yaparım.", de: "Samstags stehe ich spät auf und frühstücke ausgiebig." },
       { tr: "Ev işlerini genellikle pazar günü yaparım.", de: "Die Hausarbeit mache ich meistens am Sonntag." },
+    ],
+  },
+  {
+    temaId: 4,
+    temaAd: "Günlük Hayat ve Rutinler",
+    cumleler: [
       { tr: "Evde ev işlerini kim yapıyor?", de: "Wer macht bei euch die Hausarbeit?" },
       { tr: "Eşimle ev işlerini paylaşıyoruz.", de: "Mein Mann und ich teilen uns die Hausarbeit." },
       { tr: "Ben yemek yaparım, o da bulaşıkları yıkar.", de: "Ich koche und er spült das Geschirr." },
@@ -594,7 +608,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 3,
+    temaId: 5,
     temaAd: "Okul ve Eğitim",
     cumleler: [
       { tr: "Okulda en sevdiğin ders hangisiydi?", de: "Was war in der Schule dein Lieblingsfach?" },
@@ -614,6 +628,12 @@ export const speakingPatternsB1 = [
       { tr: "Ne kadar çok pratik yaparsam o kadar iyi konuşuyorum.", de: "Je mehr ich übe, desto besser spreche ich." },
       { tr: "Sınavdan önce her zaman çok heyecanlanırım.", de: "Vor einer Prüfung bin ich immer sehr aufgeregt." },
       { tr: "İyi hazırlanmama rağmen sınavda zorlandım.", de: "Obwohl ich mich gut vorbereitet hatte, hatte ich in der Prüfung Schwierigkeiten." },
+    ],
+  },
+  {
+    temaId: 6,
+    temaAd: "Okul ve Eğitim",
+    cumleler: [
       { tr: "Yine de sınavı geçtim.", de: "Trotzdem habe ich die Prüfung bestanden." },
       { tr: "Sınavdan kaldıysan ne yaparsın?", de: "Was machst du, wenn du eine Prüfung nicht bestanden hast?" },
       { tr: "Pes etmem, daha çok çalışır ve tekrar denerim.", de: "Ich gebe nicht auf, lerne mehr und versuche es noch einmal." },
@@ -634,7 +654,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 4,
+    temaId: 7,
     temaAd: "Meslek ve İş Hayatı",
     cumleler: [
       { tr: "Ne iş yapıyorsun?", de: "Was machst du beruflich?" },
@@ -654,6 +674,12 @@ export const speakingPatternsB1 = [
       { tr: "Evde çalışırken dikkatimi toplamak bazen zor.", de: "Wenn ich zu Hause arbeite, kann ich mich manchmal schwer konzentrieren." },
       { tr: "İleride kendi işimi kurmak istiyorum.", de: "In Zukunft möchte ich mich selbstständig machen." },
       { tr: "Kendi işini kurmak risklidir ama özgürlük verir.", de: "Sich selbstständig zu machen ist riskant, aber es gibt einem Freiheit." },
+    ],
+  },
+  {
+    temaId: 8,
+    temaAd: "Meslek ve İş Hayatı",
+    cumleler: [
       { tr: "Hayalindeki meslek ne?", de: "Was ist dein Traumberuf?" },
       { tr: "Çocukken pilot olmak isterdim.", de: "Als Kind wollte ich Pilot werden." },
       { tr: "Bugün olsaydı doktor olmayı seçerdim.", de: "Wenn ich heute wählen könnte, würde ich Arzt werden." },
@@ -674,7 +700,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 5,
+    temaId: 9,
     temaAd: "İş Başvurusu",
     cumleler: [
       { tr: "Bu pozisyon için neden başvurdunuz?", de: "Warum haben Sie sich auf diese Stelle beworben?" },
@@ -694,6 +720,12 @@ export const speakingPatternsB1 = [
       { tr: "Çünkü deneyimim ve motivasyonum bu pozisyona çok uygun.", de: "Weil meine Erfahrung und meine Motivation sehr gut zu dieser Stelle passen." },
       { tr: "Şirketiniz hakkında çok olumlu şeyler duydum.", de: "Ich habe viel Positives über Ihre Firma gehört." },
       { tr: "Çalışma saatleri hakkında bilgi alabilir miyim?", de: "Könnten Sie mir etwas über die Arbeitszeiten sagen?" },
+    ],
+  },
+  {
+    temaId: 10,
+    temaAd: "İş Başvurusu",
+    cumleler: [
       { tr: "Deneme süresi ne kadar?", de: "Wie lange dauert die Probezeit?" },
       { tr: "Ne zaman başlayabilirsiniz?", de: "Wann könnten Sie anfangen?" },
       { tr: "Bir ay sonra başlayabilirim çünkü ihbar sürem var.", de: "Ich könnte in einem Monat anfangen, weil ich eine Kündigungsfrist habe." },
@@ -713,7 +745,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 6,
+    temaId: 11,
     temaAd: "Boş Zaman ve Hobiler",
     cumleler: [
       { tr: "Boş zamanlarında en çok ne yapmayı seversin?", de: "Was machst du in deiner Freizeit am liebsten?" },
@@ -733,6 +765,12 @@ export const speakingPatternsB1 = [
       { tr: "Bu hafta sonu ne yapmayı planlıyorsun?", de: "Was hast du am Wochenende vor?" },
       { tr: "Arkadaşlarımla doğa yürüyüşüne çıkmayı planlıyoruz.", de: "Wir haben vor, mit Freunden wandern zu gehen." },
       { tr: "Bize katılmak ister misin?", de: "Hast du Lust, mitzukommen?" },
+    ],
+  },
+  {
+    temaId: 12,
+    temaAd: "Boş Zaman ve Hobiler",
+    cumleler: [
       { tr: "Çok isterdim ama maalesef vaktim yok.", de: "Ich würde gern mitkommen, aber leider habe ich keine Zeit." },
       { tr: "Belki bir dahaki sefere.", de: "Vielleicht nächstes Mal." },
       { tr: "Yeni bir şey öğrenmek isteseydin ne öğrenirdin?", de: "Wenn du etwas Neues lernen wolltest, was würdest du lernen?" },
@@ -752,7 +790,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 7,
+    temaId: 13,
     temaAd: "Tatil ve Seyahat",
     cumleler: [
       { tr: "Bu yıl tatile nereye gitmeyi planlıyorsun?", de: "Wohin möchtest du dieses Jahr in den Urlaub fahren?" },
@@ -772,6 +810,12 @@ export const speakingPatternsB1 = [
       { tr: "Otel odası internetteki fotoğraflardaki kadar güzel değildi.", de: "Das Hotelzimmer war nicht so schön wie auf den Fotos im Internet." },
       { tr: "Resepsiyona şikâyette bulundum ve bize başka bir oda verdiler.", de: "Ich habe mich an der Rezeption beschwert, und man hat uns ein anderes Zimmer gegeben." },
       { tr: "Seyahat ederken mutlaka yöresel yemekleri denerim.", de: "Auf Reisen probiere ich immer das typische Essen." },
+    ],
+  },
+  {
+    temaId: 14,
+    temaAd: "Tatil ve Seyahat",
+    cumleler: [
       { tr: "Valizini nasıl hazırlarsın?", de: "Wie packst du deinen Koffer?" },
       { tr: "Her zaman çok fazla eşya götürüyorum.", de: "Ich nehme immer zu viele Sachen mit." },
       { tr: "Pasaportunu unutma!", de: "Vergiss deinen Reisepass nicht!" },
@@ -791,7 +835,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 8,
+    temaId: 15,
     temaAd: "Ulaşım ve Trafik",
     cumleler: [
       { tr: "İşe nasıl gidiyorsun?", de: "Wie kommst du zur Arbeit?" },
@@ -811,6 +855,12 @@ export const speakingPatternsB1 = [
       { tr: "İstasyona nasıl giderim?", de: "Wie komme ich zum Bahnhof?" },
       { tr: "Bu caddeden düz gidin, ikinci ışıktan sola dönün.", de: "Gehen Sie diese Straße geradeaus und biegen Sie an der zweiten Ampel links ab." },
       { tr: "Otobüs durağı postanenin karşısında.", de: "Die Bushaltestelle ist gegenüber der Post." },
+    ],
+  },
+  {
+    temaId: 16,
+    temaAd: "Ulaşım ve Trafik",
+    cumleler: [
       { tr: "Buradan yürüyerek ne kadar sürer?", de: "Wie lange dauert es zu Fuß von hier?" },
       { tr: "Ehliyetini ne zaman aldın?", de: "Wann hast du deinen Führerschein gemacht?" },
       { tr: "Ehliyet sınavını ilk denemede geçtim.", de: "Ich habe die Führerscheinprüfung beim ersten Versuch bestanden." },
@@ -830,7 +880,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 9,
+    temaId: 17,
     temaAd: "Ev ve Yaşam",
     cumleler: [
       { tr: "Nasıl bir evde yaşıyorsun?", de: "In was für einer Wohnung wohnst du?" },
@@ -850,6 +900,12 @@ export const speakingPatternsB1 = [
       { tr: "Daire ne zaman boşalıyor?", de: "Ab wann ist die Wohnung frei?" },
       { tr: "Ev sahibine kırık ısıtıcıyı bildirdim.", de: "Ich habe dem Vermieter die kaputte Heizung gemeldet." },
       { tr: "Isıtıcı hâlâ tamir edilmedi.", de: "Die Heizung ist immer noch nicht repariert worden." },
+    ],
+  },
+  {
+    temaId: 18,
+    temaAd: "Ev ve Yaşam",
+    cumleler: [
       { tr: "Apartmanda uyulması gereken bazı kurallar var.", de: "Im Haus gibt es einige Regeln, an die man sich halten muss." },
       { tr: "Saat ondan sonra gürültü yapmak yasak.", de: "Nach zehn Uhr darf man keinen Lärm machen." },
       { tr: "Çöpleri ayırmak Almanya'da çok önemli.", de: "Mülltrennung ist in Deutschland sehr wichtig." },
@@ -869,7 +925,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 10,
+    temaId: 19,
     temaAd: "Alışveriş",
     cumleler: [
       { tr: "Alışverişi internetten mi yoksa mağazadan mı yaparsın?", de: "Kaufst du lieber online oder im Geschäft ein?" },
@@ -889,6 +945,12 @@ export const speakingPatternsB1 = [
       { tr: "İndirim dönemini bekliyorum.", de: "Ich warte auf den Schlussverkauf." },
       { tr: "Bu ceketi yüzde elli indirimle aldım.", de: "Diese Jacke habe ich mit fünfzig Prozent Rabatt gekauft." },
       { tr: "Bazen ihtiyacım olmayan şeyler satın alıyorum.", de: "Manchmal kaufe ich Dinge, die ich nicht brauche." },
+    ],
+  },
+  {
+    temaId: 20,
+    temaAd: "Alışveriş",
+    cumleler: [
       { tr: "Daha bilinçli alışveriş yapmaya çalışıyorum.", de: "Ich versuche, bewusster einzukaufen." },
       { tr: "Mümkünse yerel ürünler alırım.", de: "Wenn möglich, kaufe ich regionale Produkte." },
       { tr: "Haftalık market alışverişini genellikle cumartesi yaparım.", de: "Den Wocheneinkauf mache ich meistens am Samstag." },
@@ -908,7 +970,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 11,
+    temaId: 21,
     temaAd: "Yemek ve Beslenme",
     cumleler: [
       { tr: "Beslenme alışkanlıkların nasıl?", de: "Wie sind deine Essgewohnheiten?" },
@@ -928,6 +990,12 @@ export const speakingPatternsB1 = [
       { tr: "Alman mutfağını nasıl buluyorsun?", de: "Wie findest du die deutsche Küche?" },
       { tr: "Alman ekmeği çok çeşitli ve lezzetli.", de: "Das deutsche Brot ist sehr vielfältig und lecker." },
       { tr: "Restoranda masa ayırtmak istiyorum.", de: "Ich möchte im Restaurant einen Tisch reservieren." },
+    ],
+  },
+  {
+    temaId: 22,
+    temaAd: "Yemek ve Beslenme",
+    cumleler: [
       { tr: "Cumartesi akşamı için dört kişilik bir masa ayırtabilir miyim?", de: "Kann ich für Samstagabend einen Tisch für vier Personen reservieren?" },
       { tr: "Menüde vegan yemek var mı?", de: "Gibt es vegane Gerichte auf der Speisekarte?" },
       { tr: "Fındığa alerjim var.", de: "Ich habe eine Nussallergie." },
@@ -947,7 +1015,7 @@ export const speakingPatternsB1 = [
     ],
   },
   {
-    temaId: 12,
+    temaId: 23,
     temaAd: "Sağlık ve Hastalık",
     cumleler: [
       { tr: "Kendini nasıl hissediyorsun?", de: "Wie fühlst du dich?" },
@@ -967,6 +1035,12 @@ export const speakingPatternsB1 = [
       { tr: "Patronuma bugün hasta olduğum için gelemeyeceğimi söyledim.", de: "Ich habe meinem Chef gesagt, dass ich heute krank bin und nicht kommen kann." },
       { tr: "Geçen yıl ameliyat oldum.", de: "Letztes Jahr bin ich operiert worden." },
       { tr: "Kolumu kırdım ve altı hafta alçıda kaldı.", de: "Ich habe mir den Arm gebrochen, und er war sechs Wochen im Gips." },
+    ],
+  },
+  {
+    temaId: 24,
+    temaAd: "Sağlık ve Hastalık",
+    cumleler: [
       { tr: "Acil bir durumda 112'yi aramalısınız.", de: "In einem Notfall sollten Sie die 112 anrufen." },
       { tr: "Sağlıklı kalmak için ne yapıyorsun?", de: "Was machst du, um gesund zu bleiben?" },
       { tr: "Düzenli spor yapıyor ve yeterince uyuyorum.", de: "Ich mache regelmäßig Sport und schlafe genug." },
@@ -990,4 +1064,40 @@ export const speakingPatternsB1 = [
 export function getSpeakingPatterns(level: string) {
   if (level === "B1") return speakingPatternsB1;
   return level === "A2" ? speakingPatternsA2 : speakingPatterns;
+}
+
+// ── Adım yardımcıları ───────────────────────────────────────────────────
+// A1/A2'de bir adım = bir tema (12 adım). B1'de her tema A/B olarak ikiye bölünür (24 adım).
+// speaking_progress.current_tema her zaman ADIM numarasını tutar.
+export const SPEAKING_SPLIT_LEVELS = ["B1"];
+
+export function isSpeakingSplitLevel(level: string) {
+  return SPEAKING_SPLIT_LEVELS.includes(level);
+}
+
+export function getSpeakingStepCount(level: string) {
+  return getSpeakingPatterns(level).length;
+}
+
+/** Ekranda gösterilecek etiket: A1/A2 → "3", B1 → "2A" / "2B". */
+export function getSpeakingStepLabel(level: string, step: number) {
+  if (!isSpeakingSplitLevel(level)) return String(step);
+  return `${Math.ceil(step / 2)}${step % 2 === 1 ? "A" : "B"}`;
+}
+
+/** Adımın ait olduğu tema numarası (rozet eşikleri vb. için): B1'de 2 adım = 1 tema. */
+export function getSpeakingThemeNumber(level: string, step: number) {
+  return isSpeakingSplitLevel(level) ? Math.ceil(step / 2) : step;
+}
+
+/** Bir adımdaki cümle sayısı. */
+export function getSpeakingStepSentenceCount(level: string, step: number) {
+  return getSpeakingPatterns(level).find((t) => t.temaId === step)?.cumleler.length || 0;
+}
+
+/** 1. adımdan verilen adıma kadar (dahil) toplam cümle sayısı — kümülatif tekrar. */
+export function getSpeakingCumulativeCount(level: string, step: number) {
+  return getSpeakingPatterns(level)
+    .filter((t) => t.temaId <= step)
+    .reduce((sum, t) => sum + t.cumleler.length, 0);
 }

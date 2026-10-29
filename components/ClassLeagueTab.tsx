@@ -111,7 +111,10 @@ export default function ClassLeagueTab({
 
     const speakingMap: Record<string, number> = {};
     (speakingData || []).forEach((s: any) => {
-      speakingMap[String(s.username || "").toLowerCase()] = s.current_tema || 0;
+      // B1'de her tema iki adım (A/B) olduğu için adım sayısı temaya çevrilir.
+      const tema = s.current_tema || 0;
+      speakingMap[String(s.username || "").toLowerCase()] =
+        leagueLevel === "B1" ? Math.ceil(tema / 2) : tema;
     });
 
     const rows: StudentRow[] = usernames.map((username) => {

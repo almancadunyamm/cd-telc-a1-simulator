@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getSpeakingStepLabel } from "@/app/data/speaking_patterns";
 
 type PartnerDegisiklikTalebi = {
   id: string;
@@ -406,7 +407,7 @@ export default function SpeakingMatchesPage() {
                             <p>{"👥 Tercih: " + (talep.cinsiyet_tercihi === "fark_etmez" ? "Fark etmez" : talep.cinsiyet_tercihi)}</p>
                             {talep.konusma_temasi && (
                               <p className="text-teal-600 font-bold">
-                                {"📊 K.Kulübü: Tema " + talep.konusma_temasi + ", Görev " + talep.konusma_gorevi}
+                                {"📊 K.Kulübü: Tema " + getSpeakingStepLabel(seviye, talep.konusma_temasi) + ", Görev " + talep.konusma_gorevi}
                               </p>
                             )}
                             {talep.mevcut_partner && (
@@ -461,7 +462,7 @@ export default function SpeakingMatchesPage() {
                           </span>
                         </div>
                         <div className="space-y-1 text-xs text-slate-500 mb-4">
-                          <p>{"📊 Tema " + prog.current_tema + ", Görev " + prog.current_gorev}</p>
+                          <p>{"📊 Tema " + getSpeakingStepLabel(prog.level || seviye, prog.current_tema) + ", Görev " + prog.current_gorev}</p>
                           {prog.son_bildirim_tarihi && (
                             <p>{"📅 Son bildirim: " + new Date(prog.son_bildirim_tarihi).toLocaleDateString("tr-TR")}</p>
                           )}
@@ -555,7 +556,7 @@ export default function SpeakingMatchesPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-slate-500">Tema/Görev:</span>
                             <span className="font-black text-slate-900">
-                              {"Tema " + (talep.current_tema || "-") + ", Görev " + (talep.current_gorev || "-")}
+                              {"Tema " + (talep.current_tema ? getSpeakingStepLabel(talep.level || seviye, talep.current_tema) : "-") + ", Görev " + (talep.current_gorev || "-")}
                             </span>
                           </div>
                           {talep.aski_bitis_tarihi && (
