@@ -2218,10 +2218,8 @@ if (allClassIds.length > 0) {
 
   const speakingAccessStatus: SpeakingAccessStatus = useMemo(() => {
     if (!speakingEntitledLevels.includes(selectedLevel)) return "purchase";
-    const idx = SPEAKING_LEVEL_ORDER.indexOf(selectedLevel);
-    for (let i = 0; i < idx; i++) {
-      if (!isSpeakingLevelCompleted(SPEAKING_LEVEL_ORDER[i])) return "sequence";
-    }
+    // Önceki seviyeyi bitirmek ŞART DEĞİL (29 Ekim 2026, kullanıcı kararı);
+    // yalnızca tavsiye edilir (bkz. speakingRecommendedLevel).
     return SPEAKING_CLUB_CONTENT_LEVELS.includes(selectedLevel) ? "open" : "soon";
   }, [speakingEntitledLevels, selectedLevel, allSpeakingProgress]);
 
@@ -2232,6 +2230,16 @@ if (allClassIds.length > 0) {
     }
     return null;
   }, [selectedLevel, allSpeakingProgress]);
+
+  // Tavsiye: öğrencinin hakkı olan ama henüz bitirmediği önceki seviye (örn. A1+A2 paketinde A2'deyken A1).
+  const speakingRecommendedLevel: Level | null = useMemo(() => {
+    const idx = SPEAKING_LEVEL_ORDER.indexOf(selectedLevel);
+    for (let i = 0; i < idx; i++) {
+      const lvl = SPEAKING_LEVEL_ORDER[i];
+      if (speakingEntitledLevels.includes(lvl) && !isSpeakingLevelCompleted(lvl)) return lvl;
+    }
+    return null;
+  }, [selectedLevel, speakingEntitledLevels, allSpeakingProgress]);
 
   // Konuşma Kulübü'nün çalıştığı seviye: panelde seçili seviye (içeriği hazırsa).
   const speakingLevel: Level = SPEAKING_CLUB_CONTENT_LEVELS.includes(selectedLevel)
@@ -5216,6 +5224,26 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
             Görev tamamlanınca <strong>ikisi de bildirim</strong> atar. Bildirimlere göre seviye açılır.
           </p>
         </div>
+
+        {speakingRecommendedLevel && (
+          <div className="mx-6 mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+            <p className="text-sm font-black text-amber-800">
+              💡 Tavsiye: Önce {speakingRecommendedLevel} Konuşma Kulübünü tamamla
+            </p>
+            <p className="mt-1 text-sm leading-6 text-amber-900/80">
+              Konuşma Kulübü kümülatif ilerler: her seviye, bir önceki seviyede kazandığın cümle kalıplarının
+              üzerine kurulur. Bu yüzden {speakingRecommendedLevel} Konuşma Kulübünü bitirip {selectedLevel}
+              {selectedLevel === "B1" ? "'e" : "'ye"} geçmeni öneririz. İstersen doğrudan {selectedLevel} ile de başlayabilirsin.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSelectedLevel(speakingRecommendedLevel)}
+              className="mt-3 rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white hover:bg-amber-600"
+            >
+              {speakingRecommendedLevel} Konuşma Kulübüne Git
+            </button>
+          </div>
+        )}
 
         {/* NASIL ÇALIŞIR — kutu */}
         <div className="mx-6 mb-4 rounded-2xl bg-white/80 border border-emerald-100 p-4 shadow-sm">
