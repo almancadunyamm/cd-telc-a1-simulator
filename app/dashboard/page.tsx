@@ -346,6 +346,13 @@ const speakingTasksB1 = [
 ];
 
 // ── Konuşma Kulübü — seviye erişim mantığı ──────────────────────────────
+// Seviye bitti mi: 12. temanın 3 görevi onaylandı (12/4) ya da final sınavı geçildi (tema 13+).
+function isSpeakingProgressFinished(prog: any): boolean {
+  if (!prog) return false;
+  const tema = Number(prog.current_tema || 0);
+  const gorev = Number(prog.current_gorev || 0);
+  return tema > 12 || (tema >= 12 && gorev > 3);
+}
 const SPEAKING_LEVEL_ORDER: Level[] = ["A1", "A2", "B1"];
 const SPEAKING_LEVEL_SENTENCE_TARGET: Record<Level, number> = {
   A1: 180,
@@ -2922,8 +2929,9 @@ useEffect(() => {
 if (data) {
       let calismaData = data;
 
-      // Küme düşme kontrolü: 3+ gün üst üste bildirim yoksa hem kendisi hem partneri bir tema geri düşer
-      if (calismaData.son_bildirim_tarihi) {
+      // Küme düşme kontrolü: 3+ gün üst üste bildirim yoksa hem kendisi hem partneri bir tema geri düşer.
+      // Seviyeyi bitirmiş (12. tema tamamlandı ya da final sınavı geçildi) öğrenci ASLA geri düşmez.
+      if (calismaData.son_bildirim_tarihi && !isSpeakingProgressFinished(calismaData)) {
         const son = new Date(calismaData.son_bildirim_tarihi);
         const bugun = new Date();
         const fark = Math.floor((bugun.getTime() - son.getTime()) / (1000 * 60 * 60 * 24));
@@ -2956,7 +2964,7 @@ if (data) {
               .eq("level", speakingLevel)
               .maybeSingle();
 
-            if (partnerProg && partnerProg.current_tema > 1) {
+            if (partnerProg && partnerProg.current_tema > 1 && !isSpeakingProgressFinished(partnerProg)) {
               await supabase.from("speaking_progress")
                 .update({
                   current_tema: partnerProg.current_tema - 1,
