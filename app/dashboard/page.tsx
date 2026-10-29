@@ -5236,7 +5236,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                 : "border border-slate-200 bg-white text-slate-600 hover:border-emerald-300"
             }`}
           >
-            <span>{lvl} Konuşma Kulübü</span>
+            <span>{lvl}</span>
             {!hasContent ? (
               <span className={`rounded-full px-2 py-0.5 text-[10px] ${active ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>Yakında</span>
             ) : done ? (
