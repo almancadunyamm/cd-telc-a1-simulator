@@ -50,7 +50,7 @@ export default function SpeakingMatchesPage() {
   const [degisiklikTalepleri, setDegisiklikTalepleri] = useState<PartnerDegisiklikTalebi[]>([]);
   const [eslesmeler, setEslesmeler] = useState<any[]>([]);
   // Konuşma Kulübü seviyesi: talepler, eşleşmeler ve kayıtlar bu seviyeye göre.
-  const [seviye, setSeviye] = useState<"A1" | "A2">("A1");
+  const [seviye, setSeviye] = useState<"A1" | "A2" | "B1">("A1");
 
   useEffect(() => {
     const raw = localStorage.getItem("mock_logged_user");
@@ -259,7 +259,7 @@ export default function SpeakingMatchesPage() {
         {/* SEVİYE SEÇİMİ */}
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <span className="text-sm font-black text-slate-500">Seviye:</span>
-          {(["A1", "A2"] as const).map((lvl) => (
+          {(["A1", "A2", "B1"] as const).map((lvl) => (
             <button
               key={lvl}
               type="button"

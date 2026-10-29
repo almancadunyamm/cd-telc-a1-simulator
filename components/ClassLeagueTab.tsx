@@ -53,8 +53,8 @@ export default function ClassLeagueTab({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const myClass = classes.find((c) => c.id === mainClassId);
-  // Lig, sınıfın seviyesine göre (A1 / A2) Ustalık ve Konuşma Kulübü ilerlemesini sayar.
-  const leagueLevel = myClass?.level === "A2" ? "A2" : "A1";
+  // Lig, sınıfın seviyesine göre (A1 / A2 / B1) Ustalık ve Konuşma Kulübü ilerlemesini sayar.
+  const leagueLevel = myClass?.level === "A2" || myClass?.level === "B1" ? myClass.level : "A1";
 
   useEffect(() => {
     if (!mainClassId) return;

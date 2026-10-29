@@ -361,7 +361,82 @@ const SPEAKING_LEVEL_SENTENCE_TARGET: Record<Level, number> = {
 };
 const SPEAKING_CLUB_TOTAL_SENTENCES = 760;
 // İçeriği hazır olan Konuşma Kulübü seviyeleri (B1 hazır olunca buraya eklenir).
-const SPEAKING_CLUB_CONTENT_LEVELS: Level[] = ["A1", "A2"];
+const SPEAKING_CLUB_CONTENT_LEVELS: Level[] = ["A1", "A2", "B1"];
+// Temaları Ustalık ilerlemesine bağlı açılan seviyeler (B1 Ustalık içeriği henüz yok → B1'de şart yok).
+const SPEAKING_MASTERY_GATED_LEVELS: Level[] = ["A1", "A2"];
+
+// ── Konuşma Kulübü seviye temaları ──────────────────────────────────────
+// Tailwind v4 renkleri CSS değişkeni olarak kullandığı için, Konuşma Kulübü bölümünde
+// emerald/teal değişkenleri seviyenin paletine yeniden eşlenir; böylece bölümün tüm
+// vurgu renkleri (butonlar, rozetler, çubuklar) seviyeye göre değişir.
+type SpeakingTheme = {
+  label: string;
+  title: string;
+  hero: string;
+  glow: string;
+  accent: string;
+  pageBg: string;
+  vars: Record<string, string>;
+};
+const SPEAKING_LEVEL_THEMES: Record<Level, SpeakingTheme> = {
+  A1: {
+    label: "Temel Konuşma",
+    title: "Her Gün Konuş, Her Gün Geliş",
+    hero: "linear-gradient(135deg, #022c22 0%, #065f46 48%, #0f766e 100%)",
+    glow: "rgba(52, 211, 153, 0.35)",
+    accent: "#6ee7b7",
+    pageBg: "linear-gradient(180deg, #d1fae5 0px, #ecfdf5 260px, #f1f5f9 640px)",
+    vars: {},
+  },
+  A2: {
+    label: "Akıcı Konuşma",
+    title: "Cümlelerini Büyüt, Akıcılığını Artır",
+    hero: "linear-gradient(135deg, #1e1b4b 0%, #3730a3 50%, #6d28d9 100%)",
+    glow: "rgba(165, 180, 252, 0.4)",
+    accent: "#c7d2fe",
+    pageBg: "linear-gradient(180deg, #e0e7ff 0px, #eef2ff 260px, #f1f5f9 640px)",
+    vars: {
+      "--color-emerald-50": "#eef2ff",
+      "--color-emerald-100": "#e0e7ff",
+      "--color-emerald-200": "#c7d2fe",
+      "--color-emerald-300": "#a5b4fc",
+      "--color-emerald-400": "#818cf8",
+      "--color-emerald-500": "#6366f1",
+      "--color-emerald-600": "#4f46e5",
+      "--color-emerald-700": "#4338ca",
+      "--color-emerald-800": "#3730a3",
+      "--color-teal-50": "#f5f3ff",
+      "--color-teal-100": "#ede9fe",
+      "--color-teal-400": "#a78bfa",
+      "--color-teal-500": "#8b5cf6",
+      "--color-teal-600": "#7c3aed",
+    },
+  },
+  B1: {
+    label: "İleri Konuşma",
+    title: "Fikrini Söyle, Kendini İfade Et",
+    hero: "linear-gradient(135deg, #1c1917 0%, #451a03 40%, #92400e 78%, #b45309 100%)",
+    glow: "rgba(252, 211, 77, 0.35)",
+    accent: "#fcd34d",
+    pageBg: "linear-gradient(180deg, #fef3c7 0px, #fffbeb 260px, #f1f5f9 640px)",
+    vars: {
+      "--color-emerald-50": "#fffbeb",
+      "--color-emerald-100": "#fef3c7",
+      "--color-emerald-200": "#fde68a",
+      "--color-emerald-300": "#fcd34d",
+      "--color-emerald-400": "#f59e0b",
+      "--color-emerald-500": "#d97706",
+      "--color-emerald-600": "#b45309",
+      "--color-emerald-700": "#92400e",
+      "--color-emerald-800": "#78350f",
+      "--color-teal-50": "#fff7ed",
+      "--color-teal-100": "#ffedd5",
+      "--color-teal-400": "#fb923c",
+      "--color-teal-500": "#f97316",
+      "--color-teal-600": "#ea580c",
+    },
+  },
+};
 
 type SpeakingAccessStatus = "open" | "purchase" | "sequence" | "soon";
 
@@ -1057,9 +1132,8 @@ const getWeekIndex = () => {
   // panel aktivitesi (user_activity_ping, panel açıkken ~90 sn'de bir kayıt).
   const WORD_ARENA_THEMES_PER_LEVEL = 12;
   const SPEAKING_CLUB_THEMES_PER_LEVEL = 12;
-  // Konuşma Kulübü içeriği şu an A1 ve A2'de açık; B1 açıldığında
-  // buraya eklenince o seviyenin ilerlemesine de otomatik dahil olur.
-  const SPEAKING_CLUB_PROGRESS_LEVELS: Level[] = ["A1", "A2"];
+  // Konuşma Kulübü içeriği açık olan seviyeler (A1, A2, B1).
+  const SPEAKING_CLUB_PROGRESS_LEVELS: Level[] = ["A1", "A2", "B1"];
   // İlerleme sekmesinde gösterilen seviye (panelin genel seçili seviyesinden bağımsız)
   const [progressLevel, setProgressLevel] = useState<Level | null>(null);
   const [progressStats, setProgressStats] = useState<{
@@ -2260,6 +2334,9 @@ if (allClassIds.length > 0) {
     ? speakingViewLevel
     : "A1";
   const speakingPatternsForLevel = getSpeakingPatterns(speakingLevel);
+  const speakingNeedsMastery = SPEAKING_MASTERY_GATED_LEVELS.includes(speakingLevel);
+  const speakingTheme = SPEAKING_LEVEL_THEMES[speakingViewLevel];
+  const speakingSentenceTotal = speakingPatternsForLevel.reduce((sum, t) => sum + t.cumleler.length, 0);
   const speakingThemeTitles: Record<number, string> = Object.fromEntries(
     speakingPatternsForLevel.map((t) => [t.temaId, t.temaAd])
   );
@@ -2268,6 +2345,11 @@ if (allClassIds.length > 0) {
   // (Ustalık sekmesinde o an hangi seviye seçili olursa olsun).
   const [speakingMasteryCompletedCount, setSpeakingMasteryCompletedCount] = useState(0);
   useEffect(() => {
+    if (!SPEAKING_MASTERY_GATED_LEVELS.includes(speakingLevel)) {
+      // Bu seviyede Ustalık şartı yok: tüm temalar Konuşma Kulübü ilerlemesine göre açılır.
+      setSpeakingMasteryCompletedCount(12);
+      return;
+    }
     const username = String(currentUser?.username || "").trim().toLowerCase();
     if (!username || !studentKey) return;
     let cancelled = false;
@@ -3729,7 +3811,10 @@ if (!currentUser) {
 }
 
   return (
-    <main className="min-h-screen w-full overflow-x-hidden bg-slate-100 text-slate-900">
+    <main
+      className="min-h-screen w-full overflow-x-hidden bg-slate-100 text-slate-900"
+      style={activeDashboardTab === "speaking" ? { background: SPEAKING_LEVEL_THEMES[speakingViewLevel].pageBg } : undefined}
+    >
       {pwaGoster && (
   <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999, background: "#0f172a", color: "#fff", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, boxShadow: "0 -4px 24px rgba(0,0,0,0.3)" }}>
     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -5174,7 +5259,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
   </section>
 )}
 {activeDashboardTab === "speaking" && (
-  <section className="mb-8">
+  <section className="mb-8" style={speakingTheme.vars as React.CSSProperties}>
   {bildirimUyariModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm">
     <div className="w-full max-w-sm rounded-[2rem] bg-white p-8 shadow-2xl text-center">
@@ -5261,14 +5346,54 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
     ) : (
       <div className="rounded-[2rem] bg-gradient-to-br from-emerald-50 via-teal-50 to-white">
 
-        {/* BAŞLIK */}
-        <div className="px-6 pt-6 pb-4">
-          <p className="text-xs font-black uppercase tracking-widest text-emerald-700">{speakingLevel} Konuşma Kulübü</p>
-          <h2 className="mt-1 text-2xl font-black text-slate-900">Her Gün Konuş, Her Gün Geliş</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600 max-w-2xl">
+        {/* BAŞLIK — seviyeye özel bant */}
+        <div
+          className="relative mb-5 overflow-hidden rounded-t-[2rem] px-6 pb-7 pt-7 text-white sm:px-8"
+          style={{ background: speakingTheme.hero }}
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full blur-3xl"
+            style={{ background: speakingTheme.glow }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-24 left-1/3 h-56 w-56 rounded-full blur-3xl"
+            style={{ background: speakingTheme.glow, opacity: 0.6 }}
+          />
+          <div className="relative flex items-center gap-4">
+            <div
+              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border bg-white/10 text-2xl font-black tracking-tight backdrop-blur-sm"
+              style={{ borderColor: speakingTheme.accent, color: speakingTheme.accent }}
+            >
+              {speakingLevel}
+            </div>
+            <div className="min-w-0">
+              <p
+                className="text-[11px] font-black uppercase tracking-[0.2em]"
+                style={{ color: speakingTheme.accent }}
+              >
+                {speakingLevel} Konuşma Kulübü · {speakingTheme.label}
+              </p>
+              <h2 className="mt-1 text-2xl font-black leading-tight sm:text-3xl">{speakingTheme.title}</h2>
+            </div>
+          </div>
+          <p className="relative mt-4 max-w-2xl text-sm leading-6 text-white/80">
             Partner bulur, her gün arayıp kısa konuşma yaparsın. Dinleyici Türkçe söyler → Sen Almancasını söylersin.
-            Görev tamamlanınca <strong>ikisi de bildirim</strong> atar. Bildirimlere göre seviye açılır.
+            Görev tamamlanınca <strong className="text-white">ikisi de bildirim</strong> atar. Bildirimlere göre seviye açılır.
           </p>
+          <div className="relative mt-5 flex flex-wrap gap-2 text-xs font-black">
+            {[
+              `${speakingPatternsForLevel.length} tema`,
+              `${speakingSentenceTotal} cümle kalıbı`,
+              "Kişisel konuşma partneri",
+              "Final sınavı ve rozet",
+            ].map((chip) => (
+              <span key={chip} className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-white/90 backdrop-blur-sm">
+                {chip}
+              </span>
+            ))}
+          </div>
         </div>
 
         {speakingRecommendedLevel && (
@@ -5296,7 +5421,9 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
           <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-3">Sistemin Mantığı</p>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 text-xs text-slate-700">
             {[
-              ["🔓", "Ustalık Testi 3. temayı bitir", "Konuşma Kulübü Tema 1 açılır"],
+              speakingNeedsMastery
+                ? ["🔓", "Ustalık Testi 3. temayı bitir", "Konuşma Kulübü Tema 1 açılır"]
+                : ["🚀", "Hemen başla", "Ustalık şartı yok, Tema 1 açık"],
               ["📅", "Her gün ara, bildirim gönder", "2 gün boş kalırsan tema düşer"],
               ["🔁", "Kümülatif tekrar sistemi", "Tema 2'de önceki temalar da sorulur"],
               ["🤝", "Sabit partner", "Memnun olmazsan değiştirirsin"],
@@ -5348,10 +5475,19 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     <div className="text-4xl mb-3">🚀</div>
                     <h3 className="font-black text-slate-900">Konuşma Kulübüne Başla</h3>
                     <p className="text-sm text-slate-500 mt-2 leading-6">
-                      Ustalık Testi'nde <strong>3. temayı</strong> tamamladıktan sonra
-                      Konuşma Kulübü Tema 1 senin için açılır.
+                      {speakingNeedsMastery ? (
+                        <>
+                          Ustalık Testi'nde <strong>3. temayı</strong> tamamladıktan sonra
+                          Konuşma Kulübü Tema 1 senin için açılır.
+                        </>
+                      ) : (
+                        <>
+                          {speakingLevel} Konuşma Kulübü için ön şart yok. Hemen başlayıp partner talep edebilirsin.
+                        </>
+                      )}
                     </p>
                     {/* Ustalık testi ilerleme göster */}
+                    {speakingNeedsMastery && (
                     <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-left">
                       <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Ustalık Testi İlerlemen</p>
                       <div className="flex items-center gap-3">
@@ -5369,6 +5505,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           : `${3 - speakingMasteryCompletedCount} tema daha tamamla`}
                       </p>
                     </div>
+                    )}
                     {speakingMasteryCompletedCount >= 3 && (
                       <button
                         type="button"
@@ -5531,7 +5668,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                             <p className="text-sm font-black text-slate-900">
                               {speakingThemeTitles[temaNo] || `Tema ${temaNo}`}
                             </p>
-                            <p className="text-xs text-slate-500">{temaNo * 15} soru</p>
+                            <p className="text-xs text-slate-500">{speakingPatternsForLevel.filter((t) => t.temaId <= temaNo).reduce((sum, t) => sum + t.cumleler.length, 0)} soru</p>
                           </div>
                         </div>
                         <span className={`rounded-full px-2 py-1 text-xs font-black ${
