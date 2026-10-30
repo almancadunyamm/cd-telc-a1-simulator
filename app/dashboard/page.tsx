@@ -67,6 +67,7 @@ import {
   getSpeakingStepSentenceCount,
   getSpeakingCumulativeCount,
   isSpeakingSplitLevel,
+  SPEAKING_TASKS_PER_STEP,
 } from "@/app/data/speaking_patterns";
 import AnnouncementPopup from "@/components/AnnouncementPopup";
 import { WhatsAppLink } from "@/app/components/WhatsAppButton";
@@ -356,13 +357,14 @@ const speakingTasksB1 = [
 ];
 
 // ── Konuşma Kulübü — seviye erişim mantığı ──────────────────────────────
-// Seviye bitti mi: son adımın 3 görevi onaylandı (örn. A1 12/4, B1 24/4) ya da final sınavı geçildi (son adım + 1).
+// Seviye bitti mi: son adımın tüm görevleri onaylandı (current_gorev > SPEAKING_TASKS_PER_STEP)
+// ya da final sınavı geçildi (son adım + 1).
 function isSpeakingProgressFinished(prog: any): boolean {
   if (!prog) return false;
   const max = getSpeakingStepCount(String(prog.level || "A1"));
   const tema = Number(prog.current_tema || 0);
   const gorev = Number(prog.current_gorev || 0);
-  return tema > max || (tema >= max && gorev > 3);
+  return tema > max || (tema >= max && gorev > SPEAKING_TASKS_PER_STEP);
 }
 
 // WhatsApp numarasını wa.me biçimine çevirir (yalnızca rakam, ülke koduyla).
@@ -769,6 +771,9 @@ const [speakingCinsiyet, setSpeakingCinsiyet] = useState("fark_etmez");
 const [speakingKendiCinsiyet, setSpeakingKendiCinsiyet] = useState("");
 // Otomatik eşleşme sonrası Konuşma Kulübü verilerini yeniden yüklemek için sayaç.
 const [speakingReloadKey, setSpeakingReloadKey] = useState(0);
+// Rehber kartı için: bu görevde kim bildirim gönderdi, bekleyen partner talebi var mı.
+const [speakingSessionDurum, setSpeakingSessionDurum] = useState<{ ben: boolean; partner: boolean }>({ ben: false, partner: false });
+const [speakingTalepBekliyor, setSpeakingTalepBekliyor] = useState(false);
 // "Partnerin bulundu" bildirimi (panele girişte gösterilir).
 const [partnerBildirimleri, setPartnerBildirimleri] = useState<
   { level: Level; partnerEmail: string; partnerName: string }[]
@@ -2331,7 +2336,7 @@ if (allClassIds.length > 0) {
     const prog = allSpeakingProgress.find((p: any) => p.level === lvl);
     if (!prog) return false;
     const maxTema = getSpeakingStepCount(lvl);
-    return prog.current_tema > maxTema || (prog.current_tema === maxTema && prog.current_gorev > 3);
+    return prog.current_tema > maxTema || (prog.current_tema === maxTema && prog.current_gorev > SPEAKING_TASKS_PER_STEP);
   }
 
   // Konuşma Kulübü'nün üstündeki A1/A2/B1 sekmeleri: yalnızca Konuşma Kulübü'nü etkiler.
@@ -2356,14 +2361,12 @@ if (allClassIds.length > 0) {
     return null;
   }, [speakingViewLevel, allSpeakingProgress]);
 
-  // Tavsiye: öğrencinin hakkı olan ama henüz bitirmediği önceki seviye (örn. A1+A2 paketinde A2'deyken A1).
+  // Tavsiye: bir ÖNCEKİ seviye (B1'de A2, A2'de A1) öğrencinin hakkı olup henüz bitmediyse önerilir.
   const speakingRecommendedLevel: Level | null = useMemo(() => {
     const idx = SPEAKING_LEVEL_ORDER.indexOf(speakingViewLevel);
-    for (let i = 0; i < idx; i++) {
-      const lvl = SPEAKING_LEVEL_ORDER[i];
-      if (speakingEntitledLevels.includes(lvl) && !isSpeakingLevelCompleted(lvl)) return lvl;
-    }
-    return null;
+    if (idx <= 0) return null;
+    const onceki = SPEAKING_LEVEL_ORDER[idx - 1];
+    return speakingEntitledLevels.includes(onceki) && !isSpeakingLevelCompleted(onceki) ? onceki : null;
   }, [speakingViewLevel, speakingEntitledLevels, allSpeakingProgress]);
 
   // Konuşma Kulübü'nün çalıştığı seviye: panelde seçili seviye (içeriği hazırsa).
@@ -3118,14 +3121,16 @@ if (data) {
         }
       }
 
-      if (calismaData.current_gorev > 3) {
+      // Adımın tüm görevleri bitmişse bir sonraki adıma geçir. Görev sayısı 3'ten 2'ye
+      // indiği için eski sistemde 3. görevde bekleyen öğrenciler de burada otomatik ilerler.
+      if (calismaData.current_gorev > SPEAKING_TASKS_PER_STEP) {
         const sonAdim = getSpeakingStepCount(speakingLevel);
         const finalTemaTamamlandi = calismaData.current_tema >= sonAdim;
         const yeniTema = finalTemaTamamlandi ? sonAdim : calismaData.current_tema + 1;
         const duzeltilmis = {
           ...calismaData,
           current_tema: yeniTema,
-          current_gorev: finalTemaTamamlandi ? 4 : 1,
+          current_gorev: finalTemaTamamlandi ? SPEAKING_TASKS_PER_STEP + 1 : 1,
           sinav_bekleniyor: false,
         };
         await supabase.from("speaking_progress")
@@ -3166,6 +3171,69 @@ if (data) {
 
   loadSpeakingProgress();
 }, [currentUser, speakingBildirimGonderildi, speakingLevel, speakingReloadKey]);
+
+// ── Rehber kartı verileri: mevcut görev oturumu ve bekleyen partner talebi ──
+useEffect(() => {
+  const me = String(currentUser?.username || "");
+  const partner = String(speakingProgress?.partner_email || "");
+  if (!me || !speakingProgress || !partner) {
+    setSpeakingSessionDurum({ ben: false, partner: false });
+    return;
+  }
+  let cancelled = false;
+  supabase
+    .from("speaking_sessions")
+    .select("*")
+    .eq("tema_no", speakingProgress.current_tema)
+    .eq("gorev_no", speakingProgress.current_gorev)
+    .eq("level", speakingLevel)
+    .eq("onaylandi", false)
+    .then(({ data }) => {
+      if (cancelled) return;
+      const ses = (data || []).find((x: any) =>
+        [x.kullanici1_email, x.kullanici2_email, x.konusan_email, x.dinleyen_email].some(
+          (e: string) => e === me || e === partner
+        )
+      );
+      const bildirdi = (email: string) =>
+        !!ses &&
+        ((ses.kullanici1_email === email && ses.kullanici1_bildirdi) ||
+          (ses.kullanici2_email === email && ses.kullanici2_bildirdi) ||
+          (ses.konusan_email === email && ses.konusan_bildirdi) ||
+          (ses.dinleyen_email === email && ses.dinleyen_bildirdi));
+      setSpeakingSessionDurum({ ben: bildirdi(me), partner: bildirdi(partner) });
+    });
+  return () => {
+    cancelled = true;
+  };
+}, [
+  currentUser?.username,
+  speakingProgress?.id,
+  speakingProgress?.current_tema,
+  speakingProgress?.current_gorev,
+  speakingProgress?.partner_email,
+  speakingLevel,
+  speakingBildirimGonderildi,
+]);
+
+useEffect(() => {
+  const me = String(currentUser?.username || "");
+  if (!me) return;
+  let cancelled = false;
+  supabase
+    .from("speaking_requests")
+    .select("id")
+    .eq("user_email", me)
+    .eq("level", speakingLevel)
+    .eq("durum", "bekliyor")
+    .limit(1)
+    .then(({ data }) => {
+      if (!cancelled) setSpeakingTalepBekliyor((data || []).length > 0);
+    });
+  return () => {
+    cancelled = true;
+  };
+}, [currentUser?.username, speakingLevel, speakingGonderildi, speakingReloadKey]);
 
 // ── Otomatik partner eşleştirme: panele girişte bekleyen talep varsa uygun partner aranır ──
 useEffect(() => {
@@ -3430,6 +3498,41 @@ function getSinavSuresiLabel(sentenceCount: number): string {
   return getSpeakingExamMinutes(sentenceCount) + " dakika";
 }
 
+// Konuşma Kulübünü bu seviyede başlatır (ilerleme kaydı yoksa oluşturur).
+async function startSpeakingClub() {
+  if (!currentUser) return;
+  // Önce var mı kontrol et
+  const { data: existing } = await supabase
+    .from("speaking_progress")
+    .select("*")
+    .eq("username", currentUser.username)
+    .eq("level", speakingLevel)
+    .maybeSingle();
+
+  if (existing) {
+    setSpeakingProgress(existing);
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("speaking_progress")
+    .insert({
+      username: currentUser.username,
+      level: speakingLevel,
+      current_tema: 1,
+      current_gorev: 1,
+      gorev_tarihleri: [],
+    })
+    .select()
+    .single();
+
+  if (data) {
+    setSpeakingProgress(data);
+  } else {
+    alert("Hata: " + error?.message);
+  }
+}
+
 async function handleSpeakingBildirim() {
   if (!currentUser || !speakingProgress) return;
   setSpeakingGorevBildiriliyor(true);
@@ -3500,11 +3603,11 @@ async function handleSpeakingBildirim() {
 
     if (digerBildirdi) {
       const yeniGorev = currentGorev + 1;
-      const temaTamamlandi = yeniGorev > 3;
+      const temaTamamlandi = yeniGorev > SPEAKING_TASKS_PER_STEP;
       const sonAdim = getSpeakingStepCount(speakingLevel);
       const finalTemaTamamlandi = temaTamamlandi && currentTema >= sonAdim;
       const yeniTema = finalTemaTamamlandi ? sonAdim : temaTamamlandi ? currentTema + 1 : currentTema;
-      const sonrakiGorev = finalTemaTamamlandi ? 4 : temaTamamlandi ? 1 : yeniGorev;
+      const sonrakiGorev = finalTemaTamamlandi ? SPEAKING_TASKS_PER_STEP + 1 : temaTamamlandi ? 1 : yeniGorev;
 
       const progressUpdate: any = {
         son_bildirim_tarihi: bugun,
@@ -3547,14 +3650,14 @@ async function handleSpeakingBildirim() {
           mesaj: "Harika iş çıkardınız! Final sınavı için şimdi sınav hocası talep edebilirsin.",
           renk: "from-yellow-400 to-orange-400",
         });
-      } else if (yeniGorev > 3) {
+      } else if (yeniGorev > SPEAKING_TASKS_PER_STEP) {
         setSpeakingTeşvikMesaj({
           icon: "🎊",
           baslik: "Tema Tamamlandı!",
           mesaj: `Bravo! Tema ${getSpeakingStepLabel(speakingLevel, currentTema)} başarıyla bitti. Tema ${getSpeakingStepLabel(speakingLevel, yeniTema)} şimdi açıldı, devam edin!`,
           renk: "from-emerald-500 to-teal-500",
         });
-      } else if (yeniGorev === 3) {
+      } else if (yeniGorev === SPEAKING_TASKS_PER_STEP) {
         setSpeakingTeşvikMesaj({
           icon: "🔥",
           baslik: "Son Görev Kaldı!",
@@ -3565,7 +3668,7 @@ async function handleSpeakingBildirim() {
         setSpeakingTeşvikMesaj({
           icon: "✅",
           baslik: `${currentGorev}. Görevi Tamamladınız!`,
-          mesaj: `Aynı görevi ${3 - currentGorev} kere daha yapmalısınız. Şu an ${yeniGorev}. günün görevindeydiniz.`,
+          mesaj: `Aynı görevi ${SPEAKING_TASKS_PER_STEP - currentGorev} kere daha yapmalısınız. Sıradaki: ${yeniGorev}. görev.`,
           renk: "from-emerald-500 to-blue-500",
         });
       }
@@ -5560,6 +5663,190 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
           </div>
         </div>
 
+        {/* ŞİMDİ NE YAPMALISIN — öğrencinin o anki tek net adımı */}
+        {(() => {
+          const p = speakingProgress;
+          const bugun = new Date().toISOString().slice(0, 10);
+          const T = SPEAKING_TASKS_PER_STEP;
+          type Adim = {
+            ikon: string;
+            baslik: string;
+            aciklama: string;
+            buton?: { etiket: string; onClick: () => void };
+            ikinciButon?: { etiket: string; href?: string; onClick?: () => void };
+            ton?: "aksiyon" | "bekle" | "tamam";
+          };
+          let adim: Adim;
+          const whatsappLinki = partnerTelefon
+            ? "https://wa.me/" + partnerTelefon + "?text=" + encodeURIComponent(
+                "Merhaba! Ben " + (currentUser?.name || currentUser?.username) + ". " + speakingLevel +
+                  " Konuşma Kulübü'nde Tema " + stepLabel(p?.current_tema || 1) + ", Görev " + (p?.current_gorev || 1) +
+                  " için bugün ne zaman konuşalım? 😊"
+              )
+            : undefined;
+
+          if (speakingProgressLoading) return null;
+          if (!p) {
+            if (speakingNeedsMastery && speakingMasteryCompletedCount < 3) {
+              adim = {
+                ikon: "📚",
+                baslik: `Önce Ustalık Testi'nde ${3 - speakingMasteryCompletedCount} tema daha bitir`,
+                aciklama: `${speakingLevel} Ustalık Testi'nin ilk 3 temasını bitirince Konuşma Kulübü Tema 1 açılır. Şu an ${speakingMasteryCompletedCount}/3.`,
+                buton: {
+                  etiket: "Ustalık Testine Git",
+                  onClick: () => {
+                    setSelectedMasteryLevel(speakingLevel);
+                    setActiveDashboardTab("vocabulary");
+                  },
+                },
+              };
+            } else {
+              adim = {
+                ikon: "🚀",
+                baslik: "Konuşma Kulübünü başlat",
+                aciklama: "Tek tıkla başlat, sonra partner talep et. Uygun bir öğrenci varsa sistem seni hemen eşleştirir.",
+                buton: {
+                  etiket: "Başlat ve Partner Talep Et",
+                  onClick: async () => {
+                    await startSpeakingClub();
+                    setSpeakingTab("partner" as any);
+                  },
+                },
+              };
+            }
+          } else if (isSpeakingProgressFinished(p)) {
+            const sinavGecildi = p.current_tema > speakingStepTotal;
+            adim = sinavGecildi
+              ? {
+                  ikon: "🏆",
+                  baslik: `${speakingLevel} Konuşma Kulübünü bitirdin!`,
+                  aciklama: "Tebrikler! Final sınavını da geçtin. Bir sonraki seviyeye geçebilirsin.",
+                  ton: "tamam",
+                  buton:
+                    SPEAKING_LEVEL_ORDER.indexOf(speakingLevel) < SPEAKING_LEVEL_ORDER.length - 1
+                      ? {
+                          etiket: `${SPEAKING_LEVEL_ORDER[SPEAKING_LEVEL_ORDER.indexOf(speakingLevel) + 1]} Konuşma Kulübüne Geç`,
+                          onClick: () =>
+                            setSpeakingViewLevel(SPEAKING_LEVEL_ORDER[SPEAKING_LEVEL_ORDER.indexOf(speakingLevel) + 1]),
+                        }
+                      : undefined,
+                }
+              : {
+                  ikon: "🎓",
+                  baslik: "Tüm temaları bitirdin, sıra final sınavında",
+                  aciklama: "Final Sınavı sekmesinden sınav hocası talep et. Hoca seninle görüntülü görüşmede sınavı yapar.",
+                  buton: { etiket: "Final Sınavına Git", onClick: () => setSpeakingTab("sinav" as any) },
+                };
+          } else if (!p.partner_email) {
+            adim = speakingTalepBekliyor
+              ? {
+                  ikon: "🔎",
+                  baslik: "Sana uygun bir partner aranıyor",
+                  aciklama: `Talebin alındı. Aynı seviye ve temada (Tema ${stepLabel(p.current_tema)}) bir öğrenci talep gönderdiği anda otomatik eşleşeceksin ve panele girdiğinde bildirim alacaksın.`,
+                  ton: "bekle",
+                }
+              : {
+                  ikon: "🤝",
+                  baslik: "Partner talep et",
+                  aciklama: "Müsait saatini ve WhatsApp numaranı yaz. Sistem seni aynı temadaki uygun bir öğrenciyle otomatik eşleştirir.",
+                  buton: { etiket: "Partner Talep Et", onClick: () => setSpeakingTab("partner" as any) },
+                };
+          } else if (speakingSessionDurum.ben && !speakingSessionDurum.partner) {
+            adim = {
+              ikon: "⏳",
+              baslik: "Partnerinin bildirimi bekleniyor",
+              aciklama: `Sen Görev ${p.current_gorev} bildirimini gönderdin. Partnerin de gönderince görev onaylanır. Ona WhatsApp'tan hatırlatabilirsin.`,
+              ton: "bekle",
+              ikinciButon: whatsappLinki ? { etiket: "📲 Partnerine Hatırlat", href: whatsappLinki } : undefined,
+            };
+          } else if (p.son_bildirim_tarihi === bugun) {
+            adim = {
+              ikon: "🎉",
+              baslik: "Bugünkü görevin tamam",
+              aciklama: `Yarın Tema ${stepLabel(p.current_tema)} · Görev ${Math.min(p.current_gorev, T)}/${T} seni bekliyor. Her gün bir görev yapılabilir.`,
+              ton: "tamam",
+            };
+          } else {
+            adim = {
+              ikon: "📞",
+              baslik: `Bugün: Tema ${stepLabel(p.current_tema)} · Görev ${p.current_gorev}/${T}`,
+              aciklama: `Partnerini ara, ${stepCumulative(p.current_tema)} cümleyi karşılıklı çalışın (biri Türkçesini söyler, diğeri Almancasını). Bitince ikiniz de "Görevi Tamamladım" deyin. ${T} görev bitince Tema ${stepLabel(Math.min(p.current_tema + 1, speakingStepTotal))} açılır.`,
+              buton: { etiket: "✅ Görevi Tamamladım", onClick: () => handleSpeakingBildirim() },
+              ikinciButon: whatsappLinki
+                ? { etiket: "📲 Partnerimi Ara (WhatsApp)", href: whatsappLinki }
+                : { etiket: "Cümleleri Gör", onClick: () => setSpeakingTab("gorev" as any) },
+            };
+          }
+
+          const tonSinif =
+            adim.ton === "tamam"
+              ? "border-emerald-200 bg-white"
+              : adim.ton === "bekle"
+              ? "border-slate-200 bg-white"
+              : "border-emerald-300 bg-white ring-4 ring-emerald-100";
+          return (
+            <div className={`mx-6 mb-4 rounded-2xl border p-5 shadow-sm ${tonSinif}`}>
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-700">Şimdi ne yapmalısın?</p>
+              <div className="mt-2 flex items-start gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-2xl">{adim.ikon}</div>
+                <div className="min-w-0">
+                  <h3 className="text-lg font-black leading-snug text-slate-900">{adim.baslik}</h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">{adim.aciklama}</p>
+                </div>
+              </div>
+              {(adim.buton || adim.ikinciButon) && (
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  {adim.buton && (
+                    <button
+                      type="button"
+                      disabled={speakingGorevBildiriliyor}
+                      onClick={adim.buton.onClick}
+                      className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      {speakingGorevBildiriliyor ? "Kaydediliyor..." : adim.buton.etiket}
+                    </button>
+                  )}
+                  {adim.ikinciButon &&
+                    (adim.ikinciButon.href ? (
+                      <a
+                        href={adim.ikinciButon.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-center text-sm font-black text-emerald-700 hover:bg-emerald-100"
+                      >
+                        {adim.ikinciButon.etiket}
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={adim.ikinciButon.onClick}
+                        className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-black text-emerald-700 hover:bg-emerald-100"
+                      >
+                        {adim.ikinciButon.etiket}
+                      </button>
+                    ))}
+                </div>
+              )}
+              {p && !isSpeakingProgressFinished(p) && (
+                <div className="mt-4 flex items-center gap-2 text-[11px] font-bold text-slate-500">
+                  <span className="shrink-0">Tema {stepLabel(p.current_tema)}</span>
+                  <div className="flex flex-1 gap-1">
+                    {Array.from({ length: T }, (_, i) => (
+                      <div
+                        key={i}
+                        className={`h-2 flex-1 rounded-full ${i < p.current_gorev - 1 ? "bg-emerald-500" : "bg-slate-200"}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="shrink-0">
+                    {Math.min(p.current_gorev - 1, T)}/{T} görev
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {speakingRecommendedLevel && (
           <div className="mx-6 mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
             <p className="text-sm font-black text-amber-800">
@@ -5581,14 +5868,18 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
         )}
 
         {/* NASIL ÇALIŞIR — kutu */}
-        <div className="mx-6 mb-4 rounded-2xl bg-white/80 border border-emerald-100 p-4 shadow-sm">
-          <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-3">Sistemin Mantığı</p>
+        <details className="group mx-6 mb-4 rounded-2xl border border-emerald-100 bg-white/80 p-4 shadow-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-black uppercase tracking-wider text-emerald-700">
+            <span>ℹ️ Sistem nasıl çalışıyor?</span>
+            <span className="transition group-open:rotate-180">▾</span>
+          </summary>
+          <div className="mt-3">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 text-xs text-slate-700">
             {[
               speakingNeedsMastery
                 ? ["🔓", "Ustalık Testi 3. temayı bitir", "Konuşma Kulübü Tema 1 açılır"]
                 : ["🚀", "Hemen başla", "Ustalık şartı yok, Tema 1 açık"],
-              ["📅", "Her gün ara, bildirim gönder", "2 gün boş kalırsan tema düşer"],
+              ["📅", "Her gün ara, bildirim gönder", `${SPEAKING_TASKS_PER_STEP} görev = 1 tema · 3 gün boş kalırsan tema düşer`],
               ["🔁", "Kümülatif tekrar sistemi", "Tema 2'de önceki temalar da sorulur"],
               ["🤝", "Sabit partner", "Memnun olmazsan değiştirirsin"],
             ].map(([icon, title, desc]) => (
@@ -5600,12 +5891,13 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
             ))}
           </div>
         </div>
+        </details>
 
         {/* TAB MENÜ */}
         <div className="px-6 pb-4 flex flex-wrap gap-2">
           {([
             ["durum", "📊 Durumum"],
-            ["gorev", "🎯 Görev"],
+            ["gorev", "🎯 Görev ve Cümleler"],
             ["partner", "🤝 Partner"],
             ["sinav", "🎓 Final Sınavı"],
           ] as const).filter(([key]) => key !== "sinav" || isSpeakingProgressFinished(speakingProgress)).map(([key, label]) => (
@@ -5673,39 +5965,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     {speakingMasteryCompletedCount >= 3 && (
                       <button
                         type="button"
-                        onClick={async () => {
-  if (!currentUser) return;
-  // Önce var mı kontrol et
-  const { data: existing } = await supabase
-    .from("speaking_progress")
-    .select("*")
-    .eq("username", currentUser.username)
-    .eq("level", speakingLevel)
-    .maybeSingle();
-
-  if (existing) {
-    setSpeakingProgress(existing);
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from("speaking_progress")
-    .insert({
-      username: currentUser.username,
-      level: speakingLevel,
-      current_tema: 1,
-      current_gorev: 1,
-      gorev_tarihleri: [],
-    })
-    .select()
-    .single();
-
-  if (data) {
-    setSpeakingProgress(data);
-  } else {
-    alert("Hata: " + error?.message);
-  }
-}}
+                        onClick={startSpeakingClub}
                         className="mt-4 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700"
                       >
                         🎙️ Konuşma Kulübünü Başlat
@@ -5719,12 +5979,12 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     {/* Tema / Görev */}
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       <div className="rounded-2xl bg-emerald-50 p-4 text-center">
-                        <p className="text-3xl font-black text-emerald-700">{speakingProgress.current_tema}</p>
+                        <p className="text-3xl font-black text-emerald-700">{stepLabel(Math.min(speakingProgress.current_tema, speakingStepTotal))}</p>
                         <p className="text-xs font-bold text-slate-500 mt-1">Aktif Tema</p>
                       </div>
                       <div className="rounded-2xl bg-blue-50 p-4 text-center">
-                        <p className="text-3xl font-black text-blue-700">{Math.min(speakingProgress.current_gorev, 3)}/3</p>
-                        <p className="text-xs font-bold text-slate-500 mt-1">{speakingProgress.current_gorev > 3 ? "Tema Tamamlandı" : "Bugünkü Görev"}</p>
+                        <p className="text-3xl font-black text-blue-700">{Math.min(speakingProgress.current_gorev, SPEAKING_TASKS_PER_STEP)}/{SPEAKING_TASKS_PER_STEP}</p>
+                        <p className="text-xs font-bold text-slate-500 mt-1">{speakingProgress.current_gorev > SPEAKING_TASKS_PER_STEP ? "Tema Tamamlandı" : "Bugünkü Görev"}</p>
                       </div>
                     </div>
 
@@ -5755,11 +6015,15 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           <p className={`text-sm font-black ${fark >= 3 ? "text-red-700" : "text-amber-700"}`}>
                             {fark >= 3
                               ? `⚠️ ${fark} gündür bildirim yok! Küme düşme riski!`
+                              : fark === 2
+                              ? "⏰ 2 gündür bildirim yok. Bugün mutlaka ara!"
                               : `⏰ ${fark} gün oldu. Bugün ara!`}
                           </p>
                           <p className="text-xs text-slate-600 mt-1">
                             {fark >= 3
-                              ? "3 gün üst üste bildirim olmadığında bir tema geri düşersin."
+                              ? "Son bildiriminden 3 gün geçince bir tema geri düşersin."
+                              : fark === 2
+                              ? "Yarına kadar bildirim gönderilmezse sen ve partnerin bir tema geri düşersiniz."
                               : "Her gün konuşman seviyeni korumanı sağlar."}
                           </p>
                         </div>
@@ -5770,12 +6034,12 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     <div className="mb-4">
                       <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
                         <span>Tema {stepLabel(speakingProgress.current_tema)} İlerlemesi</span>
-                        <span>{Math.min(speakingProgress.current_gorev - 1, 3)}/3 görev tamamlandı{speakingProgress.current_gorev <= 3 ? ` · ${speakingProgress.current_gorev}. görev devam ediyor` : ""}</span>
+                        <span>{Math.min(speakingProgress.current_gorev - 1, SPEAKING_TASKS_PER_STEP)}/{SPEAKING_TASKS_PER_STEP} görev tamamlandı{speakingProgress.current_gorev <= SPEAKING_TASKS_PER_STEP ? ` · ${speakingProgress.current_gorev}. görev devam ediyor` : ""}</span>
                       </div>
                       <div className="h-2 rounded-full bg-slate-200">
                         <div
                           className="h-2 rounded-full bg-emerald-500 transition-all"
-                          style={{ width: `${((speakingProgress.current_gorev - 1) / 3) * 100}%` }}
+                          style={{ width: `${Math.min(100, ((speakingProgress.current_gorev - 1) / SPEAKING_TASKS_PER_STEP) * 100)}%` }}
                         />
                       </div>
                     </div>
@@ -5786,7 +6050,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                       {speakingProgress.partner_email ? (
                         <p className="text-sm font-bold text-slate-900">{speakingProgress.partner_email}</p>
                       ) : (
-                        <p className="text-sm text-slate-500">Henüz eşleşme yok. Admin eşleştirecek.</p>
+                        <p className="text-sm text-slate-500">Henüz eşleşme yok. Partner talebi gönderince sistem otomatik eşleştirir.</p>
                       )}
                     </div>
                   </div>
@@ -5952,7 +6216,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     ) : (
                       <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 text-center">
                         <p className="font-black">Partner bekleniyor</p>
-                        <p className="mt-1 text-xs">Admin seni eşleştirince bildirim gönderebilirsin.</p>
+                        <p className="mt-1 text-xs">Partner sekmesinden talep gönder; eşleşince buradan bildirim gönderebilirsin.</p>
                       </div>
                     )}
                   </div>

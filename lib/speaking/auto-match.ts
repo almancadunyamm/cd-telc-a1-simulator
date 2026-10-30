@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { getSpeakingStepCount } from "@/app/data/speaking_patterns";
+import { getSpeakingStepCount, SPEAKING_TASKS_PER_STEP } from "@/app/data/speaking_patterns";
 
 // ── Konuşma Kulübü otomatik partner eşleştirme ──────────────────────────
 // Sunucu tarafı zamanlayıcı olmadığı için eşleştirme öğrencinin tarayıcısında yapılır:
@@ -49,7 +49,7 @@ export function isGenderCompatible(a: SpeakingRequest, b: SpeakingRequest): bool
 
 function isFinished(p: SpeakingProgressRow) {
   const max = getSpeakingStepCount(p.level || "A1");
-  return p.current_tema > max || (p.current_tema >= max && p.current_gorev > 3);
+  return p.current_tema > max || (p.current_tema >= max && p.current_gorev > SPEAKING_TASKS_PER_STEP);
 }
 
 async function claimRequest(id: string): Promise<boolean> {

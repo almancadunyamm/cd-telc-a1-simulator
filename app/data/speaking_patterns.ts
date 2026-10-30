@@ -1071,6 +1071,13 @@ export function getSpeakingPatterns(level: string) {
 // speaking_progress.current_tema her zaman ADIM numarasını tutar.
 export const SPEAKING_SPLIT_LEVELS = ["B1"];
 
+/**
+ * Bir adımı (temayı) geçmek için partnerle tamamlanması gereken görev sayısı.
+ * Günde en fazla bir görev onaylanır; 30 Ekim 2026'da 3'ten 2'ye indirildi.
+ * current_gorev = SPEAKING_TASKS_PER_STEP + 1 → son adımda "seviye bitti" anlamına gelir.
+ */
+export const SPEAKING_TASKS_PER_STEP = 2;
+
 export function isSpeakingSplitLevel(level: string) {
   return SPEAKING_SPLIT_LEVELS.includes(level);
 }
