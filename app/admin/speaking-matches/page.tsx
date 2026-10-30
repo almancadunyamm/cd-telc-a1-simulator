@@ -397,9 +397,9 @@ export default function SpeakingMatchesPage() {
                             </div>
                             <span className={
                               "rounded-full px-2 py-1 text-xs font-black " +
-                              (talep.rol === "konusan" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700")
+                              (talep.rol === "arkadas" ? "bg-amber-100 text-amber-700" : talep.rol === "konusan" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700")
                             }>
-                              {talep.rol === "konusan" ? "🎤 Konuşan" : "👂 Dinleyici"}
+                              {talep.rol === "arkadas" ? "👥 Arkadaşını bekliyor" : talep.rol === "konusan" ? "🎤 Konuşan" : "👂 Dinleyici"}
                             </span>
                           </div>
                           <div className="space-y-1 text-xs text-slate-500 mb-4">

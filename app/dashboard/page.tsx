@@ -58,7 +58,14 @@ import { a2Tema10Questions } from "@/app/data/mastery-a2/tema10";
 import { a2Tema11Questions } from "@/app/data/mastery-a2/tema11";
 import { a2Tema12Questions } from "@/app/data/mastery-a2/tema12";
 import { getSpeakingExplanation } from "@/app/data/speaking_explanations_b1";
-import { tryAutoMatchSpeakingPartner } from "@/lib/speaking/auto-match";
+import {
+  tryAutoMatchSpeakingPartner,
+  lookupSpeakingFriend,
+  matchSpeakingFriend,
+  normalizeWhatsappNumber,
+  SPEAKING_FRIEND_ROLE,
+  type FriendLookupResult,
+} from "@/lib/speaking/auto-match";
 import {
   getSpeakingPatterns,
   getSpeakingStepCount,
@@ -365,17 +372,6 @@ function isSpeakingProgressFinished(prog: any): boolean {
   const tema = Number(prog.current_tema || 0);
   const gorev = Number(prog.current_gorev || 0);
   return tema > max || (tema >= max && gorev > SPEAKING_TASKS_PER_STEP);
-}
-
-// WhatsApp numarasını wa.me biçimine çevirir (yalnızca rakam, ülke koduyla).
-// "0532 123 45 67", "+90 532...", "5321234567" → "905321234567". Geçersizse "".
-function normalizeWhatsappNumber(raw: string): string {
-  let d = String(raw || "").replace(/\D/g, "");
-  if (d.startsWith("00")) d = d.slice(2);
-  if (d.length === 11 && d.startsWith("0")) d = "90" + d.slice(1); // 0532... (Türkiye)
-  if (d.length === 10 && d.startsWith("5")) d = "90" + d; // 532... (Türkiye)
-  if (d.startsWith("90")) return d.length === 12 ? d : "";
-  return d.length >= 10 && d.length <= 15 ? d : ""; // yurt dışı numara (ülke koduyla)
 }
 
 // Konuşma final sınavı süresi: dakikada 15 cümle (A1/A2 12. temada 180 cümle = 12 dk).
@@ -774,6 +770,15 @@ const [speakingReloadKey, setSpeakingReloadKey] = useState(0);
 // Rehber kartı için: bu görevde kim bildirim gönderdi, bekleyen partner talebi var mı.
 const [speakingSessionDurum, setSpeakingSessionDurum] = useState<{ ben: boolean; partner: boolean }>({ ben: false, partner: false });
 const [speakingTalepBekliyor, setSpeakingTalepBekliyor] = useState(false);
+const [speakingTalepRol, setSpeakingTalepRol] = useState<string>("");
+// Partner talebi modu: sistem rastgele bulsun ya da sınıf arkadaşıyla eşleşsin.
+const [speakingEslesmeModu, setSpeakingEslesmeModu] = useState<"sistem" | "arkadas">("sistem");
+const [speakingArkadasTelefon, setSpeakingArkadasTelefon] = useState("");
+const [speakingArkadasSonuc, setSpeakingArkadasSonuc] = useState<{
+  tip: "basari" | "uyari";
+  mesaj: string;
+  kaydetSecenegi?: boolean;
+} | null>(null);
 // "Partnerin bulundu" bildirimi (panele girişte gösterilir).
 const [partnerBildirimleri, setPartnerBildirimleri] = useState<
   { level: Level; partnerEmail: string; partnerName: string }[]
@@ -3222,13 +3227,16 @@ useEffect(() => {
   let cancelled = false;
   supabase
     .from("speaking_requests")
-    .select("id")
+    .select("id, rol")
     .eq("user_email", me)
     .eq("level", speakingLevel)
     .eq("durum", "bekliyor")
+    .order("created_at", { ascending: false })
     .limit(1)
     .then(({ data }) => {
-      if (!cancelled) setSpeakingTalepBekliyor((data || []).length > 0);
+      if (cancelled) return;
+      setSpeakingTalepBekliyor((data || []).length > 0);
+      setSpeakingTalepRol(String(data?.[0]?.rol || ""));
     });
   return () => {
     cancelled = true;
@@ -3496,6 +3504,132 @@ function getSinavSuresi(temaNo: number): number {
 
 function getSinavSuresiLabel(sentenceCount: number): string {
   return getSpeakingExamMinutes(sentenceCount) + " dakika";
+}
+
+// Partner talebini kaydeder: bu seviyede bekleyen talebim varsa günceller, yoksa yeni ekler
+// (aynı öğrenci için çift talep oluşmasın).
+async function saveSpeakingRequest(rol: string, telefon: string) {
+  if (!currentUser || !speakingProgress) return { error: { message: "Önce Konuşma Kulübünü başlat." } };
+  const kayit = {
+    user_email: currentUser.username,
+    user_name: currentUser.name || currentUser.username,
+    tema_id: speakingProgress.current_tema,
+    level: speakingLevel,
+    rol,
+    cinsiyet: speakingKendiCinsiyet || null,
+    cinsiyet_tercihi: speakingCinsiyet,
+    musait_saat: speakingMusait || "Arkadaşımla ayarlayacağım",
+    telefon,
+    durum: "bekliyor",
+  };
+  const { data: mevcut } = await supabase
+    .from("speaking_requests")
+    .select("id")
+    .eq("user_email", currentUser.username)
+    .eq("level", speakingLevel)
+    .eq("durum", "bekliyor")
+    .limit(1);
+  if (mevcut && mevcut.length > 0) {
+    return await supabase.from("speaking_requests").update(kayit).eq("id", mevcut[0].id);
+  }
+  return await supabase.from("speaking_requests").insert(kayit);
+}
+
+function arkadasSonucMesaji(r: FriendLookupResult): { mesaj: string; kaydetSecenegi?: boolean } {
+  if (r.ok) return { mesaj: "" };
+  const ad = r.friendName || "Arkadaşın";
+  switch (r.reason) {
+    case "invalid_number":
+      return { mesaj: "Arkadaşının numarası eksik ya da hatalı. Başında 90 olacak şekilde boşluksuz yaz: 905321234567" };
+    case "own_number":
+      return { mesaj: "Buraya kendi numaranı değil, arkadaşının WhatsApp numarasını yazmalısın." };
+    case "not_found":
+      return {
+        mesaj:
+          "⚠️ Bu numara sistemde kayıtlı değil. Sadece Konuşma Kulübü'ne kayıtlı öğrencilerle eşleşebilirsin. " +
+          "Önce numarayı kontrol et. Numara doğruysa arkadaşın henüz katılmamış demektir: talebini şimdi kaydet, " +
+          "arkadaşın kendi panelinde \"Sınıf arkadaşımla eşleş\"i seçip senin numaranı yazdığı anda eşleşirsiniz.",
+        kaydetSecenegi: true,
+      };
+    case "not_started_level":
+      return {
+        mesaj: `${ad} ${speakingLevel} Konuşma Kulübü'ne henüz başlamamış. Talebini kaydet; o da ${speakingLevel} Konuşma Kulübü'nü başlatıp senin numaranı yazınca eşleşirsiniz.`,
+        kaydetSecenegi: true,
+      };
+    case "friend_has_partner":
+      return { mesaj: `${ad} zaten başka bir partnerle eşleşmiş. Başka bir arkadaşının numarasını yazabilir ya da "Sistem bana partner bulsun"u seçebilirsin.` };
+    case "already_partners":
+      return { mesaj: `${ad} ile zaten eşleşmişsiniz. 🤝` };
+    case "friend_finished":
+      return { mesaj: `${ad} ${speakingLevel} Konuşma Kulübü'nü bitirmiş, bu seviyede partner olamaz.` };
+    case "different_step":
+      return {
+        mesaj: `${ad} Tema ${stepLabel(r.friendTema || 1)}'de, sen Tema ${stepLabel(r.myTema || 1)}'desin. Birlikte çalışabilmek için aynı temada olmanız gerekiyor.`,
+      };
+    default:
+      return { mesaj: "Şu an eşleşme yapılamadı. Sayfayı yenileyip tekrar dene." };
+  }
+}
+
+async function handleArkadasEslesme(kaydetBekle = false) {
+  if (!currentUser || !speakingProgress) return;
+  const benimTelefon = normalizeWhatsappNumber(speakingTelefon);
+  if (!benimTelefon) {
+    setSpeakingArkadasSonuc({ tip: "uyari", mesaj: "Önce kendi WhatsApp numaranı doğru yaz (örnek: 905321234567)." });
+    return;
+  }
+  setSpeakingYukleniyor(true);
+  setSpeakingArkadasSonuc(null);
+  try {
+    if (kaydetBekle) {
+      const { error } = await saveSpeakingRequest(SPEAKING_FRIEND_ROLE, benimTelefon);
+      setSpeakingArkadasSonuc(
+        error
+          ? { tip: "uyari", mesaj: "Talep kaydedilemedi: " + error.message }
+          : {
+              tip: "basari",
+              mesaj: `✅ Talebin kaydedildi. Arkadaşına söyle: Konuşma Kulübü → ${speakingLevel} → Partner → "Sınıf arkadaşımla eşleş" seçip senin numaranı (${benimTelefon}) yazsın. Yazdığı anda eşleşirsiniz.`,
+            }
+      );
+      if (!error) setSpeakingGonderildi(true);
+      return;
+    }
+    const kontrol = await lookupSpeakingFriend(currentUser.username, speakingLevel, speakingArkadasTelefon, benimTelefon);
+    if (!kontrol.ok) {
+      setSpeakingArkadasSonuc({ tip: "uyari", ...arkadasSonucMesaji(kontrol) });
+      return;
+    }
+    const { error } = await saveSpeakingRequest(SPEAKING_FRIEND_ROLE, benimTelefon);
+    if (error) {
+      setSpeakingArkadasSonuc({ tip: "uyari", mesaj: "Talep kaydedilemedi: " + error.message });
+      return;
+    }
+    const sonuc = await matchSpeakingFriend(currentUser.username, speakingLevel, speakingArkadasTelefon, benimTelefon);
+    if (sonuc.ok) {
+      setSpeakingArkadasSonuc({ tip: "basari", mesaj: `🎉 ${sonuc.friendName} ile eşleştiniz! Artık birlikte görev yapabilirsiniz.` });
+      setSpeakingReloadKey((k) => k + 1);
+    } else {
+      setSpeakingArkadasSonuc({ tip: "uyari", ...arkadasSonucMesaji(sonuc) });
+    }
+  } finally {
+    setSpeakingYukleniyor(false);
+  }
+}
+
+// Arkadaş bekleyen talebi "sistem bulsun" talebine çevirir ve hemen uygun partner arar.
+async function arkadasTalebiniSistemeCevir() {
+  if (!currentUser) return;
+  await supabase
+    .from("speaking_requests")
+    .update({ rol: "konusan" })
+    .eq("user_email", currentUser.username)
+    .eq("level", speakingLevel)
+    .eq("durum", "bekliyor");
+  setSpeakingTalepRol("konusan");
+  setSpeakingEslesmeModu("sistem");
+  const sonuc = await tryAutoMatchSpeakingPartner(currentUser.username, speakingLevel);
+  setSpeakingReloadKey((k) => k + 1);
+  if (!sonuc.matched) setSpeakingGonderildi((v) => !v);
 }
 
 // Konuşma Kulübünü bu seviyede başlatır (ilerleme kaydı yoksa oluşturur).
@@ -5738,7 +5872,15 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                   buton: { etiket: "Final Sınavına Git", onClick: () => setSpeakingTab("sinav" as any) },
                 };
           } else if (!p.partner_email) {
-            adim = speakingTalepBekliyor
+            adim = speakingTalepBekliyor && speakingTalepRol === SPEAKING_FRIEND_ROLE
+              ? {
+                  ikon: "👥",
+                  baslik: "Arkadaşının katılması bekleniyor",
+                  aciklama: `Arkadaşın Konuşma Kulübü → ${speakingLevel} → Partner → "Sınıf arkadaşımla eşleş" seçip senin numaranı yazdığı anda eşleşeceksiniz.`,
+                  ton: "bekle",
+                  ikinciButon: { etiket: "Bunun yerine sistem bana partner bulsun", onClick: () => arkadasTalebiniSistemeCevir() },
+                }
+              : speakingTalepBekliyor
               ? {
                   ikon: "🔎",
                   baslik: "Sana uygun bir partner aranıyor",
@@ -6385,9 +6527,50 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                     {speakingProgress && !speakingProgress.partner_email && (
                       <div className="mt-5 rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-left">
                         <p className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-3">Partner Talep Et</p>
+                        <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          {([
+                            ["sistem", "🎲 Sistem bana partner bulsun", "Aynı temadaki uygun bir öğrenciyle otomatik eşleşirsin."],
+                            ["arkadas", "👥 Sınıf arkadaşımla eşleş", "Tanıdığın bir arkadaşının WhatsApp numarasını yazarsın."],
+                          ] as const).map(([val, label, desc]) => (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => {
+                                setSpeakingEslesmeModu(val);
+                                setSpeakingArkadasSonuc(null);
+                              }}
+                              className={
+                                "rounded-2xl border p-3 text-left transition " +
+                                (speakingEslesmeModu === val
+                                  ? "border-emerald-500 bg-white shadow-sm ring-2 ring-emerald-200"
+                                  : "border-slate-200 bg-white/60 hover:border-emerald-300")
+                              }
+                            >
+                              <p className="text-sm font-black text-slate-900">{label}</p>
+                              <p className="mt-0.5 text-xs leading-5 text-slate-500">{desc}</p>
+                            </button>
+                          ))}
+                        </div>
+                        {speakingEslesmeModu === "arkadas" && (
+                          <div className="mb-4 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-xs leading-5 text-slate-700">
+                            <p className="mb-1 font-black text-blue-800">Arkadaşınla nasıl eşleşirsin?</p>
+                            <p>
+                              Sadece <strong>sistemde kayıtlı bir öğrenciyle</strong> eşleşebilirsin. Arkadaşın da{" "}
+                              <strong>{speakingLevel} Konuşma Kulübü</strong>'ne başlamış olmalı ve ikiniz{" "}
+                              <strong>aynı temada</strong> olmalısınız.
+                            </p>
+                            <p className="mt-1">
+                              Arkadaşın, Konuşma Kulübü'ne kaydettiği WhatsApp numarasıyla bulunur. Henüz numarasını kaydetmediyse
+                              önce sen talebini kaydet; o da "Sınıf arkadaşımla eşleş"i seçip <strong>senin numaranı</strong> yazınca
+                              hemen eşleşirsiniz.
+                            </p>
+                          </div>
+                        )}
                         <div className="space-y-3">
                           <div>
-                            <p className="text-xs font-bold text-slate-500 mb-1">Müsait Olduğun Saat</p>
+                            <p className="text-xs font-bold text-slate-500 mb-1">
+                              Müsait Olduğun Saat{speakingEslesmeModu === "arkadas" ? " (isteğe bağlı)" : ""}
+                            </p>
                             <input
                               value={speakingMusait}
                               onChange={e => setSpeakingMusait(e.target.value)}
@@ -6397,7 +6580,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           </div>
                           <div>
                             <p className="text-xs font-bold text-slate-500 mb-1">
-                              WhatsApp Numaranız{" "}
+                              {speakingEslesmeModu === "arkadas" ? "Senin WhatsApp Numaran" : "WhatsApp Numaranız"}{" "}
                               <span className="font-semibold text-emerald-700">
                                 (başında 90, boşluksuz yazın: <span className="font-black tracking-wide">905321234567</span>)
                               </span>
@@ -6421,6 +6604,64 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                               );
                             })()}
                           </div>
+                          {speakingEslesmeModu === "arkadas" ? (
+                          <div>
+                            <p className="text-xs font-bold text-slate-500 mb-1">
+                              Arkadaşının WhatsApp Numarası{" "}
+                              <span className="font-semibold text-emerald-700">
+                                (başında 90, boşluksuz: <span className="font-black tracking-wide">905321234567</span>)
+                              </span>
+                            </p>
+                            <input
+                              value={speakingArkadasTelefon}
+                              onChange={(e) => {
+                                setSpeakingArkadasTelefon(e.target.value);
+                                setSpeakingArkadasSonuc(null);
+                              }}
+                              inputMode="tel"
+                              placeholder="905321234567"
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
+                            />
+                            {speakingArkadasTelefon && !normalizeWhatsappNumber(speakingArkadasTelefon) && (
+                              <p className="mt-1 text-xs font-bold text-amber-700">Numara eksik ya da hatalı görünüyor. Örnek: 905321234567</p>
+                            )}
+                            <button
+                              type="button"
+                              disabled={
+                                speakingYukleniyor ||
+                                !normalizeWhatsappNumber(speakingTelefon) ||
+                                !normalizeWhatsappNumber(speakingArkadasTelefon)
+                              }
+                              onClick={() => handleArkadasEslesme(false)}
+                              className="mt-3 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                            >
+                              {speakingYukleniyor ? "Kontrol ediliyor..." : "👥 Arkadaşımla Eşleş"}
+                            </button>
+                            {speakingArkadasSonuc && (
+                              <div
+                                className={
+                                  "mt-3 rounded-2xl border p-3 text-sm font-bold leading-6 " +
+                                  (speakingArkadasSonuc.tip === "basari"
+                                    ? "border-emerald-200 bg-white text-emerald-700"
+                                    : "border-amber-200 bg-amber-50 text-amber-800")
+                                }
+                              >
+                                {speakingArkadasSonuc.mesaj}
+                                {speakingArkadasSonuc.kaydetSecenegi && (
+                                  <button
+                                    type="button"
+                                    disabled={speakingYukleniyor}
+                                    onClick={() => handleArkadasEslesme(true)}
+                                    className="mt-3 block w-full rounded-xl border border-amber-300 bg-white px-4 py-2 text-xs font-black text-amber-800 hover:bg-amber-100 disabled:opacity-50"
+                                  >
+                                    Talebimi kaydet, arkadaşım benim numaramı girince eşleşelim
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          ) : (
+                          <>
                           <div>
                             <p className="text-xs font-bold text-slate-500 mb-1">Cinsiyetin</p>
                             <div className="grid grid-cols-2 gap-2">
@@ -6458,18 +6699,7 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                               const telefonDuzgun = normalizeWhatsappNumber(speakingTelefon);
                               if (!currentUser || !speakingMusait || !telefonDuzgun || !speakingKendiCinsiyet) return;
                               setSpeakingYukleniyor(true);
-                              const { error: talepHata } = await supabase.from("speaking_requests").insert({
-                                user_email: currentUser.username,
-                                user_name: currentUser.name || currentUser.username,
-                                tema_id: speakingProgress.current_tema,
-                                level: speakingLevel,
-                                rol: "konusan",
-                                cinsiyet: speakingKendiCinsiyet,
-                                cinsiyet_tercihi: speakingCinsiyet,
-                                musait_saat: speakingMusait,
-                                telefon: telefonDuzgun,
-                                durum: "bekliyor",
-                              });
+                              const { error: talepHata } = await saveSpeakingRequest("konusan", telefonDuzgun);
                               if (talepHata) {
                                 setSpeakingYukleniyor(false);
                                 alert("Talep gönderilemedi: " + talepHata.message);
@@ -6484,10 +6714,12 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           >
                             {speakingYukleniyor ? "Gönderiliyor..." : "🎙️ Partner Talep Et"}
                           </button>
-                          {speakingGonderildi && (
+                          {speakingGonderildi && speakingEslesmeModu === "sistem" && (
                             <div className="rounded-2xl bg-white border border-emerald-200 p-3 text-sm font-bold text-emerald-700 text-center">
                               {"✅ Talebin alındı! Şu an uygun partner yok; aynı seviye ve temada biri talep gönderdiği anda otomatik eşleşeceksin ve panele girdiğinde bildirim alacaksın."}
                             </div>
+                          )}
+                          </>
                           )}
                         </div>
                       </div>
