@@ -774,6 +774,8 @@ const [speakingTalepRol, setSpeakingTalepRol] = useState<string>("");
 // Partner talebi modu: sistem rastgele bulsun ya da sınıf arkadaşıyla eşleşsin.
 const [speakingEslesmeModu, setSpeakingEslesmeModu] = useState<"sistem" | "arkadas">("sistem");
 const [speakingArkadasTelefon, setSpeakingArkadasTelefon] = useState("");
+const [speakingArkadasAd, setSpeakingArkadasAd] = useState("");
+const [speakingArkadasEmail, setSpeakingArkadasEmail] = useState("");
 const [speakingArkadasSonuc, setSpeakingArkadasSonuc] = useState<{
   tip: "basari" | "uyari";
   mesaj: string;
@@ -3539,21 +3541,27 @@ function arkadasSonucMesaji(r: FriendLookupResult): { mesaj: string; kaydetSecen
   if (r.ok) return { mesaj: "" };
   const ad = r.friendName || "Arkadaşın";
   switch (r.reason) {
-    case "invalid_number":
-      return { mesaj: "Arkadaşının numarası eksik ya da hatalı. Başında 90 olacak şekilde boşluksuz yaz: 905321234567" };
+    case "invalid_input":
+      return { mesaj: "Arkadaşının ad soyadını ve en az e-posta adresini ya da WhatsApp numarasını yaz." };
     case "own_number":
       return { mesaj: "Buraya kendi numaranı değil, arkadaşının WhatsApp numarasını yazmalısın." };
+    case "own_email":
+      return { mesaj: "Buraya kendi e-posta adresini değil, arkadaşının e-posta adresini yazmalısın." };
     case "not_found":
       return {
         mesaj:
-          "⚠️ Bu numara sistemde kayıtlı değil. Sadece Konuşma Kulübü'ne kayıtlı öğrencilerle eşleşebilirsin. " +
-          "Önce numarayı kontrol et. Numara doğruysa arkadaşın henüz katılmamış demektir: talebini şimdi kaydet, " +
-          "arkadaşın kendi panelinde \"Sınıf arkadaşımla eşleş\"i seçip senin numaranı yazdığı anda eşleşirsiniz.",
+          "⚠️ Bu bilgilerle (ad soyad, e-posta, WhatsApp) sistemde kayıtlı bir öğrenci bulunamadı. Sadece sistemde kayıtlı öğrencilerle eşleşebilirsin. " +
+          "Önce bilgileri kontrol et; e-posta, arkadaşının panele giriş yaptığı adres olmalı. Bilgiler doğruysa talebini şimdi kaydet, " +
+          "arkadaşın kendi panelinde \"Sınıf arkadaşımla eşleş\"i seçip senin bilgilerini yazdığı anda eşleşirsiniz.",
         kaydetSecenegi: true,
       };
+    case "ambiguous_name":
+      return { mesaj: "Bu ad soyadla birden fazla öğrenci var. Lütfen arkadaşının e-posta adresini ya da WhatsApp numarasını da yaz." };
+    case "conflict":
+      return { mesaj: "Yazdığın bilgiler farklı öğrencilere ait görünüyor (örneğin e-posta bir kişiye, telefon başka birine). Lütfen bilgileri kontrol et." };
     case "not_started_level":
       return {
-        mesaj: `${ad} ${speakingLevel} Konuşma Kulübü'ne henüz başlamamış. Talebini kaydet; o da ${speakingLevel} Konuşma Kulübü'nü başlatıp senin numaranı yazınca eşleşirsiniz.`,
+        mesaj: `${ad} sistemde kayıtlı ama ${speakingLevel} Konuşma Kulübü'ne henüz başlamamış. Talebini kaydet; o da ${speakingLevel} Konuşma Kulübü'nü başlatıp "Sınıf arkadaşımla eşleş"te senin bilgilerini yazınca eşleşirsiniz.`,
         kaydetSecenegi: true,
       };
     case "friend_has_partner":
@@ -3588,13 +3596,14 @@ async function handleArkadasEslesme(kaydetBekle = false) {
           ? { tip: "uyari", mesaj: "Talep kaydedilemedi: " + error.message }
           : {
               tip: "basari",
-              mesaj: `✅ Talebin kaydedildi. Arkadaşına söyle: Konuşma Kulübü → ${speakingLevel} → Partner → "Sınıf arkadaşımla eşleş" seçip senin numaranı (${benimTelefon}) yazsın. Yazdığı anda eşleşirsiniz.`,
+              mesaj: `✅ Talebin kaydedildi. Arkadaşına söyle: Konuşma Kulübü → ${speakingLevel} → Partner → "Sınıf arkadaşımla eşleş" seçip senin ad soyadını, e-postanı (${currentUser.username}) ya da numaranı (${benimTelefon}) yazsın. Yazdığı anda eşleşirsiniz.`,
             }
       );
       if (!error) setSpeakingGonderildi(true);
       return;
     }
-    const kontrol = await lookupSpeakingFriend(currentUser.username, speakingLevel, speakingArkadasTelefon, benimTelefon);
+    const arkadas = { phone: speakingArkadasTelefon, email: speakingArkadasEmail, name: speakingArkadasAd };
+    const kontrol = await lookupSpeakingFriend(currentUser.username, speakingLevel, arkadas, benimTelefon);
     if (!kontrol.ok) {
       setSpeakingArkadasSonuc({ tip: "uyari", ...arkadasSonucMesaji(kontrol) });
       return;
@@ -3604,7 +3613,7 @@ async function handleArkadasEslesme(kaydetBekle = false) {
       setSpeakingArkadasSonuc({ tip: "uyari", mesaj: "Talep kaydedilemedi: " + error.message });
       return;
     }
-    const sonuc = await matchSpeakingFriend(currentUser.username, speakingLevel, speakingArkadasTelefon, benimTelefon);
+    const sonuc = await matchSpeakingFriend(currentUser.username, speakingLevel, arkadas, benimTelefon);
     if (sonuc.ok) {
       setSpeakingArkadasSonuc({ tip: "basari", mesaj: `🎉 ${sonuc.friendName} ile eşleştiniz! Artık birlikte görev yapabilirsiniz.` });
       setSpeakingReloadKey((k) => k + 1);
@@ -6560,9 +6569,10 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                               <strong>aynı temada</strong> olmalısınız.
                             </p>
                             <p className="mt-1">
-                              Arkadaşın, Konuşma Kulübü'ne kaydettiği WhatsApp numarasıyla bulunur. Henüz numarasını kaydetmediyse
-                              önce sen talebini kaydet; o da "Sınıf arkadaşımla eşleş"i seçip <strong>senin numaranı</strong> yazınca
-                              hemen eşleşirsiniz.
+                              Arkadaşının <strong>ad soyadını</strong>, panele giriş yaptığı <strong>e-posta adresini</strong> ve{" "}
+                              <strong>WhatsApp numarasını</strong> yaz. Bunlardan biri sistemdeki bilgileriyle eşleşirse ikiniz hemen
+                              eşleşirsiniz. Arkadaşın henüz başlamadıysa önce sen talebini kaydet; o da "Sınıf arkadaşımla eşleş"te
+                              <strong> senin bilgilerini</strong> yazınca eşleşirsiniz.
                             </p>
                           </div>
                         )}
@@ -6606,6 +6616,33 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                           </div>
                           {speakingEslesmeModu === "arkadas" ? (
                           <div>
+                            <p className="text-xs font-bold text-slate-500 mb-1">Arkadaşının Adı Soyadı</p>
+                            <input
+                              value={speakingArkadasAd}
+                              onChange={(e) => {
+                                setSpeakingArkadasAd(e.target.value);
+                                setSpeakingArkadasSonuc(null);
+                              }}
+                              autoComplete="off"
+                              placeholder="Örn: Ayşe Yılmaz"
+                              className="mb-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
+                            />
+                            <p className="text-xs font-bold text-slate-500 mb-1">
+                              Arkadaşının E-posta Adresi{" "}
+                              <span className="font-semibold text-emerald-700">(panele giriş yaptığı adres)</span>
+                            </p>
+                            <input
+                              value={speakingArkadasEmail}
+                              onChange={(e) => {
+                                setSpeakingArkadasEmail(e.target.value);
+                                setSpeakingArkadasSonuc(null);
+                              }}
+                              type="email"
+                              inputMode="email"
+                              autoComplete="off"
+                              placeholder="ornek@mail.com"
+                              className="mb-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 outline-none"
+                            />
                             <p className="text-xs font-bold text-slate-500 mb-1">
                               Arkadaşının WhatsApp Numarası{" "}
                               <span className="font-semibold text-emerald-700">
@@ -6630,7 +6667,11 @@ localStorage.setItem("last_selected_lesson", JSON.stringify(todayLesson));
                               disabled={
                                 speakingYukleniyor ||
                                 !normalizeWhatsappNumber(speakingTelefon) ||
-                                !normalizeWhatsappNumber(speakingArkadasTelefon)
+                                speakingArkadasAd.trim().split(/\s+/).length < 2 ||
+                                !(
+                                  normalizeWhatsappNumber(speakingArkadasTelefon) ||
+                                  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(speakingArkadasEmail.trim())
+                                )
                               }
                               onClick={() => handleArkadasEslesme(false)}
                               className="mt-3 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"

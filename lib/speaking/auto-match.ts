@@ -12,9 +12,9 @@ import { getSpeakingStepCount, SPEAKING_TASKS_PER_STEP } from "@/app/data/speaki
 // "kilitlenir": durum = 'bekliyor' olan satır 'eslesti' yapılır; satır değişmezse
 // başka biri daha önce almış demektir ve sıradaki adaya geçilir.
 //
-// Arkadaş modu: öğrenci "Sınıf arkadaşımla eşleş" seçip arkadaşının WhatsApp numarasını yazar.
-// Bu talepler rol = 'arkadas' ile kaydedilir ve otomatik eşleştirmeye girmez; arkadaş,
-// Konuşma Kulübü talebindeki numarasından bulunur (öğrenci hesaplarında telefon tutulmuyor).
+// Arkadaş modu: öğrenci "Sınıf arkadaşımla eşleş" seçip arkadaşının ad soyadını, e-postasını
+// ve WhatsApp numarasını yazar. Bu talepler rol = 'arkadas' ile kaydedilir ve otomatik
+// eşleştirmeye girmez (bkz. lookupSpeakingFriend).
 
 /** Rastgele eşleştirmeye girmeyen, belirli bir arkadaşı bekleyen talep. */
 export const SPEAKING_FRIEND_ROLE = "arkadas";
@@ -202,15 +202,26 @@ export async function tryAutoMatchSpeakingPartner(
 }
 
 // ── Arkadaşla eşleşme ───────────────────────────────────────────────────
+// Öğrenci arkadaşının ad soyadını, e-posta adresini ve WhatsApp numarasını yazar.
+// Bunlardan BİRİ sistemdeki bir öğrenciyle eşleşirse o öğrenci bulunur:
+//  • e-posta → öğrenci hesabı (users.email = panel kullanıcı adı)
+//  • WhatsApp numarası → Konuşma Kulübü talebindeki numara (users'ta telefon tutulmuyor)
+//  • ad soyad → öğrenci hesabındaki ad (yalnızca tek öğrenciye uyuyorsa kullanılır)
+// Öncelik: e-posta > telefon > ad soyad. Farklı bilgiler farklı öğrencileri gösteriyorsa uyarılır.
+
+export type SpeakingFriendInput = { phone?: string; email?: string; name?: string };
 
 export type FriendLookupResult =
-  | { ok: true; friendEmail: string; friendName: string; friendStepLabelTema: number }
+  | { ok: true; friendEmail: string; friendName: string; matchedBy: "email" | "phone" | "name" }
   | {
       ok: false;
       reason:
-        | "invalid_number"
+        | "invalid_input"
         | "own_number"
+        | "own_email"
         | "not_found"
+        | "ambiguous_name"
+        | "conflict"
         | "not_started_level"
         | "friend_has_partner"
         | "already_partners"
@@ -222,37 +233,84 @@ export type FriendLookupResult =
       myTema?: number;
     };
 
+/** Ad soyad karşılaştırması için: küçük harf, Türkçe harfler sadeleştirilmiş, tek boşluk. */
+export function normalizePersonName(raw: string): string {
+  return String(raw || "")
+    .toLocaleLowerCase("tr")
+    .replace(/[ıİ]/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[âà]/g, "a")
+    .replace(/[îì]/g, "i")
+    .replace(/[ûù]/g, "u")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /**
- * Arkadaşı WhatsApp numarasından bulur ve bu seviyede eşleşmeye uygun mu kontrol eder.
- * Hiçbir şey yazmaz. Numara, arkadaşın Konuşma Kulübü partner talebinde kayıtlı olmalı.
+ * Arkadaşı ad soyad / e-posta / WhatsApp numarasından bulur ve bu seviyede eşleşmeye uygun mu kontrol eder.
+ * Hiçbir şey yazmaz.
  */
 export async function lookupSpeakingFriend(
   usernameRaw: string,
   level: string,
-  friendPhoneRaw: string,
+  friend: SpeakingFriendInput,
   myPhoneRaw: string
 ): Promise<FriendLookupResult> {
   const username = norm(usernameRaw);
-  const target = normalizeWhatsappNumber(friendPhoneRaw);
-  if (!target) return { ok: false, reason: "invalid_number" };
-  if (target === normalizeWhatsappNumber(myPhoneRaw)) return { ok: false, reason: "own_number" };
+  const email = norm(friend.email);
+  const phone = normalizeWhatsappNumber(friend.phone || "");
+  const name = normalizePersonName(friend.name || "");
+  if (!email && !phone && !name) return { ok: false, reason: "invalid_input" };
+  if (email && email === username) return { ok: false, reason: "own_email" };
+  if (phone && phone === normalizeWhatsappNumber(myPhoneRaw)) return { ok: false, reason: "own_number" };
 
-  const { data: reqRows } = await supabase
-    .from("speaking_requests")
-    .select("id, user_email, user_name, telefon, level, durum, rol, created_at")
-    .order("created_at", { ascending: false });
-  const withPhone = ((reqRows || []) as SpeakingRequest[]).filter(
-    (r) => normalizeWhatsappNumber(String(r.telefon || "")) === target && norm(r.user_email) !== username
-  );
-  if (withPhone.length === 0) return { ok: false, reason: "not_found" };
-  const friendEmail = norm(withPhone[0].user_email);
-  const friendName = withPhone[0].user_name || friendEmail;
+  // 1) E-posta → öğrenci hesabı
+  let byEmail: { email: string; name: string } | null = null;
+  if (email) {
+    const { data } = await supabase.from("users").select("email, name").ilike("email", email).limit(1);
+    if (data && data.length > 0) byEmail = { email: norm(data[0].email), name: data[0].name || data[0].email };
+  }
 
-  const { data: progRows } = await supabase
-    .from("speaking_progress")
-    .select("*")
-    .eq("level", level)
-    .in("username", Array.from(new Set([usernameRaw, username, withPhone[0].user_email, friendEmail])));
+  // 2) Telefon → Konuşma Kulübü talepleri
+  let byPhone: { email: string; name: string } | null = null;
+  if (phone) {
+    const { data: reqRows } = await supabase
+      .from("speaking_requests")
+      .select("user_email, user_name, telefon, created_at")
+      .order("created_at", { ascending: false });
+    const hit = ((reqRows || []) as SpeakingRequest[]).find(
+      (r) => normalizeWhatsappNumber(String(r.telefon || "")) === phone && norm(r.user_email) !== username
+    );
+    if (hit) byPhone = { email: norm(hit.user_email), name: hit.user_name || hit.user_email };
+  }
+
+  // 3) Ad soyad → öğrenci hesapları (yalnızca tek eşleşme kabul edilir)
+  let byName: { email: string; name: string } | null = null;
+  let nameAmbiguous = false;
+  if (name && name.includes(" ")) {
+    const { data: users } = await supabase.from("users").select("email, name").eq("role", "student");
+    const hits = ((users || []) as { email: string; name: string }[]).filter(
+      (u) => normalizePersonName(u.name) === name && norm(u.email) !== username
+    );
+    if (hits.length === 1) byName = { email: norm(hits[0].email), name: hits[0].name };
+    else if (hits.length > 1) nameAmbiguous = true;
+  }
+
+  const found = [byEmail, byPhone, byName].filter(Boolean) as { email: string; name: string }[];
+  if (found.length === 0) return { ok: false, reason: nameAmbiguous ? "ambiguous_name" : "not_found" };
+  const distinct = Array.from(new Set(found.map((f) => f.email)));
+  if (distinct.length > 1) return { ok: false, reason: "conflict" };
+  const friendEmail = distinct[0];
+  if (friendEmail === username) return { ok: false, reason: "own_email" };
+  const friendName = (byEmail || byPhone || byName)!.name;
+  const matchedBy: "email" | "phone" | "name" = byEmail ? "email" : byPhone ? "phone" : "name";
+
+  const { data: progRows } = await supabase.from("speaking_progress").select("*").eq("level", level);
   const byUser = new Map<string, SpeakingProgressRow>();
   ((progRows || []) as SpeakingProgressRow[]).forEach((p) => byUser.set(norm(p.username), p));
   const myProg = byUser.get(username);
@@ -267,15 +325,9 @@ export async function lookupSpeakingFriend(
   if (friendProg.partner_email) return { ok: false, reason: "friend_has_partner", friendName };
   if (isFinished(friendProg)) return { ok: false, reason: "friend_finished", friendName };
   if (friendProg.current_tema !== myProg.current_tema) {
-    return {
-      ok: false,
-      reason: "different_step",
-      friendName,
-      friendTema: friendProg.current_tema,
-      myTema: myProg.current_tema,
-    };
+    return { ok: false, reason: "different_step", friendName, friendTema: friendProg.current_tema, myTema: myProg.current_tema };
   }
-  return { ok: true, friendEmail: friendProg.username, friendName, friendStepLabelTema: friendProg.current_tema };
+  return { ok: true, friendEmail: friendProg.username, friendName, matchedBy };
 }
 
 /**
@@ -285,11 +337,11 @@ export async function lookupSpeakingFriend(
 export async function matchSpeakingFriend(
   usernameRaw: string,
   level: string,
-  friendPhoneRaw: string,
+  friend: SpeakingFriendInput,
   myPhoneRaw: string
 ): Promise<FriendLookupResult> {
   try {
-    const check = await lookupSpeakingFriend(usernameRaw, level, friendPhoneRaw, myPhoneRaw);
+    const check = await lookupSpeakingFriend(usernameRaw, level, friend, myPhoneRaw);
     if (!check.ok) return check;
 
     const username = norm(usernameRaw);
