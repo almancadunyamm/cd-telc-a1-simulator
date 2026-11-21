@@ -1,0 +1,620 @@
+// Sınav Hazırlık → ÖSD Zertifikat Deutsch Österreich B1 (ZDÖ B1) → Lesen & Sprachbausteine (insgesamt 90 Minuten)
+// ÖSD ZDÖ B1 Modellsatz formatı birebir örnek alınarak hazırlanmış özgün alıştırmalar. Metinlerdeki kurum ve
+// firma adları uydurmadır.
+//   Lesen Aufgabe 1 (~20 dk, 25 P.): 10 başlık (A–K, J yok) + 5 kısa metin (1–5), kaynak etiketiyle.
+//   Lesen Aufgabe 2 (~35 dk, 25 P.): Gazete makalesi + Beispiel + 5 görev (6–10), A / B / C.
+//   Lesen Aufgabe 3 (~15 dk, 25 P.): 10 durum (11–20) + 12 ilan (A–M, J yok). İlanlar tekrar kullanılabilir;
+//     uygun ilan yoksa 0.
+//   Sprachbausteine Aufgabe 1 (~10 dk, 15 P.): E-posta, 10 boşluk (21–30), A / B / C.
+//   Sprachbausteine Aufgabe 2 (~10 dk, 15 P.): İlan + mektup, 10 boşluk (31–40), kelime listesi; her kelime bir kez,
+//     bazı kelimeler kullanılmaz.
+
+import type { McOption, McTextSet } from "./goethe_a2_lesen";
+import type { OsdHeadlineSet } from "./osd_a2_lesen";
+import type { TelcA2Teil3Set } from "./telc_a2_lesen";
+import type { ClozeBankSet, ClozeMcSet } from "./telc_b1_lesen";
+
+export const OSD_B1_INSTRUCTIONS = {
+  aufgabe1: {
+    de: [
+      "Lesen Sie die 10 Überschriften und die 5 Texte.",
+      "Suchen Sie dann zu jedem Text (1–5) die passende Überschrift (A–K). Pro Text gibt es nur eine richtige Lösung.",
+    ],
+    tr: "Her kısa metne uyan başlığı seçin. Başlıklar ikişer ikişer aynı konudadır; metnin asıl mesajını bulun. 5 başlık kullanılmaz.",
+  },
+  aufgabe2: {
+    de: [
+      "Lesen Sie zuerst den Zeitungsartikel und lösen Sie dann die fünf Aufgaben (6–10), indem Sie die richtige Antwort (A, B oder C) ankreuzen.",
+      "Für jede Aufgabe gibt es nur eine richtige Lösung (siehe Beispiel).",
+    ],
+    tr: "Makaleyi okuyun ve her görev için doğru seçeneği işaretleyin. Görevler metindeki sırayı izler. Bu bölüm için yaklaşık 35 dakikanız var.",
+  },
+  aufgabe3: {
+    de: [
+      "Lesen Sie die Situationen (11–20) sowie die 12 Anzeigen (A–M). Welche Anzeige passt zu welcher Situation?",
+      "Pro Situation gibt es nur eine passende Anzeige, es ist aber auch möglich, dass es keine passende Anzeige gibt. In diesem Fall schreiben Sie 0.",
+      "Die Anzeige aus dem Beispiel kann wieder verwendet werden.",
+    ],
+    tr: "Her duruma uyan ilanı seçin. ÖSD'de bir ilan birden fazla kez kullanılabilir (örnekteki de). Uygun ilan yoksa 0.",
+  },
+  sb1: {
+    de: ["Lesen Sie den folgenden Text und kreuzen Sie für jede Lücke (21–30) das richtige Wort (A, B oder C) an."],
+    tr: "Her boşluk için dilbilgisi açısından doğru seçeneği seçin.",
+  },
+  sb2: {
+    de: [
+      "Lesen Sie das Inserat und den Brief dazu. Ergänzen Sie den Brief, indem Sie für jede Lücke (31–40) das passende Wort aus der Wortliste suchen.",
+      "Jedes Wort aus der Wortliste kann nur ein Mal verwendet werden. Nicht alle Wörter passen.",
+    ],
+    tr: "Önce ilanı okuyun; mektup bu ilana yazılmış. Her boşluğa listeden bir kelime yerleştirin. Her kelime bir kez kullanılır; 5 kelime boşta kalır.",
+  },
+};
+
+const ABC = (a: string, b: string, c: string): McOption[] => [
+  { key: "a", text: a },
+  { key: "b", text: b },
+  { key: "c", text: c },
+];
+
+const heads = (list: string[]) => ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K"].map((key, i) => ({ key, text: list[i] }));
+
+// ───────────────────────────── LESEN AUFGABE 1 · Überschriften ─────────────────────────────
+
+export const OSD_B1_A1_SETS: OsdHeadlineSet[] = [
+  {
+    id: "ob1a1-1",
+    title: "Alltag und Wirtschaft",
+    headlines: heads([
+      "Bargeld wird abgeschafft",
+      "Graz baut neue Radwege",
+      "Zu wenig Schnee in den Skigebieten",
+      "Lebensmittel immer öfter online bestellt",
+      "Buchhandlungen müssen schließen",
+      "Österreicher zahlen am liebsten bar",
+      "Supermärkte verlängern Öffnungszeiten",
+      "Skisaison beginnt früher als geplant",
+      "Jugendliche greifen wieder öfter zum Buch",
+      "Fahrräder werden teurer",
+    ]),
+    tasks: [
+      { id: 1, text: "Brot, Milch und Gemüse per Mausklick: Laut einer aktuellen Umfrage hat bereits jeder vierte Österreicher im letzten Jahr Lebensmittel im Internet bestellt. Besonders beliebt ist der Online-Einkauf bei Familien mit kleinen Kindern und bei Berufstätigen. Die meisten lassen sich die Waren am Abend nach Hause liefern.", source: "aus einer österreichischen Tageszeitung", answer: "D", explanation: "Gıdaların giderek daha çok internetten sipariş edilmesi → D. Mağazaların açılış saatleri (G) konu edilmiyor." },
+      { id: 2, text: "Die Stadt Graz investiert in den nächsten drei Jahren 30 Millionen Euro in den Radverkehr. Geplant sind 25 Kilometer neue Radwege, vor allem zwischen den äußeren Bezirken und dem Zentrum. Außerdem sollen bei allen großen Haltestellen sichere Abstellplätze für Fahrräder entstehen.", source: "aus einer österreichischen Zeitung", answer: "B", explanation: "Graz yeni bisiklet yolları yapıyor → B. Bisiklet fiyatlarından (K) söz edilmiyor." },
+      { id: 3, text: "Viele Eltern glauben, dass ihre Kinder nur noch am Handy sind. Doch eine neue Studie zeigt: Österreichs Jugendliche lesen wieder mehr. Ein Grund sind ausgerechnet soziale Medien, auf denen junge Leute Buchtipps austauschen. Besonders gefragt sind Fantasy-Romane und Liebesgeschichten.", source: "aus einer österreichischen Zeitschrift", answer: "I", explanation: "Gençler yeniden daha çok kitap okuyor → I. Kitapçılar kapanmıyor (E)." },
+      { id: 4, text: "Kartenzahlung und Handy-Apps werden zwar immer beliebter, doch die meisten Österreicherinnen und Österreicher bezahlen im Alltag weiterhin am liebsten mit Scheinen und Münzen. Vor allem in Gasthäusern, auf Märkten und in der Trafik wird bar bezahlt. Viele sagen, dass sie so einen besseren Überblick über ihre Ausgaben haben.", source: "aus einer österreichischen Wirtschaftszeitung", answer: "F", explanation: "İnsanlar en çok nakit ödüyor → F. Nakit kaldırılmıyor (A)." },
+      { id: 5, text: "Gute Nachrichten für Wintersportler: Nach den starken Schneefällen der letzten Tage öffnen mehrere Skigebiete in Tirol und Salzburg schon eine Woche früher als geplant. Die Pisten sind in sehr gutem Zustand. Die Betreiber rechnen mit vielen Gästen aus dem In- und Ausland.", source: "aus einer österreichischen Tageszeitung", answer: "H", explanation: "Kayak sezonu planlanandan erken başlıyor → H. C (az kar) tam tersi." },
+    ],
+  },
+  {
+    id: "ob1a1-2",
+    title: "Gesundheit und Familie",
+    headlines: heads([
+      "Weniger Babys geboren",
+      "Handy im Kinderzimmer stört den Schlaf",
+      "Apotheken suchen dringend Personal",
+      "Sommer bisher kühler als normal",
+      "Immer mehr Väter bleiben beim Baby zu Hause",
+      "Spital spart bei der Kinderstation",
+      "Bei Hitze viel trinken: Tipps für ältere Menschen",
+      "Neue Handyverträge für Kinder",
+      "Neue Station für kranke Kinder in Linz",
+      "Medikamente jetzt rund um die Uhr am Automaten",
+    ]),
+    tasks: [
+      { id: 1, text: "Noch vor zehn Jahren war es eine Ausnahme, heute ist es fast normal: Fast ein Drittel der Väter in Österreich geht nach der Geburt eines Kindes in Karenz. Die meisten bleiben zwei bis drei Monate zu Hause. „Ich wollte die erste Zeit mit meiner Tochter auf keinen Fall verpassen“, erzählt ein Wiener Vater.", source: "aus einer österreichischen Zeitschrift", answer: "E", explanation: "Babayla evde kalan babaların sayısı artıyor (Karenz = doğum izni) → E." },
+      { id: 2, text: "In einer Apotheke in Klagenfurt kann man seit Kurzem auch nachts Medikamente bekommen – ohne dass jemand da ist. Ein Automat an der Außenwand gibt Kopfschmerztabletten, Pflaster und andere Produkte aus. Für rezeptpflichtige Medikamente muss man aber weiterhin zur Nachtapotheke gehen.", source: "aus einer österreichischen Tageszeitung", answer: "K", explanation: "Gece de ilaç veren otomat → K. Eczane personel aramıyor (C)." },
+      { id: 3, text: "Kinder, die ein Smartphone im Schlafzimmer haben, schlafen im Durchschnitt 40 Minuten weniger als andere. Das zeigt eine Untersuchung der Universität Innsbruck. Ärzte empfehlen deshalb, das Handy am Abend in der Küche oder im Wohnzimmer zu lassen.", source: "von einem österreichischen Online-Portal", answer: "B", explanation: "Çocuk odasındaki telefon uykuyu bozuyor → B. Yeni telefon tarifeleri (H) konu değil." },
+      { id: 4, text: "Hell, freundlich und mit einem eigenen Spielzimmer: Im Linzer Krankenhaus wurde am Montag eine neue Station für Kinder und Jugendliche eröffnet. Eltern können in speziellen Zimmern bei ihren kranken Kindern übernachten. Die Station hat 40 Betten.", source: "aus einer österreichischen Zeitung", answer: "I", explanation: "Linz'de hasta çocuklar için yeni bölüm → I. Tasarruf yapılmıyor (F)." },
+      { id: 5, text: "Bis zu 35 Grad werden in den nächsten Tagen erwartet. Besonders für ältere Menschen kann die Hitze gefährlich werden, weil sie oft zu wenig Durst haben. Ärzte raten, mindestens zwei Liter Wasser pro Tag zu trinken, leichte Kleidung zu tragen und in der Mittagszeit nicht ins Freie zu gehen.", source: "aus einer österreichischen Tageszeitung", answer: "G", explanation: "Yaşlılar için sıcakta bol su içme tavsiyeleri → G. D (serin yaz) tam tersi." },
+    ],
+  },
+  {
+    id: "ob1a1-3",
+    title: "Arbeit und Bildung",
+    headlines: heads([
+      "Homeoffice wird verboten",
+      "Extra-Geld für Pflegekräfte",
+      "Weniger Jugendliche machen eine Lehre",
+      "Kostenlose Deutschkurse an der Universität",
+      "Längere Arbeitszeiten in Salzburg",
+      "Die meisten wollen teilweise von zu Hause arbeiten",
+      "Studiengebühren steigen",
+      "Lehre und Matura gleichzeitig immer beliebter",
+      "Salzburger Firma testet die Vier-Tage-Woche",
+      "Spitäler schließen Abteilungen",
+    ]),
+    tasks: [
+      { id: 1, text: "Eine Ausbildung im Betrieb und trotzdem die Matura machen? Das Modell „Lehre mit Matura“ macht es möglich. Im letzten Jahr haben sich österreichweit über 12.000 Lehrlinge dafür entschieden – so viele wie nie zuvor. Die Kurse finden meist am Abend oder am Wochenende statt und sind für die Jugendlichen kostenlos.", source: "aus einer österreichischen Zeitung", answer: "H", explanation: "Çıraklık ve Matura'yı birlikte yapmak giderek popüler → H. Çıraklık azalmıyor (C)." },
+      { id: 2, text: "Seit Jänner arbeiten die 80 Mitarbeiterinnen und Mitarbeiter eines Salzburger Softwareunternehmens nur noch von Montag bis Donnerstag – bei gleichem Gehalt. Der Versuch dauert ein Jahr. „Wenn die Arbeit trotzdem gut gemacht wird, behalten wir das Modell“, sagt die Geschäftsführerin.", source: "aus einer österreichischen Wirtschaftszeitung", answer: "I", explanation: "Salzburg'da bir firma dört günlük haftayı deniyor → I. Çalışma saatleri uzamıyor (E)." },
+      { id: 3, text: "Internationale Studierende an der Universität Wien können ab dem Wintersemester gratis Deutschkurse besuchen. Angeboten werden Kurse von A1 bis C1, auch am Abend. „Wer die Sprache gut spricht, findet leichter Freunde und später einen Job in Österreich“, erklärt die Vizerektorin.", source: "von einem österreichischen Online-Portal", answer: "D", explanation: "Üniversitede ücretsiz Almanca kursu → D. Harçlar artmıyor (G)." },
+      { id: 4, text: "Jeden Tag ins Büro oder nur noch zu Hause arbeiten? Laut einer Befragung von 2.000 Angestellten wünscht sich die große Mehrheit eine Mischung: Zwei Tage Homeoffice pro Woche finden die meisten ideal. Nur acht Prozent möchten ausschließlich von zu Hause aus arbeiten.", source: "aus einer österreichischen Tageszeitung", answer: "F", explanation: "Çoğu kişi kısmen evden çalışmak istiyor → F. Evden çalışma yasaklanmıyor (A)." },
+      { id: 5, text: "Für ihre wichtige und anstrengende Arbeit erhalten Pflegekräfte in Oberösterreich ab Juli eine Prämie von 1.000 Euro pro Jahr. Damit will das Land verhindern, dass noch mehr Menschen den Beruf verlassen. Auch Auszubildende in der Pflege bekommen künftig mehr Geld.", source: "aus einer österreichischen Zeitung", answer: "B", explanation: "Bakım personeline ek para → B. Hastaneler bölüm kapatmıyor (K)." },
+    ],
+  },
+  {
+    id: "ob1a1-4",
+    title: "Freizeit und Umwelt",
+    headlines: heads([
+      "Neue Müllgebühren ab Jänner",
+      "Einmal im Monat gratis ins Museum",
+      "Haustiere werden teurer",
+      "Mehr Trinkbrunnen für heiße Tage",
+      "Neue Wanderwege in Tirol",
+      "Nach den Feiertagen: Tierheime überfüllt",
+      "Museen öffnen am Abend länger",
+      "Bergrettung: Viele Wanderer schlecht ausgerüstet",
+      "Wasser wird teurer",
+      "Österreicher sind Meister im Mülltrennen",
+    ]),
+    tasks: [
+      { id: 1, text: "Damit sich niemand an heißen Sommertagen eine teure Flasche Wasser kaufen muss, stellt die Stadt Wien heuer 50 zusätzliche Trinkbrunnen auf – vor allem in Parks und auf großen Plätzen. Das Wasser kommt direkt aus den Bergen und ist kostenlos. Insgesamt gibt es dann über 1.500 Brunnen in der Stadt.", source: "aus einer österreichischen Tageszeitung", answer: "D", explanation: "Sıcak günler için daha fazla içme çeşmesi → D. Su pahalanmıyor, ücretsiz (I yanlış)." },
+      { id: 2, text: "Kunst, Geschichte und Technik für alle: Ab März ist der Eintritt in die städtischen Museen jeden ersten Sonntag im Monat kostenlos. Die Stadt möchte damit besonders Familien und Menschen mit wenig Geld den Besuch ermöglichen. An den anderen Tagen gelten die normalen Preise.", source: "aus einer österreichischen Zeitung", answer: "B", explanation: "Ayda bir kez ücretsiz müze → B. Akşam açılış saatleri (G) konu edilmiyor." },
+      { id: 3, text: "Papier, Glas, Plastik, Bioabfall: Kaum ein Land in Europa trennt seinen Müll so sorgfältig wie Österreich. Laut einer neuen Statistik werden fast 60 Prozent des Haushaltsmülls wiederverwertet. Experten sehen aber noch Verbesserungsbedarf beim Plastik.", source: "aus einer österreichischen Zeitschrift", answer: "K", explanation: "Avusturyalılar çöp ayrıştırmada çok iyi → K. Yeni çöp ücretlerinden (A) söz edilmiyor." },
+      { id: 4, text: "Turnschuhe statt Bergschuhe, kein Regenschutz, zu wenig zu trinken: Die Bergrettung in Vorarlberg musste in diesem Sommer schon über 200 Mal ausrücken. In vielen Fällen waren die Wanderer schlecht vorbereitet. Die Retter raten, vor jeder Tour den Wetterbericht zu lesen und die richtige Ausrüstung mitzunehmen.", source: "aus einer österreichischen Tageszeitung", answer: "H", explanation: "Dağ kurtarma: Yürüyüşçülerin çoğu kötü donanımlı → H. Yeni yürüyüş yolları (E) yok." },
+      { id: 5, text: "Jedes Jahr dasselbe Bild: Im Jänner und Februar werden in den Tierheimen besonders viele Hunde, Katzen und Kaninchen abgegeben. Viele davon waren Weihnachtsgeschenke. „Ein Tier ist kein Spielzeug“, warnt eine Mitarbeiterin des Wiener Tierschutzhauses. Derzeit gibt es dort kaum noch freie Plätze.", source: "von einem österreichischen Online-Portal", answer: "F", explanation: "Bayramlardan sonra barınaklar dolu → F. Evcil hayvan fiyatları (C) konu değil." },
+    ],
+  },
+];
+
+// ───────────────────────────── LESEN AUFGABE 2 · Zeitungsartikel ─────────────────────────────
+
+export const OSD_B1_A2_SETS: McTextSet[] = [
+  {
+    id: "ob1a2-1",
+    title: "Wie viel Taschengeld?",
+    text: {
+      kind: "article",
+      headline: "Wie viel Taschengeld ist richtig?",
+      subline: "Experten empfehlen: früh beginnen, regelmäßig zahlen – und nicht kontrollieren",
+      paragraphs: [
+        "Für viele Eltern ist es eine schwierige Frage: Ab wann soll ein Kind Taschengeld bekommen, und wie viel? Laut einer Umfrage der Schuldnerberatung erhalten in Österreich rund 80 Prozent der Kinder zwischen sechs und 14 Jahren regelmäßig Geld von ihren Eltern. Der Betrag ist allerdings sehr unterschiedlich.",
+        "Fachleute empfehlen, mit dem Schuleintritt zu beginnen. „Kinder lernen mit dem Taschengeld, mit Geld umzugehen und Entscheidungen zu treffen“, erklärt die Pädagogin Andrea Hofer. Für Volksschulkinder reichen ein bis zwei Euro pro Woche, für Zehnjährige etwa 15 Euro im Monat. Wichtig sei vor allem, dass das Geld regelmäßig und pünktlich kommt.",
+        "Einen Fehler machen viele Eltern laut Hofer immer wieder: Sie schreiben den Kindern vor, wofür sie das Geld ausgeben dürfen. „Taschengeld gehört dem Kind. Wenn es alles für Süßigkeiten ausgibt und am Ende der Woche nichts mehr übrig ist, ist das eine wichtige Erfahrung.“ Genauso wenig sollte Taschengeld als Belohnung für gute Noten oder als Strafe gestrichen werden.",
+        "Ältere Kinder ab etwa zwölf Jahren können ihr Geld einmal im Monat bekommen, damit sie lernen, länger zu planen. Manche Familien richten ihren Kindern dafür ein eigenes Jugendkonto bei der Bank ein. Für größere Wünsche wie ein Fahrrad oder ein Handy sollten die Kinder einen Teil selbst sparen. „Dann schätzen sie die Dinge auch mehr“, meint Hofer.",
+      ],
+    },
+    example: { id: 0, stem: "In Österreich bekommen", options: ABC("alle Kinder gleich viel Taschengeld.", "nur ältere Kinder Taschengeld.", "die meisten Kinder regelmäßig Taschengeld."), answer: "c", explanation: "Yaklaşık %80'i düzenli harçlık alıyor." },
+    tasks: [
+      { id: 6, stem: "Experten empfehlen, Kindern Taschengeld zu geben,", options: ABC("wenn sie in die Schule kommen.", "ab dem ersten Lebensjahr.", "erst ab zwölf Jahren."), answer: "a", explanation: "„mit dem Schuleintritt zu beginnen“." },
+      { id: 7, stem: "Besonders wichtig beim Taschengeld ist,", options: ABC("dass es möglichst viel ist.", "dass die Kinder es zuverlässig bekommen.", "dass die Kinder es sparen."), answer: "b", explanation: "„dass das Geld regelmäßig und pünktlich kommt“." },
+      { id: 8, stem: "Eltern sollten", options: ABC("das Kind selbst über sein Geld entscheiden lassen.", "selbst entscheiden, wofür das Kind das Geld ausgibt.", "Süßigkeiten verbieten."), answer: "a", explanation: "„Taschengeld gehört dem Kind.“ Harcamaları ebeveyn belirlememeli." },
+      { id: 9, stem: "Taschengeld sollte man", options: ABC("nur für gute Noten geben.", "als Strafe verwenden.", "nicht wegen schlechter Noten streichen."), answer: "c", explanation: "Ödül ya da ceza aracı olarak kullanılmamalı." },
+      { id: 10, stem: "Wenn sich ein Kind etwas Teures wünscht,", options: ABC("sollten die Eltern es sofort kaufen.", "sollte das Kind einen Teil davon selbst bezahlen.", "braucht es ein eigenes Konto."), answer: "b", explanation: "„sollten die Kinder einen Teil selbst sparen“." },
+    ],
+  },
+  {
+    id: "ob1a2-2",
+    title: "Allein reisen im Alter",
+    text: {
+      kind: "article",
+      headline: "Mit 70 allein um die Welt",
+      subline: "Immer mehr ältere Menschen entdecken das Reisen ohne Begleitung",
+      paragraphs: [
+        "Als Hermine Wallner vor fünf Jahren ihren Mann verlor, dachte sie, ihre Reisezeit sei vorbei. „Wir waren immer zusammen unterwegs. Allein konnte ich mir das nicht vorstellen“, erzählt die heute 74-jährige Grazerin. Doch dann buchte sie auf Anraten ihrer Tochter eine Gruppenreise nach Portugal – und entdeckte eine neue Leidenschaft.",
+        "Hermine ist kein Einzelfall. Reiseveranstalter berichten, dass die Zahl der älteren Alleinreisenden in den letzten Jahren stark gestiegen ist. Viele Anbieter haben inzwischen spezielle Programme für Menschen über 60 entwickelt: kleinere Gruppen, ein ruhigeres Tempo und Hotels, in denen man nicht viel umziehen muss.",
+        "Ein Problem ist allerdings der Preis. Wer allein reist, muss für ein Einzelzimmer oft deutlich mehr bezahlen als die Hälfte eines Doppelzimmers. Einige Veranstalter verzichten deshalb auf diesen Zuschlag oder vermitteln Zimmerpartnerinnen und -partner. Hermine teilt sich inzwischen regelmäßig ein Zimmer mit einer Wienerin, die sie auf ihrer ersten Reise kennengelernt hat.",
+        "Für die Reisemedizinerin Dr. Karin Brandl ist Reisen im Alter grundsätzlich eine gute Idee. „Neue Eindrücke und Bewegung halten Körper und Geist fit.“ Sie rät aber, vor weiten Reisen mit dem Hausarzt zu sprechen und ausreichend Medikamente mitzunehmen. Hermine plant schon ihr nächstes Ziel: Japan. „Dafür lerne ich gerade ein paar Wörter Japanisch“, sagt sie und lacht.",
+      ],
+    },
+    example: { id: 0, stem: "Nach dem Tod ihres Mannes", options: ABC("ist Hermine sofort nach Portugal gezogen.", "hat Hermine mit ihrer Tochter eine Weltreise gemacht.", "wollte Hermine zuerst nicht mehr reisen."), answer: "c", explanation: "Seyahat zamanının bittiğini düşünmüş." },
+    tasks: [
+      { id: 6, stem: "Die erste Reise allein", options: ABC("war eine Idee von Hermines Tochter.", "hat Hermine selbst geplant.", "war nicht schön für Hermine."), answer: "a", explanation: "„auf Anraten ihrer Tochter“ – kızının tavsiyesiyle." },
+      { id: 7, stem: "Reiseveranstalter", options: ABC("möchten keine älteren Gäste allein reisen lassen.", "bieten jetzt Reisen speziell für ältere Menschen an.", "bieten nur noch große Gruppenreisen an."), answer: "b", explanation: "60 yaş üstü için özel programlar geliştirmişler." },
+      { id: 8, stem: "Für Alleinreisende ist es oft ein Nachteil, dass", options: ABC("es keine Einzelzimmer gibt.", "sie für das Zimmer mehr bezahlen müssen.", "sie mit Fremden reisen müssen."), answer: "b", explanation: "Tek kişilik oda için daha fazla ödeniyor (Zuschlag)." },
+      { id: 9, stem: "Hermine", options: ABC("übernachtet jetzt oft mit einer Bekannten in einem Zimmer.", "bucht immer ein teures Einzelzimmer.", "reist inzwischen nur noch mit ihrer Tochter."), answer: "a", explanation: "İlk seyahatinde tanıştığı Viyanalı bir kadınla oda paylaşıyor." },
+      { id: 10, stem: "Die Ärztin empfiehlt älteren Reisenden,", options: ABC("nur kurze Reisen zu machen.", "keine Medikamente mitzunehmen.", "vor einer langen Reise den Arzt zu fragen."), answer: "c", explanation: "„vor weiten Reisen mit dem Hausarzt zu sprechen“." },
+    ],
+  },
+  {
+    id: "ob1a2-3",
+    title: "Das Wiener Kaffeehaus",
+    text: {
+      kind: "article",
+      headline: "Ein Kaffee, eine Zeitung und viel Zeit",
+      subline: "Das traditionelle Kaffeehaus erlebt bei jungen Menschen eine Renaissance",
+      paragraphs: [
+        "Marmortische, Thonet-Sessel, Kellner im Frack und ein Glas Wasser zu jedem Kaffee: Das Wiener Kaffeehaus ist seit über 300 Jahren ein Ort, an dem man stundenlang sitzen kann, ohne mehr als eine Melange zu bestellen. Lange Zeit galt es als etwas für Touristen und ältere Stammgäste. Doch das ändert sich gerade.",
+        "„Immer mehr junge Leute kommen zu uns, um zu lernen, zu arbeiten oder Freunde zu treffen“, erzählt Franz Leitner, der seit 30 Jahren als Oberkellner in einem Café in der Josefstadt arbeitet. Viele schätzen gerade das, was es anderswo kaum noch gibt: Ruhe, keine laute Musik und niemanden, der einen nach einer halben Stunde zum Gehen auffordert.",
+        "Ganz ohne Veränderungen geht es aber nicht. Viele Kaffeehäuser haben inzwischen WLAN, und auf der Karte stehen neben Sachertorte und Apfelstrudel auch vegane Kuchen und Hafermilch. „Am Anfang haben sich manche Stammgäste über Laptops auf den Tischen beschwert“, sagt Leitner. Inzwischen gebe es in seinem Café eine Regel: Laptops nur an den Fensterplätzen.",
+        "Schwierig ist für viele Betriebe die wirtschaftliche Lage. Die Mieten in der Innenstadt sind hoch, und wer stundenlang bei einem Kaffee sitzt, bringt wenig Umsatz. Einige Kaffeehäuser bieten deshalb mittags günstige Menüs an. Die UNESCO hat die Wiener Kaffeehauskultur übrigens schon 2011 zum immateriellen Kulturerbe erklärt.",
+      ],
+    },
+    example: { id: 0, stem: "Im Wiener Kaffeehaus", options: ABC("muss man nach einer Stunde gehen.", "kann man lange sitzen, auch wenn man wenig bestellt.", "bekommt man kein Wasser."), answer: "b", explanation: "Tek bir Melange ile saatlerce oturulabiliyor." },
+    tasks: [
+      { id: 6, stem: "Früher dachten viele, dass Kaffeehäuser", options: ABC("zu modern sind.", "nur für Studenten sind.", "vor allem etwas für Touristen und ältere Gäste sind."), answer: "c", explanation: "„galt es als etwas für Touristen und ältere Stammgäste“." },
+      { id: 7, stem: "Junge Leute gehen gern ins Kaffeehaus, weil", options: ABC("man dort in Ruhe sitzen kann.", "es dort laute Musik gibt.", "der Kaffee dort billig ist."), answer: "a", explanation: "Sessizlik, gürültülü müzik yok, kimse kalk demiyor." },
+      { id: 8, stem: "In Herrn Leitners Café", options: ABC("darf man Laptops nur an bestimmten Tischen benutzen.", "sind Laptops verboten.", "gibt es kein WLAN."), answer: "a", explanation: "„Laptops nur an den Fensterplätzen.“" },
+      { id: 9, stem: "Ein Problem für viele Kaffeehäuser ist,", options: ABC("dass sie keine Gäste haben.", "dass niemand mehr Kuchen essen möchte.", "dass sie mit Gästen, die lange bleiben, wenig verdienen."), answer: "c", explanation: "Uzun oturanlar az ciro getiriyor ve kiralar yüksek." },
+      { id: 10, stem: "Um mehr Geld zu verdienen, bieten einige Kaffeehäuser", options: ABC("Kaffee nur noch zum Mitnehmen an.", "günstiges Mittagessen an.", "Führungen für Touristen an."), answer: "b", explanation: "„mittags günstige Menüs“." },
+    ],
+  },
+  {
+    id: "ob1a2-4",
+    title: "Mehrsprachig aufwachsen",
+    text: {
+      kind: "article",
+      headline: "Zwei Sprachen sind kein Problem",
+      subline: "Wie Kinder mehrsprachig aufwachsen – und was Eltern dabei beachten sollten",
+      paragraphs: [
+        "In Österreich wächst etwa jedes vierte Kind mit mehr als einer Sprache auf. Viele Eltern machen sich Sorgen: Verwirrt es das Kind, wenn es zu Hause Türkisch oder Kroatisch und im Kindergarten Deutsch spricht? Lernt es dann keine Sprache richtig? Sprachwissenschaftlerinnen und Sprachwissenschaftler können beruhigen.",
+        "„Kinder sind in der Lage, mehrere Sprachen gleichzeitig zu lernen“, sagt die Linguistin Prof. Sabine Rauch von der Universität Salzburg. Es sei ganz normal, dass mehrsprachige Kinder am Anfang Wörter aus beiden Sprachen mischen oder etwas später zu sprechen beginnen. „Das gibt sich meist bis zum Schulalter von selbst.“",
+        "Wichtig sei vor allem, dass die Eltern mit dem Kind in der Sprache sprechen, die sie selbst am besten können. „Wenn Eltern mit schlechtem Deutsch mit ihrem Kind sprechen, weil sie glauben, dass es ihm hilft, ist das eher ein Nachteil“, erklärt Rauch. Das Kind lerne Deutsch besser im Kindergarten und mit anderen Kindern.",
+        "Auch die Erstsprache sollte gefördert werden, zum Beispiel durch Bücher, Lieder oder Besuche bei Verwandten. Viele Schulen bieten inzwischen muttersprachlichen Unterricht an, der freiwillig und kostenlos ist. „Wer seine Erstsprache gut beherrscht, lernt auch die Zweitsprache leichter“, betont Rauch.",
+      ],
+    },
+    example: { id: 0, stem: "In Österreich", options: ABC("sprechen viele Kinder mehr als eine Sprache.", "lernen alle Kinder zwei Sprachen.", "spricht kaum ein Kind eine andere Sprache."), answer: "a", explanation: "Yaklaşık her dört çocuktan biri birden fazla dille büyüyor." },
+    tasks: [
+      { id: 6, stem: "Viele Eltern haben Angst, dass", options: ABC("der Kindergarten zu teuer ist.", "ihr Kind keine Sprache gut lernt.", "ihr Kind keine Freunde findet."), answer: "b", explanation: "„Lernt es dann keine Sprache richtig?“" },
+      { id: 7, stem: "Wenn mehrsprachige Kinder Wörter mischen,", options: ABC("sollten die Eltern sofort zum Arzt gehen.", "lernen sie nie richtig Deutsch.", "ist das ganz normal."), answer: "c", explanation: "„Es sei ganz normal …“ – okul çağına kadar kendiliğinden geçiyor." },
+      { id: 8, stem: "Eltern sollten mit ihren Kindern", options: ABC("in der Sprache sprechen, die sie am besten können.", "immer Deutsch sprechen.", "nur wenig sprechen."), answer: "a", explanation: "En iyi bildikleri dilde konuşmalılar." },
+      { id: 9, stem: "Deutsch lernt das Kind am besten", options: ABC("von den Eltern.", "im Kontakt mit anderen Kindern.", "aus Büchern."), answer: "b", explanation: "„im Kindergarten und mit anderen Kindern“." },
+      { id: 10, stem: "Muttersprachlicher Unterricht an Schulen", options: ABC("kostet viel Geld.", "ist für alle Kinder Pflicht.", "hilft auch beim Lernen der Zweitsprache."), answer: "c", explanation: "Ana dilini iyi bilen ikinci dili de kolay öğreniyor; ders gönüllü ve ücretsiz." },
+    ],
+  },
+];
+
+// ───────────────────────────── LESEN AUFGABE 3 · Anzeigen (A–M, Wiederverwendung möglich, 0) ─────────────────────────────
+
+export const OSD_B1_A3_SETS: TelcA2Teil3Set[] = [
+  {
+    id: "ob1a3-1",
+    title: "Wohnen und Haushalt",
+    ads: [
+      { key: "A", title: "Möbelhaus Kraft – Abverkauf", lines: ["Wohnzimmermöbel bis −50 %", "z. B. Ledersofa statt 1.290 € nur 640 €", "Mo–Fr 10–19, Sa 9–17 Uhr"] },
+      { key: "B", title: "Reinigungsservice Glanz", lines: ["Wohnungsreinigung, Fenster, Endreinigung", "Auch einmalig nach dem Umzug", "Tel. 0664 / 2318877"] },
+      { key: "C", title: "Mietwohnung in Linz-Urfahr", lines: ["2 Zimmer, 55 m², Balkon", "Ruhige Lage, Nähe Straßenbahn", "Miete 690 € inkl. Betriebskosten"] },
+      { key: "D", title: "Flohmarkt im Pfarrsaal St. Josef", lines: ["Jeden 1. Samstag im Monat", "Tische für Privatverkäufer: 8 €", "Anmeldung im Pfarrbüro"] },
+      { key: "E", title: "Elektro Huber", lines: ["Reparatur von Fernsehern, Radios und Computern", "Abholung und Zustellung gratis", "Meisterbetrieb seit 1985"] },
+      { key: "F", title: "Gärtnerei Blütenmeer", lines: ["Balkon- und Zimmerpflanzen", "Kostenlose Beratung", "Lieferung im ganzen Bezirk"] },
+      { key: "G", title: "Umzüge Schnell & Sicher", lines: ["Wir übersiedeln Sie in ganz Österreich", "Möbelmontage inklusive", "Kostenloser Kostenvoranschlag"] },
+      { key: "H", title: "Mieterhilfe der Stadt", lines: ["Kostenlose Beratung bei Problemen mit der Wohnung", "Betriebskosten, Kaution, Kündigung", "Di + Do 14–18 Uhr"] },
+      { key: "I", title: "WG-Zimmer frei", lines: ["Studentin sucht Mitbewohnerin", "15 m², möbliert, 350 € warm", "Graz, 5 Min. zur Uni"] },
+      { key: "K", title: "Kinderzimmer zu verkaufen", lines: ["Bett, Schrank, Schreibtisch, weiß", "Guter Zustand, nur Selbstabholer", "Preis: VB, Tel. 0676 / 5512390"] },
+      { key: "L", title: "Schlüsseldienst Tag & Nacht", lines: ["Tür zugefallen? Wir öffnen ohne Schaden", "In 30 Minuten bei Ihnen", "Fixpreis 79 €"] },
+      { key: "M", title: "Tischlerei Holzwurm", lines: ["Möbel nach Maß", "Küchen, Schränke, Einbaumöbel", "Beratung bei Ihnen zu Hause"] },
+    ],
+    example: { id: 0, situation: "Sie sind gerade nach Linz gezogen und suchen eine kleine Wohnung zum Mieten.", answer: "C", explanation: "Linz'de kiralık 2 odalı daire → C." },
+    tasks: [
+      { id: 11, situation: "Sie haben eine neue Wohnung und suchen ein günstiges Sofa.", answer: "A", explanation: "Oturma odası mobilyalarında indirim → A." },
+      { id: 12, situation: "Sie ziehen aus und müssen die alte Wohnung sauber übergeben.", answer: "B", explanation: "Taşınma sonrası bir kerelik temizlik → B." },
+      { id: 13, situation: "Ihr Fernseher funktioniert nicht mehr.", answer: "E", explanation: "Televizyon tamiri → E." },
+      { id: 14, situation: "Sie möchten Ihre alten Bücher und Spielsachen privat verkaufen.", answer: "D", explanation: "Bit pazarında özel satıcılar için masa → D." },
+      { id: 15, situation: "Ihre Kinder sind größer geworden. Sie suchen ein günstiges, gebrauchtes Bett für das Kinderzimmer.", answer: "K", explanation: "İkinci el çocuk odası takımı satılık → K." },
+      { id: 16, situation: "Ihr Vermieter möchte die Kaution nicht zurückzahlen. Sie brauchen Rat.", answer: "H", explanation: "Kira ve depozito sorunlarında ücretsiz danışmanlık → H." },
+      { id: 17, situation: "Ihre Waschmaschine ist kaputt und muss repariert werden.", answer: "x", explanation: "E sadece TV, radyo, bilgisayar tamir ediyor; çamaşır makinesi yok → 0." },
+      { id: 18, situation: "Sie möchten eine Küche, die genau in Ihre kleine Wohnung passt.", answer: "M", explanation: "Ölçüye göre mutfak → M." },
+      { id: 19, situation: "Ihre Schwester beginnt im Herbst ihr Studium in Graz und sucht ein Zimmer.", answer: "I", explanation: "Graz'da üniversiteye yakın WG odası → I." },
+      { id: 20, situation: "Ihre Eltern ziehen von Wien nach Linz und brauchen Hilfe beim Transport der Möbel.", answer: "G", explanation: "Avusturya genelinde nakliyat → G." },
+    ],
+  },
+  {
+    id: "ob1a3-2",
+    title: "Arbeit und Weiterbildung",
+    ads: [
+      { key: "A", title: "Hotel Alpenrose, Kitzbühel", lines: ["Rezeptionist/in für die Wintersaison", "Englischkenntnisse erforderlich", "Unterkunft wird gestellt"] },
+      { key: "B", title: "Nachhilfe Mathe & Physik", lines: ["Student der TU Wien gibt Nachhilfe", "Für Unter- und Oberstufe", "Ich komme zu Ihnen, 20 €/Std."] },
+      { key: "C", title: "Kindergarten Sonnenschein", lines: ["Freie Plätze ab September", "Ganztags, für Kinder von 3 bis 6", "Mit Mittagessen"] },
+      { key: "D", title: "Callcenter TeleService", lines: ["Mitarbeiter/innen für Kundenberatung am Telefon", "Teilzeit, auch abends", "Deutsch und eine weitere Sprache"] },
+      { key: "E", title: "Lehrstelle Einzelhandel", lines: ["Modegeschäft in der Mariahilfer Straße", "sucht Lehrling (m/w/d)", "Beginn: 1. September"] },
+      { key: "F", title: "Volkshochschule – Deutsch für den Beruf", lines: ["Kurse B1 und B2 mit ÖSD-Prüfung", "Abendkurse Mo + Mi 18–21 Uhr", "Förderung durch das AMS möglich"] },
+      { key: "G", title: "Bäckerei Mayr", lines: ["Verkäufer/in für Samstag und Sonntag gesucht", "6–13 Uhr", "Ideal als Nebenjob"] },
+      { key: "H", title: "Computerkurs für Einsteiger", lines: ["Word, Excel, E-Mail", "Vormittags, 4 Wochen", "Im Bildungszentrum Ottakring"] },
+      { key: "I", title: "Krankenhaus der Barmherzigen Schwestern", lines: ["Diplomierte Pflegekräfte gesucht", "Vollzeit und Teilzeit", "Kinderbetreuung im Haus"] },
+      { key: "K", title: "Bewerbungsfotos in 10 Minuten", lines: ["Professionelle Fotos für Lebenslauf und Ausweis", "Ohne Termin", "Fotostudio Blitzlicht"] },
+      { key: "L", title: "Gründerservice der Wirtschaftskammer", lines: ["Sie möchten sich selbstständig machen?", "Kostenlose Beratung und Workshops", "Anmeldung online"] },
+      { key: "M", title: "Juwelier Goldschmied", lines: ["Wir suchen Verkäufer/in mit Erfahrung", "Freude an Schmuck und Uhren", "Vollzeit"] },
+    ],
+    example: { id: 0, situation: "Ihr Freund möchte im Winter in einem Hotel arbeiten.", answer: "A", explanation: "Kış sezonu için otel resepsiyonu → A." },
+    tasks: [
+      { id: 11, situation: "Sie möchten Ihr Deutsch für den Beruf verbessern und eine Prüfung machen.", answer: "F", explanation: "Meslek Almancası, ÖSD sınavlı → F." },
+      { id: 12, situation: "Sie sprechen gern mit Menschen und suchen eine Arbeit am Telefon.", answer: "D", explanation: "Telefonda müşteri danışmanlığı → D." },
+      { id: 13, situation: "Ihr Sohn geht ins Gymnasium und hat Probleme in Mathematik.", answer: "B", explanation: "Evde matematik özel dersi → B." },
+      { id: 14, situation: "Sie studieren und suchen einen Job am Wochenende.", answer: "G", explanation: "Hafta sonu satış elemanı, yan iş → G." },
+      { id: 15, situation: "Ihre Tochter hat die Pflichtschule beendet und möchte im Verkauf eine Ausbildung machen.", answer: "E", explanation: "Perakende sektöründe çıraklık → E." },
+      { id: 16, situation: "Sie sind Krankenpflegerin und haben einen kleinen Sohn. Sie suchen eine Stelle mit Kinderbetreuung.", answer: "I", explanation: "Hastane bakım personeli arıyor, kurum içinde çocuk bakımı var → I." },
+      { id: 17, situation: "Sie möchten ein eigenes kleines Geschäft eröffnen und brauchen Informationen.", answer: "L", explanation: "Kendi işini kurma danışmanlığı → L." },
+      { id: 18, situation: "Sie brauchen für Ihre Bewerbung schnell ein gutes Foto.", answer: "K", explanation: "10 dakikada vesikalık fotoğraf → K." },
+      { id: 19, situation: "Ihre Freundin interessiert sich sehr für Schmuck und möchte eine Ausbildung als Goldschmiedin machen.", answer: "x", explanation: "M deneyimli satış elemanı arıyor, kuyumculuk eğitimi değil → 0." },
+      { id: 20, situation: "Sie möchten lernen, wie man mit dem Computer Briefe schreibt, haben aber nur abends Zeit.", answer: "x", explanation: "H sadece sabahları → 0." },
+    ],
+  },
+  {
+    id: "ob1a3-3",
+    title: "Freizeit und Gesundheit",
+    ads: [
+      { key: "A", title: "Schwimmschule Wellenreiter", lines: ["Kurse für Kinder ab 4 Jahren", "Kleine Gruppen, erfahrene Trainer", "Hallenbad Hietzing"] },
+      { key: "B", title: "Wandergruppe „Gipfelglück“", lines: ["Jeden Sonntag geführte Touren im Wienerwald", "Für alle Altersgruppen", "Teilnahme kostenlos"] },
+      { key: "C", title: "Yoga für Schwangere", lines: ["Sanfte Übungen für werdende Mütter", "Dienstag 10 Uhr", "Hebammenzentrum Mitte"] },
+      { key: "D", title: "Tanzschule Elmayer-Nachwuchs", lines: ["Tanzkurse für Jugendliche ab 14", "Walzer, Foxtrott, Discofox", "Vorbereitung auf die Ballsaison"] },
+      { key: "E", title: "Zahnarztpraxis Dr. Berger", lines: ["Neue Patienten willkommen", "Ordination auch Samstag vormittags", "Alle Kassen"] },
+      { key: "F", title: "Fitnessstudio Power", lines: ["Geöffnet täglich 6–23 Uhr", "Gerätetraining und Kurse", "Erster Monat gratis"] },
+      { key: "G", title: "Theaterkarten zum halben Preis", lines: ["Restkarten für den gleichen Abend", "Ab 17 Uhr an der Kassa im Museumsquartier", "Nur solange der Vorrat reicht"] },
+      { key: "H", title: "Kochkurs „Österreichische Küche“", lines: ["Wiener Schnitzel, Knödel, Apfelstrudel", "Samstag 14–18 Uhr", "Mit gemeinsamem Essen"] },
+      { key: "I", title: "Fahrradverleih Donauinsel", lines: ["Fahrräder, E-Bikes und Tandems", "Stunden- und Tagesmiete", "April bis Oktober"] },
+      { key: "K", title: "Rückenschule der Gesundheitskasse", lines: ["Kurs bei Rückenschmerzen", "8 Termine, für Versicherte kostenlos", "Anmeldung erforderlich"] },
+      { key: "L", title: "Chor „Stimmen der Stadt“", lines: ["Wir suchen neue Sängerinnen und Sänger", "Keine Notenkenntnisse nötig", "Probe: Mittwoch 19 Uhr"] },
+      { key: "M", title: "Ernährungsberatung Gesund & Fit", lines: ["Individuelle Beratung zum Abnehmen", "Erstgespräch kostenlos", "Auch online"] },
+    ],
+    example: { id: 0, situation: "Ihr Sohn ist fünf Jahre alt und soll schwimmen lernen.", answer: "A", explanation: "4 yaştan itibaren yüzme kursu → A." },
+    tasks: [
+      { id: 11, situation: "Ihre Tochter (6) möchte auch schwimmen lernen.", answer: "A", explanation: "Yine A: ÖSD'de ilanlar tekrar kullanılabilir (örnekteki de)." },
+      { id: 12, situation: "Sie wandern gern, möchten aber nicht allein gehen.", answer: "B", explanation: "Pazar günleri rehberli yürüyüş grubu → B." },
+      { id: 13, situation: "Sie haben oft Rückenschmerzen und möchten einen Kurs machen, der nichts kostet.", answer: "K", explanation: "Sigortalılar için ücretsiz sırt okulu → K." },
+      { id: 14, situation: "Ihr Sohn (15) möchte für den Schulball tanzen lernen.", answer: "D", explanation: "14 yaş üstü gençler için dans, balo sezonu hazırlığı → D." },
+      { id: 15, situation: "Sie haben Zahnschmerzen und können nur am Wochenende zum Arzt.", answer: "E", explanation: "Cumartesi sabahı da muayene → E." },
+      { id: 16, situation: "Sie möchten heute Abend spontan und günstig ins Theater gehen.", answer: "G", explanation: "Aynı akşam için yarı fiyatına kalan biletler → G." },
+      { id: 17, situation: "Ihre Freunde aus dem Ausland möchten typisch österreichisch kochen lernen.", answer: "H", explanation: "Avusturya mutfağı kursu → H." },
+      { id: 18, situation: "Sie möchten mit Ihrem Partner einen Ausflug mit dem Rad machen, haben aber keine Fahrräder.", answer: "I", explanation: "Bisiklet kiralama → I." },
+      { id: 19, situation: "Sie möchten Gitarre spielen lernen.", answer: "x", explanation: "Gitar kursu ilanı yok (L koro) → 0." },
+      { id: 20, situation: "Sie möchten nach der Arbeit, spät am Abend, noch Sport machen.", answer: "F", explanation: "Her gün 23'e kadar açık spor salonu → F." },
+    ],
+  },
+];
+
+// ───────────────────────────── SPRACHBAUSTEINE AUFGABE 1 · E-Mail · A/B/C ─────────────────────────────
+
+export const OSD_B1_SB1_SETS: ClozeMcSet[] = [
+  {
+    id: "ob1sb1-1",
+    title: "E-Mail: Ein Treffen planen",
+    paragraphs: [
+      "Liebe Sabine,",
+      "entschuldige, dass ich mich so lange nicht gemeldet habe. Wie du weißt, habe ich vor einem Monat eine neue Stelle [[21]]. Deshalb hatte ich in den letzten Wochen kaum Zeit [[22]] meine Freunde.",
+      "Dein Vorschlag, wieder einmal einen [[23]] Tag zusammen zu verbringen, gefällt mir sehr. Am besten passt es mir am Wochenende. Hättest du vielleicht schon [[24]] Sonntag Zeit? Wir könnten zuerst im Prater spazieren gehen und danach in ein Kaffeehaus, [[25]] es die beste Sachertorte der Stadt gibt.",
+      "Außerdem würde ich [[26]] freuen, wenn du meine neuen Kollegen kennenlernst. Zwei von ihnen kommen [[27]] aus Graz, so wie du! Wenn du willst, [[28]] ich sie einfach fragen, ob sie mitkommen möchten.",
+      "Kannst du übrigens mit dem Auto kommen? [[29]] ist leider wieder einmal in der Werkstatt. Schreib mir bald, ob es dir passt. [[30]] du keine Zeit hast, finden wir sicher einen anderen Termin.",
+      "Alles Liebe",
+      "Marion",
+    ],
+    gaps: [
+      { id: 21, options: ABC("angefangen", "anfangen", "fing an"), answer: "a", explanation: "Perfekt: „habe … angefangen“." },
+      { id: 22, options: ABC("bei", "mit", "für"), answer: "c", explanation: "„Zeit für jemanden haben“." },
+      { id: 23, options: ABC("schöner", "schönen", "schönes"), answer: "b", explanation: "einen + der Tag (eril) Akkusativ → schönen." },
+      { id: 24, options: ABC("nächster", "nächsten", "nächste"), answer: "b", explanation: "„nächsten Sonntag“ – zaman bildiren Akkusativ, eril → nächsten." },
+      { id: 25, options: ABC("was", "wann", "wo"), answer: "c", explanation: "Yer bildiren ilgi zarfı: „ein Kaffeehaus, wo es … gibt“." },
+      { id: 26, options: ABC("mich", "mir", "sich"), answer: "a", explanation: "„sich freuen“ → ich freue mich (Akkusativ)." },
+      { id: 27, options: ABC("übrigens", "trotzdem", "deshalb"), answer: "a", explanation: "Ek bir bilgi: übrigens (bu arada)." },
+      { id: 28, options: ABC("muss", "darf", "kann"), answer: "c", explanation: "Teklif / olanak: „kann ich sie fragen“." },
+      { id: 29, options: ABC("Meiner", "Meines", "Meine"), answer: "b", explanation: "das Auto (nötr) → iyelik zamiri: meines (= mein Auto)." },
+      { id: 30, options: ABC("Falls", "Dass", "Weil"), answer: "a", explanation: "Koşul: Falls (eğer) du keine Zeit hast." },
+    ],
+  },
+  {
+    id: "ob1sb1-2",
+    title: "Brief: Anfrage an einen Sportverein",
+    paragraphs: [
+      "Sehr geehrte Damen und Herren,",
+      "ich habe auf Ihrer Homepage gelesen, dass Ihr Verein Volleyballkurse für Erwachsene anbietet, und ich interessiere mich sehr [[21]]. Ich bin 32 Jahre alt und habe als Jugendliche in meiner Heimat drei Jahre in einer Mannschaft [[22]].",
+      "Seit ich in Salzburg wohne, habe ich leider nicht mehr regelmäßig trainiert. Deshalb möchte ich gern wissen, [[23]] ich gleich in eine Gruppe für Fortgeschrittene kommen kann oder zuerst einen Anfängerkurs machen muss.",
+      "Außerdem hätte ich noch einige Fragen zu den Kosten: Wie hoch ist der Mitgliedsbeitrag [[24]] Jahr? Gibt es eine Ermäßigung für Arbeitssuchende? Ich bin nämlich im Moment ohne Arbeit, [[25]] ich vor Kurzem umgezogen bin.",
+      "Da ich [[26]] Nähe des Hauptbahnhofs wohne, wäre für mich ein Training in der Halle in der Elisabethstraße am [[27]]. Könnten Sie mir bitte auch mitteilen, [[28]] das Training am Abend beginnt?",
+      "Gern würde ich vor der Anmeldung einmal an einem Training teilnehmen, um die Gruppe [[29]]. Ist das möglich?",
+      "Ich freue mich auf Ihre Antwort und [[30]] Ihnen schon im Voraus.",
+      "Mit freundlichen Grüßen",
+      "Ana Ribeiro",
+    ],
+    gaps: [
+      { id: 21, options: ABC("darüber", "dafür", "darauf"), answer: "b", explanation: "„sich interessieren für“ → dafür." },
+      { id: 22, options: ABC("spielen", "spielte", "gespielt"), answer: "c", explanation: "Perfekt: „habe … gespielt“." },
+      { id: 23, options: ABC("dass", "ob", "wenn"), answer: "b", explanation: "Dolaylı evet/hayır sorusu → ob." },
+      { id: 24, options: ABC("pro", "im", "für"), answer: "a", explanation: "„pro Jahr“ = yıllık." },
+      { id: 25, options: ABC("denn", "deshalb", "weil"), answer: "c", explanation: "Fiil sonda (umgezogen bin) → weil." },
+      { id: 26, options: ABC("in der", "in die", "im"), answer: "a", explanation: "„in der Nähe“ – Dativ, die Nähe." },
+      { id: 27, options: ABC("besser", "besten", "gut"), answer: "b", explanation: "Kalıp: „am besten“." },
+      { id: 28, options: ABC("wie", "was", "wann"), answer: "c", explanation: "Zaman sorusu: „wann das Training beginnt“." },
+      { id: 29, options: ABC("kennenzulernen", "kennenlernen", "kennengelernt"), answer: "a", explanation: "„um … zu + mastar“ → kennenzulernen." },
+      { id: 30, options: ABC("bedanke", "danke", "dankbar"), answer: "b", explanation: "„Ich danke Ihnen im Voraus.“" },
+    ],
+  },
+  {
+    id: "ob1sb1-3",
+    title: "E-Mail: Nach dem Urlaub",
+    paragraphs: [
+      "Hallo Thomas,",
+      "ich bin seit gestern wieder [[21]] Hause und möchte dir gleich von meinem Urlaub in Kroatien erzählen. Die ersten Tage waren leider nicht so schön, [[22]] es fast die ganze Zeit geregnet hat. Aber dann kam die Sonne, und wir konnten jeden Tag im Meer schwimmen.",
+      "Gewohnt haben wir in einer kleinen Pension, [[23]] Besitzerin sehr freundlich war. Jeden Morgen hat sie uns frisches Obst aus ihrem Garten [[24]]. Am Abend sind wir oft in den Hafen gegangen und haben dort Fisch gegessen.",
+      "Das Beste war ein Ausflug [[25]] Boot zu einer kleinen Insel. Dort gab es keine Autos und nur wenige Touristen. Ich hätte am liebsten noch eine Woche [[26]] bleiben können!",
+      "Wie war es bei dir? Hast du deine Prüfung [[27]]? Ich drücke dir die Daumen! Wenn du Lust hast, können wir uns nächste Woche treffen. Dann zeige ich dir die Fotos und gebe dir die Adresse der Pension – vielleicht [[28]] du ja auch einmal dorthin.",
+      "Ich habe übrigens [[29]] eine Kleinigkeit mitgebracht. Was es ist, verrate ich dir aber noch nicht!",
+      "Melde dich [[30]]!",
+      "Liebe Grüße",
+      "Lena",
+    ],
+    gaps: [
+      { id: 21, options: ABC("nach", "bei", "zu"), answer: "c", explanation: "„zu Hause sein“ (evde olmak); nach Hause = eve doğru." },
+      { id: 22, options: ABC("weil", "deshalb", "obwohl"), answer: "a", explanation: "Neden + fiil sonda → weil." },
+      { id: 23, options: ABC("die", "deren", "dessen"), answer: "b", explanation: "die Pension (dişil) → iyelik ilgi zamiri deren Besitzerin." },
+      { id: 24, options: ABC("gebracht", "bringen", "brachte"), answer: "a", explanation: "Perfekt: „hat … gebracht“." },
+      { id: 25, options: ABC("mit das", "mit den", "mit dem"), answer: "c", explanation: "mit + Dativ, das Boot → mit dem Boot." },
+      { id: 26, options: ABC("dorthin", "dort", "dahin"), answer: "b", explanation: "bleiben (nerede?) → dort. dorthin = oraya doğru." },
+      { id: 27, options: ABC("bestehen", "besteht", "bestanden"), answer: "c", explanation: "Perfekt: „Hast du … bestanden?“" },
+      { id: 28, options: ABC("fährst", "fahren", "fährt"), answer: "a", explanation: "du ile çekim → fährst." },
+      { id: 29, options: ABC("dich", "dir", "du"), answer: "b", explanation: "„jemandem etwas mitbringen“ → Dativ: dir." },
+      { id: 30, options: ABC("schnell", "bald", "früh"), answer: "b", explanation: "Kalıp: „Melde dich bald!“" },
+    ],
+  },
+  {
+    id: "ob1sb1-4",
+    title: "Brief: Beschwerde an die Hausverwaltung",
+    paragraphs: [
+      "Sehr geehrte Damen und Herren,",
+      "ich wohne seit drei Jahren in der Gartengasse 14 und war bisher sehr zufrieden. Leider muss ich mich heute [[21]] ein Problem beschweren, das schon seit mehreren Wochen besteht.",
+      "Der Lift in unserem Haus ist seit Anfang des Monats kaputt. Für mich ist das besonders schwierig, [[22]] ich im fünften Stock wohne und ein kleines Kind habe. Jeden Tag muss ich den Kinderwagen und die Einkäufe die Treppen [[23]] tragen.",
+      "Ich habe den Schaden bereits zweimal telefonisch gemeldet. Man hat mir versprochen, dass sich ein Techniker darum [[24]] wird. Bis heute ist aber niemand gekommen. Auch ältere Nachbarn, [[25]] nicht mehr gut gehen können, verlassen kaum noch ihre Wohnung.",
+      "Ich bitte Sie deshalb, den Lift so schnell [[26]] möglich reparieren zu lassen. Außerdem möchte ich wissen, [[27]] wir für diesen Monat weniger Betriebskosten bezahlen müssen, da wir den Lift nicht benutzen konnten.",
+      "Ich [[28]] Ihnen dankbar, wenn Sie mir bis Ende der Woche antworten. Sie erreichen mich am [[29]] am Nachmittag unter der Nummer 0699 / 1234567.",
+      "[[30]] freundlichen Grüßen",
+      "Sandra Novak",
+    ],
+    gaps: [
+      { id: 21, options: ABC("über", "für", "an"), answer: "a", explanation: "„sich beschweren über“." },
+      { id: 22, options: ABC("denn", "deshalb", "weil"), answer: "c", explanation: "Fiil sonda (wohne) → weil." },
+      { id: 23, options: ABC("hinaus", "hinauf", "herein"), answer: "b", explanation: "Merdivenlerden yukarı → hinauf." },
+      { id: 24, options: ABC("kümmert", "gekümmert", "kümmern"), answer: "c", explanation: "werden (Futur) + mastar → kümmern wird." },
+      { id: 25, options: ABC("die", "der", "denen"), answer: "a", explanation: "Nachbarn (çoğul) yalın hâl → die." },
+      { id: 26, options: ABC("wie", "als", "so"), answer: "a", explanation: "Kalıp: „so schnell wie möglich“." },
+      { id: 27, options: ABC("dass", "wann", "ob"), answer: "c", explanation: "Dolaylı evet/hayır sorusu → ob." },
+      { id: 28, options: ABC("würde", "wäre", "werde"), answer: "b", explanation: "„Ich wäre Ihnen dankbar“ – Konjunktiv II." },
+      { id: 29, options: ABC("besten", "besser", "beste"), answer: "a", explanation: "Kalıp: „am besten“." },
+      { id: 30, options: ABC("Von", "Mit", "Bei"), answer: "b", explanation: "Kalıp: „Mit freundlichen Grüßen“." },
+    ],
+  },
+];
+
+// ───────────────────────────── SPRACHBAUSTEINE AUFGABE 2 · Inserat + Brief · Wortliste ─────────────────────────────
+
+export const OSD_B1_SB2_SETS: ClozeBankSet[] = [
+  {
+    id: "ob1sb2-1",
+    title: "Sommercamp für Kinder",
+    inserat: {
+      title: "Abenteuer-Sommercamps am Wolfgangsee",
+      lines: [
+        "Für Kinder von 8 bis 14 Jahren: Segeln, Klettern, Lagerfeuer und viel Spaß in der Natur!",
+        "Termine: Juli und August, jeweils eine oder zwei Wochen",
+        "Information und Anmeldung: Frau Petra Lindner, camps@natur-erleben.at, Tel. 06138 / 2290",
+      ],
+    },
+    paragraphs: [
+      "Sehr geehrte Frau Lindner,",
+      "in Ihrer Anzeige bieten Sie Sommercamps [[31]] Kinder am Wolfgangsee an. Ich interessiere mich sehr dafür und hätte [[32]] einige Fragen.",
+      "Ich lebe mit meiner Familie seit vier Jahren in Linz. Da mein Mann und ich beide berufstätig sind, suchen wir für die Sommerferien eine Betreuung für [[33]] Kinder. Unser Sohn ist zehn und unsere Tochter zwölf Jahre alt.",
+      "Auf Ihrer Homepage habe ich gelesen, [[34]] es noch freie Plätze im August gibt. Dieser Termin würde uns sehr gut [[35]]. Mein Sohn kann allerdings noch nicht gut schwimmen. Ist das ein Problem, [[36]] die Kinder segeln?",
+      "Außerdem möchte ich gern wissen, [[37]] der Preis für zwei Wochen ist und ob es eine Ermäßigung gibt, wenn man [[38]] Kinder anmeldet.",
+      "Bitte antworten Sie mir [[39]], damit wir die Ferien planen [[40]].",
+      "Mit freundlichen Grüßen",
+      "Elena Petrović",
+    ],
+    words: [
+      { key: "a", text: "ABER" },
+      { key: "b", text: "BALD" },
+      { key: "c", text: "DASS" },
+      { key: "d", text: "DENN" },
+      { key: "e", text: "FÜR" },
+      { key: "f", text: "IHRE" },
+      { key: "g", text: "KÖNNEN" },
+      { key: "h", text: "MÜSSEN" },
+      { key: "i", text: "NOCH" },
+      { key: "j", text: "OB" },
+      { key: "k", text: "PASSEN" },
+      { key: "l", text: "UNSERE" },
+      { key: "m", text: "WENN" },
+      { key: "n", text: "WIE HOCH" },
+      { key: "o", text: "ZWEI" },
+    ],
+    gaps: [
+      { id: 31, answer: "e", explanation: "„Camps für Kinder“." },
+      { id: 32, answer: "i", explanation: "„hätte noch einige Fragen“ – kalıp." },
+      { id: 33, answer: "l", explanation: "Kendi çocuklarımız → unsere Kinder." },
+      { id: 34, answer: "c", explanation: "„gelesen, dass …“ – fiil sonda." },
+      { id: 35, answer: "k", explanation: "„Der Termin würde uns sehr gut passen.“ = bize çok uyar." },
+      { id: 36, answer: "m", explanation: "„Ist das ein Problem, wenn die Kinder segeln?“ – koşul / durum." },
+      { id: 37, answer: "n", explanation: "Fiyatın ne kadar olduğu → „wie hoch der Preis ist“." },
+      { id: 38, answer: "o", explanation: "İki çocuk kaydedersek → zwei Kinder." },
+      { id: 39, answer: "b", explanation: "„Bitte antworten Sie mir bald“ = yakında / kısa sürede." },
+      { id: 40, answer: "g", explanation: "„damit wir … planen können“ – modal fiil sonda." },
+    ],
+  },
+  {
+    id: "ob1sb2-2",
+    title: "Zimmer in einer Wohngemeinschaft",
+    inserat: {
+      title: "Zimmer in netter WG frei!",
+      lines: [
+        "Wir (Paula, 24, und Jakob, 27) suchen ab 1. März eine Mitbewohnerin oder einen Mitbewohner.",
+        "Helles Zimmer, 16 m², in Altbauwohnung in Graz-Lend, 5 Minuten zur Straßenbahn. Miete: 420 € inkl. Internet.",
+        "Kontakt: wg-lend@mail.at",
+      ],
+    },
+    paragraphs: [
+      "Liebe Paula, lieber Jakob,",
+      "ich habe eure Anzeige im Internet gelesen und interessiere mich sehr [[31]] das Zimmer in eurer WG. Ich heiße Mehmet, bin 25 Jahre alt und komme aus Izmir. Seit Oktober studiere ich Architektur an der TU Graz.",
+      "Im Moment wohne ich noch bei einer Tante, [[32]] ich möchte gern selbstständiger leben und andere Studenten kennenlernen. Ich bin ordentlich, koche gern und spiele am Wochenende Fußball. Rauchen tue ich [[33]].",
+      "Ich hätte noch ein paar Fragen: Ist das Zimmer möbliert, oder muss ich eigene Möbel [[34]]? Und wie teilt ihr euch die Arbeit im Haushalt? Gibt es [[35]] einen Putzplan?",
+      "Die Miete passt gut zu meinem Budget. Ich würde das Zimmer gern so bald [[36]] möglich ansehen. Am besten passt es mir am Abend, [[37]] ich tagsüber an der Uni bin.",
+      "Ihr könnt mich jederzeit anrufen oder mir eine E-Mail schreiben. Ich freue mich [[38]], von euch zu hören, und hoffe, dass wir uns bald [[39]] lernen.",
+      "Viele [[40]]",
+      "Mehmet",
+    ],
+    words: [
+      { key: "a", text: "ABER" },
+      { key: "b", text: "ALS" },
+      { key: "c", text: "DARAUF" },
+      { key: "d", text: "DARÜBER" },
+      { key: "e", text: "DENN" },
+      { key: "f", text: "FÜR" },
+      { key: "g", text: "GRÜSSE" },
+      { key: "h", text: "KEIN" },
+      { key: "i", text: "KENNEN" },
+      { key: "j", text: "MITBRINGEN" },
+      { key: "k", text: "MITNEHMEN" },
+      { key: "l", text: "NICHT" },
+      { key: "m", text: "VIELLEICHT" },
+      { key: "n", text: "WEIL" },
+      { key: "o", text: "WIE" },
+    ],
+    gaps: [
+      { id: 31, answer: "f", explanation: "„sich interessieren für“." },
+      { id: 32, answer: "a", explanation: "Karşıtlık, normal cümle düzeni → aber." },
+      { id: 33, answer: "l", explanation: "„Rauchen tue ich nicht.“ (kein isimle kullanılır)." },
+      { id: 34, answer: "j", explanation: "„eigene Möbel mitbringen“ – getirmek. (mitnehmen = götürmek)" },
+      { id: 35, answer: "m", explanation: "„Gibt es vielleicht einen Putzplan?“" },
+      { id: 36, answer: "o", explanation: "Kalıp: „so bald wie möglich“." },
+      { id: 37, answer: "n", explanation: "Fiil sonda (bin) → weil." },
+      { id: 38, answer: "c", explanation: "„sich darauf freuen, … zu hören“." },
+      { id: 39, answer: "i", explanation: "„kennen lernen / kennenlernen“ → „uns bald kennen lernen“." },
+      { id: 40, answer: "g", explanation: "Kalıp: „Viele Grüße“." },
+    ],
+  },
+  {
+    id: "ob1sb2-3",
+    title: "Anfrage an eine Sprachschule",
+    inserat: {
+      title: "Sprachinstitut Danubia – Deutsch in Wien",
+      lines: [
+        "Intensivkurse A1–C1 · Abendkurse für Berufstätige · Prüfungsvorbereitung ÖSD",
+        "Neu: Konversationskurs „Deutsch im Alltag“ – jeden Samstag",
+        "Information: office@danubia-sprachen.at, Tel. 01 / 405 22 18",
+      ],
+    },
+    paragraphs: [
+      "Sehr geehrte Damen und Herren,",
+      "ich habe Ihre Anzeige in der Zeitung gelesen und möchte mich [[31]] Ihre Kurse informieren. Ich komme aus Brasilien, lebe seit einem Jahr in Wien und arbeite als Krankenpflegerin [[32]] einem Spital.",
+      "Im Moment habe ich das Niveau A2. Für meine Arbeit brauche ich [[33]] das Zertifikat B1. Ich würde deshalb gern einen Kurs zur Vorbereitung auf die ÖSD-Prüfung besuchen. Da ich im Schichtdienst arbeite, kann ich leider nicht jeden Tag [[34]] Unterricht kommen.",
+      "Gibt es auch Kurse, [[35]] nur zwei- oder dreimal pro Woche stattfinden? Und wie lange dauert es ungefähr, [[36]] man vom Niveau A2 bis B1 kommt?",
+      "Außerdem interessiert mich Ihr neuer Konversationskurs am Samstag. Kann man diesen Kurs [[37]] zusätzlich besuchen?",
+      "Bitte schicken Sie mir Informationen über die Kurszeiten und Preise. Ich wäre Ihnen auch sehr [[38]], wenn Sie mir sagen könnten, ob mein Arbeitgeber einen Teil der Kosten übernehmen [[39]].",
+      "Ich danke [[40]] im Voraus.",
+      "Mit freundlichen Grüßen",
+      "Juliana Costa",
+    ],
+    words: [
+      { key: "a", text: "AN" },
+      { key: "b", text: "AUCH" },
+      { key: "c", text: "AUF" },
+      { key: "d", text: "BIS" },
+      { key: "e", text: "DANKBAR" },
+      { key: "f", text: "DER" },
+      { key: "g", text: "DIE" },
+      { key: "h", text: "DRINGEND" },
+      { key: "i", text: "FROH" },
+      { key: "j", text: "IHNEN" },
+      { key: "k", text: "IN" },
+      { key: "l", text: "KANN" },
+      { key: "m", text: "MUSS" },
+      { key: "n", text: "ÜBER" },
+      { key: "o", text: "ZUM" },
+    ],
+    gaps: [
+      { id: 31, answer: "n", explanation: "„sich über etwas informieren“." },
+      { id: 32, answer: "k", explanation: "„in einem Spital arbeiten“ = bir hastanede çalışmak." },
+      { id: 33, answer: "h", explanation: "„brauche ich dringend das Zertifikat“ = acilen." },
+      { id: 34, answer: "o", explanation: "„zum Unterricht kommen“ = derse gelmek." },
+      { id: 35, answer: "g", explanation: "Kurse (çoğul) yalın hâl ilgi zamiri → die." },
+      { id: 36, answer: "d", explanation: "„wie lange dauert es, bis …“ = … olana kadar." },
+      { id: 37, answer: "b", explanation: "„auch zusätzlich besuchen“ = ek olarak da." },
+      { id: 38, answer: "e", explanation: "Kalıp: „Ich wäre Ihnen sehr dankbar, wenn …“." },
+      { id: 39, answer: "l", explanation: "„ob … übernehmen kann“ – modal fiil sonda." },
+      { id: 40, answer: "j", explanation: "„jemandem danken“ → Dativ: Ich danke Ihnen im Voraus." },
+    ],
+  },
+];

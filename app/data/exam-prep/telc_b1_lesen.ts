@@ -27,6 +27,7 @@ export type ClozeBankSet = {
   paragraphs: string[];
   words: { key: string; text: string }[];
   gaps: { id: number; answer: string; explanation: string }[];
+  inserat?: { title: string; lines: string[] }; // ÖSD: mektubun cevap verdiği ilan
 };
 
 export const TELC_B1_INSTRUCTIONS = {

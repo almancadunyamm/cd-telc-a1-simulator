@@ -44,6 +44,14 @@ import {
   type DoubleTextSet,
   type YesNoSet,
 } from "@/app/data/exam-prep/goethe_b1_lesen";
+import {
+  OSD_B1_A1_SETS,
+  OSD_B1_A2_SETS,
+  OSD_B1_A3_SETS,
+  OSD_B1_INSTRUCTIONS,
+  OSD_B1_SB1_SETS,
+  OSD_B1_SB2_SETS,
+} from "@/app/data/exam-prep/osd_b1_lesen";
 
 type Level = "A1" | "A2" | "B1";
 type ExamKey = "telc" | "goethe" | "osd";
@@ -76,6 +84,7 @@ type Teil = TeilConfig & {
   upperKeys?: boolean; // seçenek harflerini A/B/C olarak göster (ÖSD)
   points?: string; // sınavdaki puan bilgisi
   noneLabel?: string; // match: "ilan yok" etiketi (telc "X", Goethe "0")
+  reuseAds?: boolean; // match: ilanlar (örnektekiler dahil) tekrar kullanılabilir (ÖSD ZDÖ B1)
 };
 
 type ExamConfig = {
@@ -450,15 +459,97 @@ const EXAMS_B1: ExamConfig[] = [
   {
     key: "osd",
     name: "ÖSD",
-    full: "ÖSD Zertifikat B1",
-    ready: false,
+    full: "ÖSD Zertifikat Deutsch Österreich B1",
+    ready: true,
     color: "from-rose-600 to-red-700",
     accent: "bg-rose-800",
     partLabel: "Aufgabe",
-    header: "ÖSD Zertifikat B1 · Lesen",
-    intro: "",
+    summary: "Lesen 1–3 · Sprachbausteine 1–2",
+    header: "ÖSD Zertifikat Deutsch Österreich B1 · Lesen & Sprachbausteine · 90 Minuten",
+    intro:
+      "Bu bölüm Avusturya'daki ÖSD Zertifikat Deutsch Österreich B1 (ZDÖ B1) sınavının formatını birebir izler: 3 Lesen görevi ve 2 Sprachbausteine görevi, toplam 90 dakika. Not: ÖSD'nin bir de Goethe ile ortak hazırladığı „ÖSD Zertifikat B1“ (ZB1) sınavı var. O sınavın Lesen bölümü Goethe-Zertifikat B1 ile birebir aynıdır, bu yüzden ZB1'e giriyorsan Goethe B1 alıştırmalarını çöz.",
     progressSlug: "osd-b1-lesen",
-    teile: [],
+    teile: [
+      {
+        no: 1,
+        kind: "headlines",
+        sets: OSD_B1_A1_SETS,
+        title: "Lesen, Aufgabe 1",
+        desc: "5 kısa gazete metni (1–5) · 10 başlık (A–K)",
+        points: "5 görev · 25 puan · ~20 dakika",
+        tips: [
+          "Başlıklar ikişer ikişer aynı konudadır (ör. „Zu wenig Schnee“ / „Skisaison beginnt früher“). Doğru olan, metnin asıl mesajını veren başlıktır.",
+          "Önce metni oku ve ana fikri bir cümleyle Türkçe söyle, sonra başlıklara bak.",
+          "Olumlu / olumsuz farkına dikkat: mehr ↔ weniger, teurer ↔ gratis, früher ↔ später.",
+          "Metnin altındaki kaynak etiketi (aus einer österreichischen Zeitung) cevap için ipucu değildir.",
+        ],
+        instructions: OSD_B1_INSTRUCTIONS.aufgabe1,
+      },
+      {
+        no: 2,
+        kind: "mc",
+        sets: OSD_B1_A2_SETS,
+        title: "Lesen, Aufgabe 2",
+        desc: "Uzun gazete makalesi · görev 6–10 · A, B, C",
+        points: "5 görev · 25 puan · ~35 dakika",
+        upperKeys: true,
+        tips: [
+          "Görevler metindeki sırayı izler: 6. görevin cevabı metnin başında, 10. görevinki sonundadır.",
+          "Önce cümle başlangıcını (Stamm) oku, metinde aynı bilgiyi ara; seçeneklerdeki kelimeler metinden farklı olabilir (eş anlamlılar).",
+          "Uzman görüşlerine dikkat: „sagt“, „betont“, „rät“, „warnt“ ile başlayan cümleler sık sorulur.",
+          "Bu görev için en uzun süreyi (yaklaşık 35 dakika) ayır.",
+        ],
+        instructions: OSD_B1_INSTRUCTIONS.aufgabe2,
+      },
+      {
+        no: 3,
+        kind: "match",
+        sets: OSD_B1_A3_SETS,
+        title: "Lesen, Aufgabe 3",
+        desc: "10 durum (11–20) · 12 ilan (A–M) · uygun ilan yoksa 0",
+        points: "10 görev · 25 puan · ~15 dakika",
+        noneLabel: "0",
+        reuseAds: true,
+        tips: [
+          "ÖSD'ye özgü: Bir ilan birden fazla duruma uyabilir, örnekteki ilan da tekrar kullanılabilir.",
+          "Genellikle 1–2 durumun cevabı 0'dır. Konu tutan ama bir ayrıntısı uymayan ilan tipik tuzaktır (akşam ↔ sabah, satış ↔ eğitim, yeni ↔ ikinci el).",
+          "Durumdaki anahtar bilgiyi işaretle: ne arıyor, kim için, ne zaman, alıyor mu satıyor mu?",
+          "Bu bölüm hızlı olmalı: ilanları baştan sona okuma, aradığın bilgiyi tara.",
+        ],
+        instructions: OSD_B1_INSTRUCTIONS.aufgabe3,
+      },
+      {
+        no: 4,
+        kind: "clozeMc",
+        sets: OSD_B1_SB1_SETS,
+        title: "Sprachbausteine, Aufgabe 1",
+        desc: "E-posta / mektup · boşluk 21–30 · A, B, C",
+        points: "10 görev · 15 puan · ~10 dakika",
+        upperKeys: true,
+        tips: [
+          "Boşluğun önüne ve arkasına bak: fiil sonda mı (weil, dass, ob, wenn) yoksa ikinci sırada mı (denn, deshalb, aber)?",
+          "Sık sorulanlar: Perfekt partizip, sıfat çekimi, fiil + edat (sich freuen auf / sich interessieren für), dönüşlü zamirler.",
+          "Kalıplara dikkat: so schnell wie möglich, am besten, Ich wäre Ihnen dankbar, Mit freundlichen Grüßen.",
+          "Bir boşlukta birden fazla işaret = 0 puan; her boşluğa tek cevap.",
+        ],
+        instructions: OSD_B1_INSTRUCTIONS.sb1,
+      },
+      {
+        no: 5,
+        kind: "clozeBank",
+        sets: OSD_B1_SB2_SETS,
+        title: "Sprachbausteine, Aufgabe 2",
+        desc: "İlan + mektup · boşluk 31–40 · 15 kelimelik liste",
+        points: "10 görev · 15 puan · ~10 dakika",
+        tips: [
+          "Önce ilanı oku: mektup bu ilana cevap olarak yazılmış; kişi neyi soruyor, neye ilgi duyuyor?",
+          "Listede 15 kelime var, 10'u kullanılır. Benzer çiftler bilinçli tuzaktır: dass / ob, aber / denn, mitbringen / mitnehmen.",
+          "Önce kolay boşlukları doldur (hitap, kapanış, edatlar), sonra kalan kelimelerle zor boşluklara dön.",
+          "Her kelime yalnızca bir kez kullanılır.",
+        ],
+        instructions: OSD_B1_INSTRUCTIONS.sb2,
+      },
+    ],
   },
 ];
 
@@ -882,10 +973,10 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
       <div className="mt-4">
         {teil.kind === "board" && <BoardView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "rf" && <RfView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
-        {teil.kind === "match" && <MatchView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} noneLabel={teil.noneLabel} />}
+        {teil.kind === "match" && <MatchView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} noneLabel={teil.noneLabel} reuse={teil.reuseAds} />}
         {teil.kind === "mc" && <McView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} upper={teil.upperKeys} />}
         {teil.kind === "headlines" && <HeadlinesView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
-        {teil.kind === "clozeMc" && <ClozeMcView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "clozeMc" && <ClozeMcView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} upper={teil.upperKeys} />}
         {teil.kind === "clozeBank" && <ClozeBankView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "double" && <DoubleView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "yesno" && <YesNoView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
@@ -1153,7 +1244,7 @@ function RfView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil2Set>) 
 
 // ───────────────────────── İlanlar (match) ─────────────────────────
 
-function MatchView({ set, answers, checked, onAnswer, noneLabel = "X" }: ViewProps<TelcA2Teil3Set> & { noneLabel?: string }) {
+function MatchView({ set, answers, checked, onAnswer, noneLabel = "X", reuse = false }: ViewProps<TelcA2Teil3Set> & { noneLabel?: string; reuse?: boolean }) {
   const letters = [...set.ads.map((a) => a.key), "x"];
   const usedBy = (letter: string) => Object.entries(answers).find(([, v]) => v === letter && letter !== "x")?.[0];
 
@@ -1172,8 +1263,8 @@ function MatchView({ set, answers, checked, onAnswer, noneLabel = "X" }: ViewPro
           <div className="mt-3 flex flex-wrap gap-1.5">
             {letters.map((l) => {
               const takenBy = usedBy(l);
-              const takenElsewhere = !checked && takenBy !== undefined && Number(takenBy) !== task.id;
-              const exampleLetter = !!set.example && l === set.example.answer;
+              const takenElsewhere = !reuse && !checked && takenBy !== undefined && Number(takenBy) !== task.id;
+              const exampleLetter = !reuse && !!set.example && l === set.example.answer;
               return (
                 <button
                   key={l}
@@ -1338,7 +1429,8 @@ function GapChip({ id, label, state, active, onClick }: { id: number; label?: st
 
 // ───────────────────────── Sprachbausteine 1 (clozeMc) ─────────────────────────
 
-function ClozeMcView({ set, answers, checked, onAnswer }: ViewProps<ClozeMcSet>) {
+function ClozeMcView({ set, answers, checked, onAnswer, upper }: ViewProps<ClozeMcSet> & { upper?: boolean }) {
+  const k = (key: string) => (upper ? key.toUpperCase() : key);
   const gapState = (id: number, answer: string) =>
     checked ? (answers[id] === answer ? "right" : "wrong") : answers[id] ? "filled" : "empty";
   const scrollTo = (id: number) => {
@@ -1377,7 +1469,7 @@ function ClozeMcView({ set, answers, checked, onAnswer }: ViewProps<ClozeMcSet>)
                     onClick={() => onAnswer(g.id, opt.key)}
                     className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-sm font-semibold transition ${choiceClass(selected === opt.key, checked, opt.key === g.answer)}`}
                   >
-                    <span className="text-xs font-black opacity-70">{opt.key}</span>
+                    <span className="text-xs font-black opacity-70">{k(opt.key)}</span>
                     {opt.text}
                   </button>
                 ))}
@@ -1386,7 +1478,7 @@ function ClozeMcView({ set, answers, checked, onAnswer }: ViewProps<ClozeMcSet>)
                 <Feedback
                   correct={selected === g.answer}
                   explanation={g.explanation}
-                  rightLabel={`${g.answer} (${g.options.find((x) => x.key === g.answer)?.text})`}
+                  rightLabel={`${k(g.answer)} (${g.options.find((x) => x.key === g.answer)?.text})`}
                 />
               )}
             </div>
@@ -1414,7 +1506,20 @@ function ClozeBankView({ set, answers, checked, onAnswer }: ViewProps<ClozeBankS
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+      <div className="min-w-0 space-y-4">
+      {set.inserat && (
+        <div className="rounded-3xl border-2 border-dashed border-amber-400 bg-amber-50 p-5">
+          <p className="text-xs font-black uppercase tracking-widest text-amber-700">Inserat</p>
+          <p lang="de" className="mt-1 text-lg font-black text-slate-900">{set.inserat.title}</p>
+          <div className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
+            {set.inserat.lines.map((l, i) => (
+              <p key={i}>{l}</p>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="rounded-3xl border border-slate-300 bg-white p-5 shadow">
+        {set.inserat && <p className="mb-2 text-xs font-black uppercase tracking-widest text-slate-500">Brief</p>}
         <div className="space-y-3 text-[15px] leading-8 text-slate-800">
           {set.paragraphs.map((p, i) => (
             <p key={i}>
@@ -1427,6 +1532,7 @@ function ClozeBankView({ set, answers, checked, onAnswer }: ViewProps<ClozeBankS
             </p>
           ))}
         </div>
+      </div>
       </div>
       <div className="space-y-4">
         <div className="sticky top-4 space-y-4">
