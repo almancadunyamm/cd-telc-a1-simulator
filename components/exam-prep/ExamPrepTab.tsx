@@ -24,6 +24,16 @@ import {
   OSD_A2_AUFGABE2_SETS,
   type OsdHeadlineSet,
 } from "@/app/data/exam-prep/osd_a2_lesen";
+import {
+  TELC_B1_INSTRUCTIONS,
+  TELC_B1_TEIL1_SETS,
+  TELC_B1_TEIL2_SETS,
+  TELC_B1_TEIL3_SETS,
+  TELC_B1_SB1_SETS,
+  TELC_B1_SB2_SETS,
+  type ClozeMcSet,
+  type ClozeBankSet,
+} from "@/app/data/exam-prep/telc_b1_lesen";
 
 type Level = "A1" | "A2" | "B1";
 type ExamKey = "telc" | "goethe" | "osd";
@@ -33,13 +43,17 @@ type ExamKey = "telc" | "goethe" | "osd";
 //  rf    → metin + richtig/falsch (telc Teil 2)
 //  match → ilanlar + harf / X (telc Teil 3, Goethe Teil 4)
 //  mc    → makale veya e-posta + a/b/c (Goethe Teil 1 ve 3, ÖSD Aufgabe 2)
-//  headlines → 10 başlık + 5 kısa metin (ÖSD Aufgabe 1)
+//  headlines → başlık eşleştirme (ÖSD Aufgabe 1, telc B1 Lesen Teil 1)
+//  clozeMc   → mektupta boşluk + a/b/c (telc B1 Sprachbausteine 1)
+//  clozeBank → metinde boşluk + kelime bankası (telc B1 Sprachbausteine 2)
 type TeilConfig =
   | { kind: "board"; sets: TelcA2Teil1Set[] }
   | { kind: "rf"; sets: TelcA2Teil2Set[] }
   | { kind: "match"; sets: TelcA2Teil3Set[] }
   | { kind: "mc"; sets: McTextSet[] }
-  | { kind: "headlines"; sets: OsdHeadlineSet[] };
+  | { kind: "headlines"; sets: OsdHeadlineSet[] }
+  | { kind: "clozeMc"; sets: ClozeMcSet[] }
+  | { kind: "clozeBank"; sets: ClozeBankSet[] };
 
 type Teil = TeilConfig & {
   no: number;
@@ -48,6 +62,7 @@ type Teil = TeilConfig & {
   tips: string[];
   instructions: { de: string[]; tr: string };
   upperKeys?: boolean; // seçenek harflerini A/B/C olarak göster (ÖSD)
+  points?: string; // sınavdaki puan bilgisi
 };
 
 type ExamConfig = {
@@ -58,6 +73,7 @@ type ExamConfig = {
   color: string;
   accent: string;
   partLabel: string; // "Teil" veya "Aufgabe"
+  summary?: string; // sınav kartında bölüm özeti
   header: string;
   intro: string;
   progressSlug: string;
@@ -72,8 +88,6 @@ type Props = {
   username?: string | null;
 };
 
-// Sınav Hazırlık içeriği hazır olan seviyeler.
-const READY_LEVELS: Level[] = ["A2"];
 
 const BOARD_TIPS = [
   "Önce görevi oku ve anahtar kelimenin altını çiz (ör. Geldbörse verloren → Fundbüro).",
@@ -96,7 +110,7 @@ const MC_TIPS = [
   "Kim söylüyor? Bir kişinin görüşünü başka bir kişiyle karıştırma.",
 ];
 
-const EXAMS: ExamConfig[] = [
+const EXAMS_A2: ExamConfig[] = [
   {
     key: "telc",
     name: "telc",
@@ -236,7 +250,137 @@ const EXAMS: ExamConfig[] = [
   },
 ];
 
+const EXAMS_B1: ExamConfig[] = [
+  {
+    key: "telc",
+    name: "telc",
+    full: "telc Deutsch B1 · Zertifikat Deutsch",
+    ready: true,
+    color: "from-sky-600 to-blue-700",
+    accent: "bg-slate-800",
+    partLabel: "Teil",
+    summary: "Leseverstehen 1–3 · Sprachbausteine 1–2",
+    header: "telc Deutsch B1 · 90 Minuten Leseverstehen und Sprachbausteine",
+    intro:
+      "telc Deutsch B1 (Zertifikat Deutsch) sınavında Leseverstehen ve Sprachbausteine birlikte 90 dakikadır ve yazılı sınavın 105 puanını oluşturur (Lesen 75 + Sprachbausteine 30). Yazılı sınavı geçmek için toplam 225 puanın %60'ı (135 puan) gerekir. Önerilen süre: Lesen Teil 1 ~15 dk, Teil 2 ~20 dk, Teil 3 ~20 dk, Sprachbausteine 1 ve 2 ~15'er dk. Zertifikat Deutsch für Jugendliche ve telc Deutsch B1+ Beruf da aynı yapıdadır.",
+    progressSlug: "telc-b1-lesen",
+    teile: [
+      {
+        no: 1,
+        kind: "headlines",
+        sets: TELC_B1_TEIL1_SETS,
+        title: "Leseverstehen, Teil 1",
+        desc: "Globalverstehen · 10 başlık (a–j) · 5 metin",
+        points: "25 Punkte (her doğru 5 puan)",
+        tips: [
+          "Önce 5 metni hızlıca oku ve her metnin konusunu tek kelimeyle not al (ör. „Bibliothek“, „Umfrage“).",
+          "Başlıklar ikişer ikişer aynı konudadır. Fark genellikle tek bir kelimededir: „immer mehr“ ↔ „immer weniger“, „billiger“ ↔ „teurer“, „Buchtipp“ ↔ „Studie“.",
+          "Metinde geçmeyen bir iddia içeren başlık (zam, yasak, yeni açılış…) yanlıştır — kelimeler tanıdık gelse bile.",
+          "Her başlık bir kez kullanılır; 5 başlık boşta kalır. Emin olduğun metinlerden başla.",
+        ],
+        instructions: TELC_B1_INSTRUCTIONS.teil1,
+      },
+      {
+        no: 2,
+        kind: "mc",
+        sets: TELC_B1_TEIL2_SETS,
+        title: "Leseverstehen, Teil 2",
+        desc: "Detailverstehen · uzun metin · 5 görev (6–10) · a, b, c",
+        points: "25 Punkte (her doğru 5 puan)",
+        tips: [
+          "Önce görevleri oku; görevlerin sırası metindeki paragrafların sırasıyla aynıdır.",
+          "Yanlış seçenekler metindeki kelimeleri kullanır ama anlamı değiştirir: önce ↔ sonra, hepsi ↔ bazıları, istemek ↔ yapmak.",
+          "„zuerst“, „inzwischen“, „früher“, „heute“, „in Zukunft“ gibi zaman ifadelerine dikkat et.",
+          "Seçenek metindekinden daha kesin bir şey söylüyorsa (immer, nie, alle) genellikle yanlıştır.",
+        ],
+        instructions: TELC_B1_INSTRUCTIONS.teil2,
+      },
+      {
+        no: 3,
+        kind: "match",
+        sets: TELC_B1_TEIL3_SETS,
+        title: "Leseverstehen, Teil 3",
+        desc: "Selektives Verstehen · 10 durum (11–20) · 12 ilan (a–l) · x",
+        points: "25 Punkte (her doğru 2,5 puan)",
+        tips: [
+          "Her durumda kişinin tam ihtiyacının altını çiz: kim için? ne zaman? nerede? ne kadar?",
+          "12 ilandan genellikle 8'i kullanılır; 1–3 durumun cevabı x'tir.",
+          "Konu tutan ama bir detayı uymayan ilan (yaz/kış, sabah/akşam, yeni/ikinci el, çırak/deneyimli) tipik tuzaktır → x.",
+          "Önce emin olduklarını işaretle; kullanılmış ilanlar soluklaşır, kalan durumlara bu sayede daha hızlı bakarsın.",
+        ],
+        instructions: TELC_B1_INSTRUCTIONS.teil3,
+      },
+      {
+        no: 4,
+        kind: "clozeMc",
+        sets: TELC_B1_SB1_SETS,
+        title: "Sprachbausteine, Teil 1",
+        desc: "Grammatik · mektup / e-posta · 10 boşluk (21–30) · a, b, c",
+        points: "15 Punkte (her doğru 1,5 puan)",
+        tips: [
+          "Boşluktan sonra fiil nerede? Fiil sondaysa yan cümle bağlacı (weil, dass, ob, obwohl), fiil 2. sıradaysa denn / aber / und.",
+          "Edattan sonra hâl: mit / bei / von / zu → Dativ; für / ohne / um → Akkusativ; in / an / auf → nerede? Dativ, nereye? Akkusativ.",
+          "Sıfat ekleri için önce ismin artikelini ve hâlini bul: ein schönes Picknick, einen guten Service.",
+          "Kalıplara dikkat: sich freuen auf / über, sich interessieren für, sich beschweren über, Mit freundlichen Grüßen.",
+        ],
+        instructions: TELC_B1_INSTRUCTIONS.sb1,
+      },
+      {
+        no: 5,
+        kind: "clozeBank",
+        sets: TELC_B1_SB2_SETS,
+        title: "Sprachbausteine, Teil 2",
+        desc: "Lexik · metin · 10 boşluk (31–40) · 15 kelime (a–o)",
+        points: "15 Punkte (her doğru 1,5 puan)",
+        tips: [
+          "Önce 15 kelimeyi türlerine ayır: bağlaçlar (denn, weil, deshalb…), edatlar, fiiller, sıfatlar.",
+          "Boşluğun önü ve arkası hangi türü istiyor? „sich interessieren ___“ → edat, „Wir wären Ihnen sehr ___“ → sıfat.",
+          "Fiil boşluğun hemen ardındaysa deshalb / außerdem / trotzdem; fiil sondaysa weil / dass / ob; fiil 2. sıradaysa denn.",
+          "Her kelime bir kez kullanılır; 5 kelime boşta kalır. Emin olduğun boşluklardan başla.",
+        ],
+        instructions: TELC_B1_INSTRUCTIONS.sb2,
+      },
+    ],
+  },
+  {
+    key: "goethe",
+    name: "Goethe",
+    full: "Goethe-Zertifikat B1",
+    ready: false,
+    color: "from-emerald-600 to-teal-700",
+    accent: "bg-emerald-800",
+    partLabel: "Teil",
+    header: "Goethe-Zertifikat B1 · Lesen",
+    intro: "",
+    progressSlug: "goethe-b1-lesen",
+    teile: [],
+  },
+  {
+    key: "osd",
+    name: "ÖSD",
+    full: "ÖSD Zertifikat B1",
+    ready: false,
+    color: "from-rose-600 to-red-700",
+    accent: "bg-rose-800",
+    partLabel: "Aufgabe",
+    header: "ÖSD Zertifikat B1 · Lesen",
+    intro: "",
+    progressSlug: "osd-b1-lesen",
+    teile: [],
+  },
+];
+
+const EXAMS_BY_LEVEL: Record<Level, ExamConfig[]> = { A1: [], A2: EXAMS_A2, B1: EXAMS_B1 };
+const ALL_EXAMS: ExamConfig[] = [...EXAMS_A2, ...EXAMS_B1];
+// Sınav Hazırlık içeriği hazır olan seviyeler (en az bir sınavı hazır olanlar).
+const READY_LEVELS: Level[] = (["A1", "A2", "B1"] as Level[]).filter((lvl) => EXAMS_BY_LEVEL[lvl].some((e) => e.ready));
+
 type Progress = Record<string, number>; // setId → en iyi skor (0–5)
+
+function setItemCount(set: unknown): number {
+  const s = set as { tasks?: unknown[]; gaps?: unknown[] };
+  return (s.tasks || s.gaps || []).length;
+}
 
 function progressKey(username: string | null | undefined, slug: string) {
   return `examprep:${username || "guest"}:${slug}`;
@@ -244,7 +388,7 @@ function progressKey(username: string | null | undefined, slug: string) {
 
 function loadProgress(username: string | null | undefined): Progress {
   const all: Progress = {};
-  for (const exam of EXAMS) {
+  for (const exam of ALL_EXAMS) {
     try {
       const raw = window.localStorage.getItem(progressKey(username, exam.progressSlug));
       if (raw) Object.assign(all, JSON.parse(raw) as Progress);
@@ -283,7 +427,8 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
     setSetIndex(null);
   }, [level]);
 
-  const exam = EXAMS.find((e) => e.key === examKey) || null;
+  const levelExams = EXAMS_BY_LEVEL[level];
+  const exam = levelExams.find((e) => e.key === examKey) || null;
   const teil = exam && teilIndex !== null ? exam.teile[teilIndex] : null;
 
   const recordScore = (setId: string, score: number) => {
@@ -411,7 +556,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
           {/* 1) Sınav seçimi */}
           {!exam && (
             <div className="mt-4 grid gap-4 md:grid-cols-3">
-              {EXAMS.map((e) => {
+              {levelExams.map((e) => {
                 const stats = examStats(e);
                 return (
                   <button
@@ -430,7 +575,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
                     <div className="p-5">
                       <p className="font-black text-slate-900">{e.full}</p>
                       <p className="mt-1 text-sm text-slate-600">
-                        {e.ready ? e.teile.map((t) => `${e.partLabel} ${t.no}`).join(" · ") : "Lesen"}
+                        {e.ready ? e.summary || e.teile.map((t) => `${e.partLabel} ${t.no}`).join(" · ") : "Lesen"}
                       </p>
                       {e.ready ? (
                         <p className="mt-3 inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
@@ -454,7 +599,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
               <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
                 <b>{exam.full} · Lesen:</b> {exam.intro}
               </div>
-              <div className={`mt-4 grid gap-4 ${exam.teile.length === 4 ? "sm:grid-cols-2 xl:grid-cols-4" : exam.teile.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+              <div className={`mt-4 grid gap-4 ${exam.teile.length === 5 ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" : exam.teile.length === 4 ? "sm:grid-cols-2 xl:grid-cols-4" : exam.teile.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
                 {exam.teile.map((t, i) => {
                   const done = (t.sets as { id: string }[]).filter((s) => progress[s.id] !== undefined).length;
                   return (
@@ -464,9 +609,10 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
                       onClick={() => setTeilIndex(i)}
                       className="rounded-3xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg"
                     >
-                      <p className="text-xs font-black uppercase tracking-widest text-blue-600">{exam.name} A2</p>
+                      <p className="text-xs font-black uppercase tracking-widest text-blue-600">{exam.name} {level}</p>
                       <p className="mt-1 text-xl font-black text-slate-900">{t.title}</p>
                       <p className="mt-2 text-sm text-slate-600">{t.desc}</p>
+                      {t.points && <p className="mt-1 text-xs font-bold text-slate-400">Sınavda: {t.points}</p>}
                       <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
                         <div className="h-full rounded-full bg-blue-500" style={{ width: `${(done / t.sets.length) * 100}%` }} />
                       </div>
@@ -486,6 +632,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
               <div className="grid content-start gap-3 sm:grid-cols-2">
                 {(teil.sets as { id: string; title: string }[]).map((s, i) => {
                   const best = progress[s.id];
+                  const max = setItemCount(s);
                   return (
                     <button
                       key={s.id}
@@ -500,10 +647,10 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
                       {best !== undefined ? (
                         <span
                           className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
-                            best === 5 ? "bg-emerald-100 text-emerald-700" : best >= 3 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"
+                            best === max ? "bg-emerald-100 text-emerald-700" : best >= max * 0.6 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"
                           }`}
                         >
-                          {best}/5
+                          {best}/{max}
                         </span>
                       ) : (
                         <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-600">Başla</span>
@@ -566,8 +713,9 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
   const [checked, setChecked] = useState(false);
   const [showTr, setShowTr] = useState(false);
 
-  const data = teil.sets[setIndex] as { id: string; title: string; tasks: { id: number; answer: string }[] };
-  const tasks = data.tasks;
+  const data = teil.sets[setIndex] as { id: string; title: string; tasks?: { id: number; answer: string }[]; gaps?: { id: number; answer: string }[] };
+  const tasks = data.tasks || data.gaps || [];
+  const max = tasks.length;
   const total = teil.sets.length;
   const allAnswered = tasks.every((t) => answers[t.id]);
   const score = useMemo(() => tasks.filter((t) => answers[t.id] === t.answer).length, [answers, tasks]);
@@ -589,7 +737,7 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
   };
 
   const sourceWord =
-    teil.kind === "board" ? "bilgi panosu" : teil.kind === "match" ? "ilanlar" : teil.kind === "headlines" ? "başlıklar" : teil.kind === "mc" && (teil.sets[setIndex] as McTextSet).text.kind === "email" ? "e-posta" : "metin";
+    teil.kind === "board" ? "bilgi panosu" : teil.kind === "match" ? "ilanlar" : teil.kind === "headlines" ? "başlıklar" : teil.kind === "clozeMc" || teil.kind === "clozeBank" ? "seçenekler" : teil.kind === "mc" && (teil.sets[setIndex] as McTextSet).text.kind === "email" ? "e-posta" : "metin";
 
   return (
     <div className="mt-4">
@@ -622,16 +770,17 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
       {checked && (
         <div
           className={`mt-4 rounded-3xl border p-5 ${
-            score === 5 ? "border-emerald-200 bg-emerald-50" : score >= 3 ? "border-amber-200 bg-amber-50" : "border-rose-200 bg-rose-50"
+            score === max ? "border-emerald-200 bg-emerald-50" : score >= max * 0.6 ? "border-amber-200 bg-amber-50" : "border-rose-200 bg-rose-50"
           }`}
         >
           <p className="text-2xl font-black text-slate-900">
-            {score}/5 doğru {score === 5 ? "🎉" : score >= 3 ? "👍" : "💪"}
+            {score}/{max} doğru {score === max ? "🎉" : score >= max * 0.6 ? "👍" : "💪"}
           </p>
+          {teil.points && <p className="mt-1 text-xs font-bold text-slate-500">Sınavda bu bölüm: {teil.points}</p>}
           <p className="mt-1 text-sm text-slate-700">
-            {score === 5
+            {score === max
               ? "Mükemmel! Bu formatı çok iyi tanıyorsun. Sıradaki alıştırmaya geç."
-              : score >= 3
+              : score >= max * 0.6
               ? "İyi gidiyorsun. Yanlış cevapların açıklamalarını oku, sonra aynı alıştırmayı tekrar çöz."
               : "Açıklamaları dikkatle oku ve stratejileri tekrar gözden geçir. Tekrar çözdükçe hızlanacaksın."}
           </p>
@@ -644,6 +793,8 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
         {teil.kind === "match" && <MatchView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "mc" && <McView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} upper={teil.upperKeys} />}
         {teil.kind === "headlines" && <HeadlinesView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "clozeMc" && <ClozeMcView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "clozeBank" && <ClozeBankView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -659,7 +810,7 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
               allAnswered ? "bg-blue-600 hover:bg-blue-700" : "cursor-not-allowed bg-slate-300"
             }`}
           >
-            {allAnswered ? "Cevapları Kontrol Et" : `Tüm görevleri cevapla (${Object.keys(answers).length}/5)`}
+            {allAnswered ? "Cevapları Kontrol Et" : `Tüm görevleri cevapla (${Object.keys(answers).length}/${max})`}
           </button>
         ) : (
           <>
@@ -912,7 +1063,7 @@ function MatchView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set
   const letters = [...set.ads.map((a) => a.key), "x"];
   const usedBy = (letter: string) => Object.entries(answers).find(([, v]) => v === letter && letter !== "x")?.[0];
 
-  const renderTask = (task: TelcA2Teil3Set["example"], isExample = false) => {
+  const renderTask = (task: NonNullable<TelcA2Teil3Set["example"]>, isExample = false) => {
     const selected = isExample ? task.answer : answers[task.id];
     return (
       <div key={task.id} className={`rounded-2xl border p-4 ${isExample ? "border-dashed border-slate-300 bg-slate-50" : "border-slate-200 bg-white"}`}>
@@ -928,7 +1079,7 @@ function MatchView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set
             {letters.map((l) => {
               const takenBy = usedBy(l);
               const takenElsewhere = !checked && takenBy !== undefined && Number(takenBy) !== task.id;
-              const exampleLetter = l === set.example.answer;
+              const exampleLetter = !!set.example && l === set.example.answer;
               return (
                 <button
                   key={l}
@@ -960,7 +1111,7 @@ function MatchView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_1.15fr]">
       <div className="space-y-3">
-        {renderTask(set.example, true)}
+        {set.example && renderTask(set.example, true)}
         {set.tasks.map((t) => renderTask(t))}
         <p className="text-xs text-slate-500">Soluk harfler: örnekte veya başka bir görevde kullanılmış ilanlar. Her ilan yalnızca bir kez kullanılır.</p>
       </div>
@@ -1012,7 +1163,7 @@ function HeadlinesView({ set, answers, checked, onAnswer }: ViewProps<OsdHeadlin
                 </span>
               </div>
               <p className="mt-3 font-serif text-[15px] leading-7 text-slate-800">{t.text}</p>
-              <p className="mt-1 text-right text-xs italic text-slate-500">[{t.source}]</p>
+              {t.source && <p className="mt-1 text-right text-xs italic text-slate-500">[{t.source}]</p>}
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {set.headlines.map((h) => (
                   <button
@@ -1057,6 +1208,173 @@ function HeadlinesView({ set, answers, checked, onAnswer }: ViewProps<OsdHeadlin
               );
             })}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────── Boşluklu metin yardımcıları ─────────────────────────
+
+function renderWithGaps(text: string, renderGap: (id: number) => React.ReactNode) {
+  const parts = text.split(/\[\[(\d+)\]\]/);
+  return parts.map((part, i) => (i % 2 === 1 ? <React.Fragment key={i}>{renderGap(Number(part))}</React.Fragment> : <React.Fragment key={i}>{part}</React.Fragment>));
+}
+
+function GapChip({ id, label, state, active, onClick }: { id: number; label?: string; state: "empty" | "filled" | "right" | "wrong"; active?: boolean; onClick?: () => void }) {
+  const cls =
+    state === "right"
+      ? "border-emerald-500 bg-emerald-50 text-emerald-800"
+      : state === "wrong"
+      ? "border-rose-400 bg-rose-50 text-rose-700"
+      : state === "filled"
+      ? "border-blue-500 bg-blue-50 text-blue-800"
+      : "border-slate-300 bg-slate-100 text-slate-500";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`mx-0.5 inline-flex items-baseline gap-1 rounded-md border px-1.5 py-0 align-baseline font-sans text-sm font-bold ${cls} ${active ? "ring-2 ring-blue-400" : ""}`}
+    >
+      <span className="text-[10px] font-black opacity-70">{id}</span>
+      <span className="min-w-[3.5rem] text-left">{label || "………"}</span>
+    </button>
+  );
+}
+
+// ───────────────────────── Sprachbausteine 1 (clozeMc) ─────────────────────────
+
+function ClozeMcView({ set, answers, checked, onAnswer }: ViewProps<ClozeMcSet>) {
+  const gapState = (id: number, answer: string) =>
+    checked ? (answers[id] === answer ? "right" : "wrong") : answers[id] ? "filled" : "empty";
+  const scrollTo = (id: number) => {
+    if (typeof document !== "undefined") document.getElementById(`gap-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+  return (
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+      <div>
+        <div className="sticky top-4 rounded-3xl border border-slate-300 bg-white p-5 shadow">
+          <div className="space-y-3 text-[15px] leading-8 text-slate-800">
+            {set.paragraphs.map((p, i) => (
+              <p key={i}>
+                {renderWithGaps(p, (id) => {
+                  const gap = set.gaps.find((g) => g.id === id);
+                  const sel = answers[id];
+                  const label = sel ? gap?.options.find((x) => x.key === sel)?.text : undefined;
+                  return <GapChip id={id} label={label} state={gap ? gapState(id, gap.answer) : "empty"} onClick={() => scrollTo(id)} />;
+                })}
+              </p>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {set.gaps.map((g) => {
+          const selected = answers[g.id];
+          return (
+            <div key={g.id} id={`gap-${g.id}`} className="rounded-2xl border border-slate-200 bg-white p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="w-7 text-sm font-black text-slate-500">{g.id}</span>
+                {g.options.map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    disabled={checked}
+                    onClick={() => onAnswer(g.id, opt.key)}
+                    className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-sm font-semibold transition ${choiceClass(selected === opt.key, checked, opt.key === g.answer)}`}
+                  >
+                    <span className="text-xs font-black opacity-70">{opt.key}</span>
+                    {opt.text}
+                  </button>
+                ))}
+              </div>
+              {checked && (
+                <Feedback
+                  correct={selected === g.answer}
+                  explanation={g.explanation}
+                  rightLabel={`${g.answer} (${g.options.find((x) => x.key === g.answer)?.text})`}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────── Sprachbausteine 2 (clozeBank) ─────────────────────────
+
+function ClozeBankView({ set, answers, checked, onAnswer }: ViewProps<ClozeBankSet>) {
+  const [activeGap, setActiveGap] = useState<number | null>(set.gaps[0]?.id ?? null);
+  const wordText = (key?: string) => set.words.find((w) => w.key === key)?.text;
+  const usedBy = (key: string) => Object.entries(answers).find(([, v]) => v === key)?.[0];
+
+  const pickWord = (key: string) => {
+    if (checked || activeGap === null) return;
+    onAnswer(activeGap, key);
+    // bir sonraki boş boşluğa geç
+    const next = set.gaps.find((g) => g.id !== activeGap && !answers[g.id]);
+    setActiveGap(next ? next.id : activeGap);
+  };
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+      <div className="rounded-3xl border border-slate-300 bg-white p-5 shadow">
+        <div className="space-y-3 text-[15px] leading-8 text-slate-800">
+          {set.paragraphs.map((p, i) => (
+            <p key={i}>
+              {renderWithGaps(p, (id) => {
+                const gap = set.gaps.find((g) => g.id === id);
+                const sel = answers[id];
+                const state = checked ? (gap && sel === gap.answer ? "right" : "wrong") : sel ? "filled" : "empty";
+                return <GapChip id={id} label={sel ? `${sel}) ${wordText(sel)}` : undefined} state={state} active={!checked && activeGap === id} onClick={() => setActiveGap(id)} />;
+              })}
+            </p>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div className="sticky top-4 space-y-4">
+          <div className="overflow-hidden rounded-3xl border-2 border-slate-800 bg-white shadow">
+            <div className="flex items-center justify-between bg-slate-800 px-4 py-2.5 text-white">
+              <span className="text-sm font-black">Wörter a–o</span>
+              {!checked && <span className="text-xs font-bold opacity-80">{activeGap ? `Boşluk ${activeGap} seçili` : "Önce bir boşluk seç"}</span>}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 p-3 sm:grid-cols-3">
+              {set.words.map((w) => {
+                const by = usedBy(w.key);
+                return (
+                  <button
+                    key={w.key}
+                    type="button"
+                    disabled={checked}
+                    onClick={() => pickWord(w.key)}
+                    className={`flex items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-xs font-bold transition ${
+                      by ? "border-blue-200 bg-blue-50 text-blue-400" : "border-slate-300 bg-white text-slate-800 hover:border-blue-400"
+                    }`}
+                  >
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-current text-[10px]">{w.key}</span>
+                    <span className="truncate">{w.text}</span>
+                    {by && <span className="ml-auto text-[10px]">→{by}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <p className="text-xs leading-5 text-slate-500">Metinde bir boşluğa tıkla, sonra kelimeyi seç. Kullanılan kelimeler soluklaşır; her kelime bir kez kullanılır.</p>
+          {checked && (
+            <div className="space-y-2">
+              {set.gaps.map((g) => (
+                <div key={g.id} className="rounded-xl border border-slate-200 bg-white p-2">
+                  <p className="text-xs font-black text-slate-600">
+                    {g.id}: {answers[g.id] ? `${answers[g.id]}) ${wordText(answers[g.id])}` : "—"}
+                  </p>
+                  <Feedback correct={answers[g.id] === g.answer} explanation={g.explanation} rightLabel={`${g.answer}) ${wordText(g.answer)}`} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

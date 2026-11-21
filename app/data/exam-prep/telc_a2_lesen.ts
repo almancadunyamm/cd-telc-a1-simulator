@@ -51,7 +51,7 @@ export type TelcA2Teil3Set = {
   id: string;
   title: string;
   ads: TelcA2Teil3Ad[];
-  example: TelcA2Teil3Task;
+  example?: TelcA2Teil3Task;
   tasks: TelcA2Teil3Task[];
 };
 
