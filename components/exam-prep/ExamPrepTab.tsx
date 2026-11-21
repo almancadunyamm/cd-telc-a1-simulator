@@ -599,7 +599,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
               <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
                 <b>{exam.full} · Lesen:</b> {exam.intro}
               </div>
-              <div className={`mt-4 grid gap-4 ${exam.teile.length === 5 ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" : exam.teile.length === 4 ? "sm:grid-cols-2 xl:grid-cols-4" : exam.teile.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+              <div className={`mt-4 grid gap-4 ${exam.teile.length === 5 ? "sm:grid-cols-2 lg:grid-cols-3" : exam.teile.length === 4 ? "sm:grid-cols-2 xl:grid-cols-4" : exam.teile.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
                 {exam.teile.map((t, i) => {
                   const done = (t.sets as { id: string }[]).filter((s) => progress[s.id] !== undefined).length;
                   return (
@@ -607,10 +607,10 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
                       key={t.no}
                       type="button"
                       onClick={() => setTeilIndex(i)}
-                      className="rounded-3xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg"
+                      className="min-w-0 overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg"
                     >
                       <p className="text-xs font-black uppercase tracking-widest text-blue-600">{exam.name} {level}</p>
-                      <p className="mt-1 text-xl font-black text-slate-900">{t.title}</p>
+                      <p lang="de" className="mt-1 break-words text-lg font-black leading-snug text-slate-900 [hyphens:auto]">{t.title}</p>
                       <p className="mt-2 text-sm text-slate-600">{t.desc}</p>
                       {t.points && <p className="mt-1 text-xs font-bold text-slate-400">Sınavda: {t.points}</p>}
                       <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
