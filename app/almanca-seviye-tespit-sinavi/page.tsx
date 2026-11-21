@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { LIVE_ACADEMY_VISIBLE } from "@/lib/site-flags";
 import { scoreLevelTest, type ScoredAnswer, type CefrLevel } from "@/lib/level-test/scoring";
 
 type Question = {
@@ -218,7 +219,9 @@ export default function LevelTestPage() {
     const level = scoring?.resultLevel || "A1";
     const targetLevel = level === "B2" ? "B1" : level;
 
-    window.location.href = `/academy-live?level=${targetLevel}#kayit`;
+    window.location.href = LIVE_ACADEMY_VISIBLE
+      ? `/academy-live?level=${targetLevel}#kayit`
+      : `/register?level=${targetLevel}&package=starter&free=true`;
   }
 
   async function handleWhatsappClick() {
@@ -501,7 +504,7 @@ export default function LevelTestPage() {
                   onClick={handleCourseClick}
                   className="rounded-full bg-blue-600 px-7 py-4 text-sm font-black text-white shadow-lg hover:bg-blue-700"
                 >
-                  {scoring.resultLevel} Kursunu İncele
+                  {LIVE_ACADEMY_VISIBLE ? `${scoring.resultLevel} Kursunu İncele` : `${scoring.resultLevel} ile Ücretsiz Başla`}
                 </button>
               )}
               <button

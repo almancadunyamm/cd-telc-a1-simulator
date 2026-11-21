@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { DIGITAL_SIMULATOR_VISIBLE } from "@/lib/site-flags";
+import { DIGITAL_SIMULATOR_VISIBLE, LIVE_ACADEMY_VISIBLE } from "@/lib/site-flags";
 
 type UserItem = {
   id: string;
@@ -210,9 +210,31 @@ router.push("/payment/pending");
           <div className="mb-8 text-center">
             <img src="/images/logo.png" alt="Almanca Okulum" className="mx-auto h-12 w-auto" />
             <h1 className="mt-6 text-3xl font-black text-slate-900">Nasıl devam etmek istersiniz?</h1>
-            <p className="mt-2 text-sm text-slate-500">Önce bir yol seçin, sonra seviyenizi belirleyin.</p>
+            <p className="mt-2 text-sm text-slate-500">{LIVE_ACADEMY_VISIBLE ? "Önce bir yol seçin, sonra seviyenizi belirleyin." : "Seviyenizi seçin, ücretsiz hesabınız hemen açılsın."}</p>
           </div>
 
+          {!LIVE_ACADEMY_VISIBLE && DIGITAL_SIMULATOR_VISIBLE ? (
+          <div className="rounded-3xl border-2 border-blue-200 bg-white p-6 shadow-sm">
+            <div className="text-3xl mb-3">🎁</div>
+            <h2 className="text-xl font-black text-slate-900">Ücretsiz başla</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Seviyeni seç, ücretsiz Başlangıç paketiyle hemen öğrenci paneline gir: video dersler, çalışma sayfaları,
+              sınav hazırlık alıştırmaları ve Kelime Arenası.
+            </p>
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              {(["A1", "A2", "B1"] as const).map((lvl) => (
+                <a
+                  key={lvl}
+                  href={`/register?level=${lvl}&package=starter&free=true`}
+                  className="rounded-2xl bg-blue-600 py-4 text-center text-lg font-black text-white shadow transition hover:bg-blue-700"
+                >
+                  {lvl}
+                </a>
+              ))}
+            </div>
+            <p className="mt-4 text-xs text-slate-400">Seviyeni bilmiyor musun? <a href="/almanca-seviye-tespit-sinavi" className="font-bold text-blue-600">Ücretsiz seviye tespit sınavı</a></p>
+          </div>
+          ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             <button type="button" onClick={() => window.location.href = "/academy-live"}
               className="rounded-3xl border-2 border-orange-200 bg-white p-6 text-left shadow-sm hover:border-orange-400 hover:shadow-md transition">
@@ -236,6 +258,7 @@ router.push("/payment/pending");
             </button>
             )}
           </div>
+          )}
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm">
             <a href="/login" className="rounded-full border border-slate-200 bg-white px-5 py-2.5 font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">

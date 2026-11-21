@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Footer from "./components/Footer";
-import { DIGITAL_SIMULATOR_VISIBLE } from "@/lib/site-flags";
+import { DIGITAL_SIMULATOR_VISIBLE, LIVE_ACADEMY_VISIBLE } from "@/lib/site-flags";
 
 type LevelSlug = "a1" | "a2" | "b1";
 
@@ -166,7 +166,10 @@ export default function HomePage() {
     ) : (
       <a href="/deneme-dersi" className="hover:text-orange-600 transition">Ücretsiz Deneme Dersi</a>
     )}
-    <a href="/academy-live" className="hover:text-blue-600 transition">{"Canlı Akademi"}</a>
+    <a href="/sinav-hazirlik" className="hover:text-blue-600 transition">Sınav Hazırlık</a>
+    {LIVE_ACADEMY_VISIBLE && (
+      <a href="/academy-live" className="hover:text-blue-600 transition">{"Canlı Akademi"}</a>
+    )}
     <a href="/register" className="hover:text-blue-600 transition">Kayıt Ol</a>
   </nav>
   <div className="flex items-center gap-2">
@@ -187,6 +190,7 @@ export default function HomePage() {
     </div>
 
     <div className="relative mt-4 grid gap-6 lg:grid-cols-2 lg:items-stretch">
+  {LIVE_ACADEMY_VISIBLE ? (
   <div className="group relative overflow-hidden rounded-[40px] border border-orange-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(249,115,22,0.5)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-orange-300 hover:shadow-[0_45px_120px_-32px_rgba(249,115,22,0.7)] order-first">
     <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 via-white to-orange-50 opacity-90" />
     <div className="absolute bottom-0 right-10 h-40 w-40 rounded-full bg-orange-300/20 blur-3xl" />
@@ -214,6 +218,47 @@ export default function HomePage() {
       </a>
     </div>
   </div>
+  ) : (
+  <div className="group relative overflow-hidden rounded-[40px] border border-orange-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(249,115,22,0.5)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-orange-300 hover:shadow-[0_45px_120px_-32px_rgba(249,115,22,0.7)] order-first">
+    <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 via-white to-orange-50 opacity-90" />
+    <div className="absolute bottom-0 right-10 h-40 w-40 rounded-full bg-orange-300/20 blur-3xl" />
+    <div className="relative z-10 flex h-full flex-col">
+      <div className="grid h-52 grid-cols-3 gap-3 rounded-[30px] bg-gradient-to-br from-orange-500 to-rose-600 p-5 text-white shadow-2xl">
+        {[
+          ["telc", "A2 · B1"],
+          ["Goethe", "A2 · B1"],
+          ["ÖSD", "A2 · B1"],
+        ].map(([name, levels]) => (
+          <div key={name} className="flex flex-col items-center justify-center rounded-2xl bg-white/15 text-center ring-1 ring-white/25">
+            <span className="text-2xl font-black">{name}</span>
+            <span className="mt-1 text-xs font-bold opacity-90">{levels}</span>
+            <span className="mt-3 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">Lesen</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-yellow-100 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-700">
+        <span className="h-2 w-2 rounded-full bg-yellow-500" />
+        Sınav Hazırlık
+      </div>
+      <h2 className="mt-3 text-2xl font-black leading-tight text-slate-950">
+        Gerçek sınav formatında
+        <span className="block text-orange-500">hemen çöz</span>
+      </h2>
+      <p className="mt-2 text-sm leading-5 text-slate-600">telc, Goethe ve ÖSD sınavlarının Lesen ve Sprachbausteine bölümleri birebir aynı formatta. Kayıt olmadan dene, Türkçe açıklamalarla öğren.</p>
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        {["✓ Kayıt gerekmez", "✓ Türkçe açıklama", "✓ Strateji ipuçları", "✓ Anında sonuç"].map((item) => (
+          <div key={item} className="rounded-full bg-orange-50/90 px-4 py-2 text-xs font-black text-orange-700 ring-1 ring-orange-100">{item}</div>
+        ))}
+      </div>
+      <a href="/sinav-hazirlik" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-yellow-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:scale-[1.02] hover:bg-yellow-300">
+        {"📝 Ücretsiz Sınav Alıştırmalarını Çöz"}
+      </a>
+      <a href="/almanca-seviye-tespit-sinavi" className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-orange-200 bg-white/80 px-5 py-3 text-sm font-black text-orange-700 transition hover:bg-orange-50">
+        {"🎯 Seviyemi Öğren"}
+      </a>
+    </div>
+  </div>
+  )}
   {DIGITAL_SIMULATOR_VISIBLE ? (
   <div className="group relative overflow-hidden rounded-[40px] border border-blue-200/70 bg-white/80 p-4 shadow-[0_30px_90px_-28px_rgba(37,99,235,0.55)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-300 hover:shadow-[0_45px_120px_-32px_rgba(37,99,235,0.75)]">
     <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50 opacity-90" />
@@ -258,12 +303,20 @@ export default function HomePage() {
       </div>
 
       <div className="mt-6 space-y-3">
-  <a
-    href="/digital-simulation#paketler"
-    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:scale-[1.02] hover:bg-blue-700"
-  >
-    {"🎁 Ücretsiz Seviye Seç ve Başla"}
-  </a>
+  <div className="rounded-3xl bg-blue-600 p-3 text-white shadow-lg">
+    <p className="text-center text-sm font-bold">{"🎁 Seviyeni seç, ücretsiz başla"}</p>
+    <div className="mt-2 grid grid-cols-3 gap-2">
+      {(["A1", "A2", "B1"] as const).map((lvl) => (
+        <a
+          key={lvl}
+          href={`/register?level=${lvl}&package=starter&free=true`}
+          className="rounded-full bg-white py-2.5 text-center text-sm font-black text-blue-700 transition hover:scale-[1.04] hover:bg-blue-50"
+        >
+          {lvl}
+        </a>
+      ))}
+    </div>
+  </div>
 
   <a
     href="/digital-simulation"

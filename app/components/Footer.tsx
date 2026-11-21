@@ -4,6 +4,7 @@ import {
   GraduationCap,
   BarChart3,
 } from "lucide-react";
+import { LIVE_ACADEMY_VISIBLE } from "@/lib/site-flags";
 
 const footerColumns = [
   {
@@ -45,8 +46,9 @@ const footerColumns = [
   {
     title: "Öğrenci Merkezi",
     links: [
-      "Dijital Paketler",
-      "Canlı Akademi",
+      "Sınav Hazırlık",
+      "Dijital Kurs",
+      ...(LIVE_ACADEMY_VISIBLE ? ["Canlı Akademi"] : []),
       "Öğrenci Paneli",
       "Sınav Takibi",
       "Başarı Raporları",
@@ -110,7 +112,7 @@ export default function Footer() {
               </h2>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                Canlı ders, dijital deneme, yazma-konuşma pratiği ve performans
+                {LIVE_ACADEMY_VISIBLE ? "Canlı ders, dijital deneme" : "Video dersler, dijital deneme, sınav formatı alıştırmaları"}, yazma-konuşma pratiği ve performans
                 takibiyle Almanca öğrenme sürecinizi daha düzenli, ölçülebilir
                 ve güven veren bir yapıya taşıyoruz.
               </p>
@@ -186,6 +188,10 @@ export default function Footer() {
           "Başarı Hikayeleri": "/basari-hikayeleri",
           "Destek": "/destek",
           "Kaynaklar": "/kaynaklar",
+          "Sınav Hazırlık": "/sinav-hazirlik",
+          "Dijital Kurs": "/digital-simulation",
+          "Canlı Akademi": "/academy-live",
+          "Öğrenci Paneli": "/login",
         }[link] || "#"
       }
                       className="text-sm text-slate-400 transition hover:text-white"

@@ -1,5 +1,5 @@
 import CorporateShell from "@/app/components/CorporateShell";
-import { DIGITAL_SIMULATOR_VISIBLE } from "@/lib/site-flags";
+import { DIGITAL_SIMULATOR_VISIBLE, LIVE_ACADEMY_VISIBLE } from "@/lib/site-flags";
 
 const resources = [
   {
@@ -7,11 +7,17 @@ const resources = [
     desc: "Almanca seviyeni ölç, sana uygun hazırlık paketini keşfet.",
     href: "/almanca-seviye-tespit-sinavi",
   },
-  {
-    title: "Canlı Akademi",
-    desc: "Eğitmen eşliğinde canlı ders programımızı incele.",
-    href: "/academy-live",
-  },
+  LIVE_ACADEMY_VISIBLE
+    ? {
+        title: "Canlı Akademi",
+        desc: "Eğitmen eşliğinde canlı ders programımızı incele.",
+        href: "/academy-live",
+      }
+    : {
+        title: "Ücretsiz Sınav Hazırlık",
+        desc: "telc, Goethe ve ÖSD Lesen alıştırmalarını kayıt olmadan gerçek sınav formatında çöz.",
+        href: "/sinav-hazirlik",
+      },
   DIGITAL_SIMULATOR_VISIBLE
     ? {
         title: "Dijital Simülasyon",
@@ -68,6 +74,7 @@ export default function KaynaklarPage() {
         </div>
 
         <div className="mt-10 grid gap-4 rounded-2xl border border-orange-200 bg-orange-50 p-6 text-sm text-slate-700 sm:grid-cols-2 sm:text-base">
+          {LIVE_ACADEMY_VISIBLE ? (
           <div>
             <p className="font-bold text-slate-950">Canlı ders almak istiyorum</p>
             <p className="mt-1 text-slate-600">
@@ -81,6 +88,21 @@ export default function KaynaklarPage() {
               .
             </p>
           </div>
+          ) : (
+          <div>
+            <p className="font-bold text-slate-950">Sınav formatını tanımak istiyorum</p>
+            <p className="mt-1 text-slate-600">
+              telc, Goethe ve ÖSD Lesen bölümlerini gerçek formatta denemek için{" "}
+              <a
+                href="/sinav-hazirlik"
+                className="font-bold text-orange-600 hover:text-orange-600"
+              >
+                ücretsiz sınav alıştırmalarını çöz
+              </a>
+              .
+            </p>
+          </div>
+          )}
 
           {DIGITAL_SIMULATOR_VISIBLE ? (
           <div>

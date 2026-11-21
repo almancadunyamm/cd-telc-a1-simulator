@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useState } from "react";
+import { PUBLIC_PAID_PRICES_VISIBLE } from "@/lib/site-flags";
 // Ustalık testi tema sayısı seviyeye göre değişir (B1 henüz hazırlanıyor)
 const MASTERY_THEMES_BY_LEVEL: Record<string, number | null> = { A1: 12, A2: 12, B1: null };
 function masteryLabel(level: string, starter: boolean) {
@@ -59,7 +60,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
                 href="#paketler"
                 className="rounded-full bg-blue-600 px-7 py-4 text-center text-sm font-black text-white shadow-xl shadow-blue-600/20 hover:bg-blue-700"
               >
-                Paketleri İncele
+                {PUBLIC_PAID_PRICES_VISIBLE ? "Paketleri İncele" : "Ücretsiz Başla"}
               </a>
 
               <a
@@ -96,12 +97,13 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
       </h2>
 
       <p className="mt-4 text-base leading-7 text-slate-600">
-        Başlangıç ile sınav sistemini tanı, Gelişim ile video ders ve materyalleri aç,
-        Zirve ile tam hazırlık sistemine geç.
+        {PUBLIC_PAID_PRICES_VISIBLE
+          ? "Başlangıç ile sınav sistemini tanı, Gelişim ile video ders ve materyalleri aç, Zirve ile tam hazırlık sistemine geç."
+          : "Seviyeni seç ve ücretsiz Başlangıç paketiyle hemen öğrenci paneline gir. Kredi kartı gerekmez."}
       </p>
     </div>
 
-    <div className="mt-12 grid gap-6 lg:grid-cols-3">
+    <div className={PUBLIC_PAID_PRICES_VISIBLE ? "mt-12 grid gap-6 lg:grid-cols-3" : "mx-auto mt-12 grid max-w-md gap-6"}>
       {[
         {
           name: "Başlangıç",
@@ -149,7 +151,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
             "12 ay erişim",
           ],
         },
-      ].map((plan) => (
+      ].filter((plan) => PUBLIC_PAID_PRICES_VISIBLE || plan.name === "Başlangıç").map((plan) => (
         <div
           key={plan.name}
           className={`relative rounded-[40px] border p-7 shadow-xl transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${
@@ -259,6 +261,12 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
       ))}
     </div>
 
+    {!PUBLIC_PAID_PRICES_VISIBLE && (
+      <p className="mx-auto mt-6 max-w-md text-center text-sm leading-6 text-slate-500">
+        Daha fazla video ders ve deneme sınavı istersen, panel içinden dilediğin zaman paketini yükseltebilirsin.
+      </p>
+    )}
+
     <div className="mt-12 text-center">
       <p className="text-sm text-slate-500">Sadece konuşma pratiği yapmak mı istiyorsun?</p>
       <a
@@ -295,7 +303,7 @@ const [masterLevel, setMasterLevel] = useState<"A1" | "A2" | "B1">("A1");
         href="#paketler"
         className="rounded-full bg-blue-600 px-8 py-4 text-sm font-black text-white shadow-xl shadow-blue-600/30 hover:bg-blue-500"
       >
-        Dijital Paketleri İncele
+        {PUBLIC_PAID_PRICES_VISIBLE ? "Dijital Paketleri İncele" : "Ücretsiz Başla"}
       </a>
 
       <a

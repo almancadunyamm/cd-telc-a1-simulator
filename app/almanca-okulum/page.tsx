@@ -1,14 +1,24 @@
 import CorporateShell from "@/app/components/CorporateShell";
+import { LIVE_ACADEMY_VISIBLE } from "@/lib/site-flags";
 
 const features = [
   {
     title: "Dijital Paketler",
     desc: "Seviyene uygun video dersler, PDF materyaller ve alıştırmalarla kendi hızında ilerle.",
   },
-  {
-    title: "Canlı Akademi",
-    desc: "Eğitmen eşliğinde düzenli canlı derslerle sınav formatına ve konuşma pratiğine hazırlan.",
-  },
+  ...(LIVE_ACADEMY_VISIBLE
+    ? [
+        {
+          title: "Canlı Akademi",
+          desc: "Eğitmen eşliğinde düzenli canlı derslerle sınav formatına ve konuşma pratiğine hazırlan.",
+        },
+      ]
+    : [
+        {
+          title: "Sınav Hazırlık",
+          desc: "telc, Goethe ve ÖSD sınavlarının Lesen bölümlerini gerçek sınav formatında, Türkçe açıklamalarla çöz.",
+        },
+      ]),
   {
     title: "Konuşma Kulübü",
     desc: "Seviyene uygun konuşma partnerleriyle düzenli pratik yaparak konuşma özgüvenini geliştir.",
