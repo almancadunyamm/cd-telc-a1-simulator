@@ -23,6 +23,7 @@ type TabKey =
   | "vocabulary"
   | "wordgame"
   | "speaking"
+  | "examprep"
   | "exams"
   | "progress";
 
@@ -35,6 +36,7 @@ const TABS: { key: TabKey; label: string; icon: string; access: Access }[] = [
   { key: "vocabulary", label: "Ustalık", icon: "📚", access: "locked" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮", access: "partial" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️", access: "locked" },
+  { key: "examprep", label: "Sınav Hazırlık", icon: "🎯", access: "locked" },
   { key: "exams", label: "Deneme Sınavları", icon: "📝", access: "locked" },
   { key: "progress", label: "İlerleme", icon: "📊", access: "locked" },
 ];

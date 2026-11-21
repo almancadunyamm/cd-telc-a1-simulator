@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { getTrialClassIds } from "@/lib/trial";
 const KelimeOyunu = dynamic(() => import("@/components/KelimeOyunu"), { ssr: false });
+const ExamPrepTab = dynamic(() => import("@/components/exam-prep/ExamPrepTab"), { ssr: false });
 import ClassLeagueTab from "@/components/ClassLeagueTab";
 import {
   getActiveOrderForUserAndLevel,
@@ -4415,6 +4416,7 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
+  { key: "examprep", label: "Sınav Hazırlık", icon: "🎯" },
   ...(CLASS_LEAGUE_ENABLED && hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
@@ -4476,6 +4478,7 @@ if (!currentUser) {
   { key: "vocabulary", label: "Ustalık", icon: "📚" },
   { key: "wordgame", label: "Kelime Arenası", icon: "🎮" },
   { key: "speaking", label: "Konuşma Klübü", icon: "🎙️" },
+  { key: "examprep", label: "Sınav Hazırlık", icon: "🎯" },
   ...(CLASS_LEAGUE_ENABLED && hasAnyLiveCourseOrder ? [{ key: "classleague", label: "Sınıf Ligi ⚡", icon: "🏆" }] : []),
   { key: "exams", label: "Deneme Sınavları", icon: "📝" },
   { key: "progress", label: "İlerleme", icon: "📊" },
@@ -7937,6 +7940,19 @@ if (!isPreviousThemeCompleted) {
 )}
   </section>
 )}
+{activeDashboardTab === "examprep" && (
+  <ExamPrepTab
+    level={selectedLevel}
+    onLevelChange={(lvl) => {
+      setSelectedLevel(lvl);
+      setSelectedLesson(null);
+    }}
+    accessLevels={activeAccessLevels}
+    accessExpired={accessExpired}
+    username={currentUser?.username}
+  />
+)}
+
 {activeDashboardTab === "exams" && (
   <section className="mb-8 rounded-3xl bg-white p-6 shadow-lg">
     <p className="text-sm font-black uppercase tracking-widest text-blue-600">
