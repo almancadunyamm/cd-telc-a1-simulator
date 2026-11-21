@@ -18,6 +18,12 @@ import {
   GOETHE_A2_TEIL4_SETS,
   type McTextSet,
 } from "@/app/data/exam-prep/goethe_a2_lesen";
+import {
+  OSD_A2_LESEN_INSTRUCTIONS,
+  OSD_A2_AUFGABE1_SETS,
+  OSD_A2_AUFGABE2_SETS,
+  type OsdHeadlineSet,
+} from "@/app/data/exam-prep/osd_a2_lesen";
 
 type Level = "A1" | "A2" | "B1";
 type ExamKey = "telc" | "goethe" | "osd";
@@ -26,12 +32,14 @@ type ExamKey = "telc" | "goethe" | "osd";
 //  board → bilgi panosu + a/b/c (telc Teil 1, Goethe Teil 2)
 //  rf    → metin + richtig/falsch (telc Teil 2)
 //  match → ilanlar + harf / X (telc Teil 3, Goethe Teil 4)
-//  mc    → makale veya e-posta + a/b/c (Goethe Teil 1 ve 3)
+//  mc    → makale veya e-posta + a/b/c (Goethe Teil 1 ve 3, ÖSD Aufgabe 2)
+//  headlines → 10 başlık + 5 kısa metin (ÖSD Aufgabe 1)
 type TeilConfig =
   | { kind: "board"; sets: TelcA2Teil1Set[] }
   | { kind: "rf"; sets: TelcA2Teil2Set[] }
   | { kind: "match"; sets: TelcA2Teil3Set[] }
-  | { kind: "mc"; sets: McTextSet[] };
+  | { kind: "mc"; sets: McTextSet[] }
+  | { kind: "headlines"; sets: OsdHeadlineSet[] };
 
 type Teil = TeilConfig & {
   no: number;
@@ -39,6 +47,7 @@ type Teil = TeilConfig & {
   desc: string;
   tips: string[];
   instructions: { de: string[]; tr: string };
+  upperKeys?: boolean; // seçenek harflerini A/B/C olarak göster (ÖSD)
 };
 
 type ExamConfig = {
@@ -48,6 +57,7 @@ type ExamConfig = {
   ready: boolean;
   color: string;
   accent: string;
+  partLabel: string; // "Teil" veya "Aufgabe"
   header: string;
   intro: string;
   progressSlug: string;
@@ -94,6 +104,7 @@ const EXAMS: ExamConfig[] = [
     ready: true,
     color: "from-sky-600 to-blue-700",
     accent: "bg-slate-800",
+    partLabel: "Teil",
     header: "telc Deutsch A2 · 50 Minuten Lesen und Schreiben",
     intro:
       "Sınavda Lesen ve Schreiben birlikte 50 dakikadır. Lesen üç bölümden oluşur, her bölümde 5 görev vardır. Aşağıdaki alıştırmalar gerçek sınavla aynı yapıda hazırlandı.",
@@ -140,6 +151,7 @@ const EXAMS: ExamConfig[] = [
     ready: true,
     color: "from-emerald-600 to-teal-700",
     accent: "bg-emerald-800",
+    partLabel: "Teil",
     header: "Goethe-Zertifikat A2 · Lesen · 30 Minuten",
     intro:
       "Goethe A2 sınavında Lesen bölümü 30 dakikadır ve dört bölümden oluşur: gazete makalesi, bilgi panosu, e-posta ve ilanlar. Her bölümde 5 görev vardır, toplam 20 puan. Aşağıdaki alıştırmalar gerçek sınavla aynı yapıda hazırlandı.",
@@ -187,13 +199,40 @@ const EXAMS: ExamConfig[] = [
     key: "osd",
     name: "ÖSD",
     full: "ÖSD Zertifikat A2",
-    ready: false,
+    ready: true,
     color: "from-rose-600 to-red-700",
     accent: "bg-rose-800",
-    header: "ÖSD Zertifikat A2 · Lesen",
-    intro: "",
+    partLabel: "Aufgabe",
+    header: "ÖSD Zertifikat A2 · Lesen · insgesamt 30 Minuten",
+    intro:
+      "ÖSD A2 sınavında Lesen bölümü toplam 30 dakikadır ve iki Aufgabe'den oluşur: Aufgabe 1'de 10 başlıktan 5 kısa metne uygun olanı seçersin (15 puan), Aufgabe 2'de bir gazete metni ve 5 çoktan seçmeli soru vardır (10 puan). Aşağıdaki alıştırmalar gerçek sınavla aynı yapıda hazırlandı.",
     progressSlug: "osd-a2-lesen",
-    teile: [],
+    teile: [
+      {
+        no: 1,
+        kind: "headlines",
+        sets: OSD_A2_AUFGABE1_SETS,
+        title: "Lesen, Aufgabe 1",
+        desc: "10 başlık (A–K) · 5 kısa metin · uygun başlığı seç",
+        tips: [
+          "Başlıklar ikişer ikişer aynı konudadır (ör. iki tane eczane, iki tane bisiklet başlığı). Konuyu bulmak yetmez, metnin tam olarak ne anlattığına bak.",
+          "Metnin ilk iki cümlesi genellikle asıl konuyu söyler.",
+          "Metinde geçmeyen bilgi içeren başlık (zam, indirim, yeni açılış…) yanlıştır.",
+          "Önce emin olduğun eşleştirmeleri yap; 5 başlık hiç kullanılmayacak.",
+        ],
+        instructions: OSD_A2_LESEN_INSTRUCTIONS.aufgabe1,
+      },
+      {
+        no: 2,
+        kind: "mc",
+        sets: OSD_A2_AUFGABE2_SETS,
+        title: "Lesen, Aufgabe 2",
+        desc: "Gazete metni · 5 görev · A, B oder C",
+        tips: MC_TIPS,
+        instructions: OSD_A2_LESEN_INSTRUCTIONS.aufgabe2,
+        upperKeys: true,
+      },
+    ],
   },
 ];
 
@@ -391,7 +430,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
                     <div className="p-5">
                       <p className="font-black text-slate-900">{e.full}</p>
                       <p className="mt-1 text-sm text-slate-600">
-                        {e.ready ? e.teile.map((t) => `Teil ${t.no}`).join(" · ") : "Lesen"}
+                        {e.ready ? e.teile.map((t) => `${e.partLabel} ${t.no}`).join(" · ") : "Lesen"}
                       </p>
                       {e.ready ? (
                         <p className="mt-3 inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
@@ -415,7 +454,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
               <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
                 <b>{exam.full} · Lesen:</b> {exam.intro}
               </div>
-              <div className={`mt-4 grid gap-4 ${exam.teile.length === 4 ? "sm:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-3"}`}>
+              <div className={`mt-4 grid gap-4 ${exam.teile.length === 4 ? "sm:grid-cols-2 xl:grid-cols-4" : exam.teile.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
                 {exam.teile.map((t, i) => {
                   const done = (t.sets as { id: string }[]).filter((s) => progress[s.id] !== undefined).length;
                   return (
@@ -550,7 +589,7 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
   };
 
   const sourceWord =
-    teil.kind === "board" ? "bilgi panosu" : teil.kind === "match" ? "ilanlar" : teil.kind === "mc" && (teil.sets[setIndex] as McTextSet).text.kind === "email" ? "e-posta" : "metin";
+    teil.kind === "board" ? "bilgi panosu" : teil.kind === "match" ? "ilanlar" : teil.kind === "headlines" ? "başlıklar" : teil.kind === "mc" && (teil.sets[setIndex] as McTextSet).text.kind === "email" ? "e-posta" : "metin";
 
   return (
     <div className="mt-4">
@@ -603,7 +642,8 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
         {teil.kind === "board" && <BoardView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "rf" && <RfView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "match" && <MatchView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
-        {teil.kind === "mc" && <McView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "mc" && <McView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} upper={teil.upperKeys} />}
+        {teil.kind === "headlines" && <HeadlinesView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -672,6 +712,7 @@ function AbcTaskCard({
   selected,
   checked,
   onAnswer,
+  upper,
 }: {
   task: AbcTask;
   label: string;
@@ -679,7 +720,9 @@ function AbcTaskCard({
   selected?: string;
   checked: boolean;
   onAnswer: (id: number, value: string) => void;
+  upper?: boolean;
 }) {
+  const k = (key: string) => (upper ? key.toUpperCase() : key);
   return (
     <div className={`rounded-2xl border p-4 ${isExample ? "border-dashed border-slate-300 bg-slate-50" : "border-slate-200 bg-white"}`}>
       {isExample && <p className="mb-1 text-xs font-black uppercase tracking-widest text-slate-500">Beispiel</p>}
@@ -703,7 +746,7 @@ function AbcTaskCard({
             }`}
           >
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-current text-xs font-black">
-              {(isExample && o.key === task.answer) || (!isExample && selected === o.key) ? "✕" : o.key}
+              {(isExample && o.key === task.answer) || (!isExample && selected === o.key) ? "✕" : k(o.key)}
             </span>
             {o.text}
           </button>
@@ -713,7 +756,7 @@ function AbcTaskCard({
         <Feedback
           correct={selected === task.answer}
           explanation={task.explanation}
-          rightLabel={`${task.answer} (${task.options.find((o) => o.key === task.answer)?.text})`}
+          rightLabel={`${k(task.answer)} (${task.options.find((o) => o.key === task.answer)?.text})`}
         />
       )}
     </div>
@@ -750,14 +793,14 @@ function BoardView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil1Set
 
 // ───────────────────────── Metin + a/b/c (mc) ─────────────────────────
 
-function McView({ set, answers, checked, onAnswer }: ViewProps<McTextSet>) {
+function McView({ set, answers, checked, onAnswer, upper }: ViewProps<McTextSet> & { upper?: boolean }) {
   const { text } = set;
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <div className="space-y-3">
-        {set.example && <AbcTaskCard task={set.example} label={set.example.stem} isExample checked={checked} onAnswer={onAnswer} />}
+        {set.example && <AbcTaskCard task={set.example} label={set.example.stem} isExample checked={checked} onAnswer={onAnswer} upper={upper} />}
         {set.tasks.map((t) => (
-          <AbcTaskCard key={t.id} task={t} label={t.stem} isExample={false} selected={answers[t.id]} checked={checked} onAnswer={onAnswer} />
+          <AbcTaskCard key={t.id} task={t} label={t.stem} isExample={false} selected={answers[t.id]} checked={checked} onAnswer={onAnswer} upper={upper} />
         ))}
       </div>
       <div>
@@ -935,6 +978,86 @@ function MatchView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────── Başlık eşleştirme (headlines) ─────────────────────────
+
+function HeadlinesView({ set, answers, checked, onAnswer }: ViewProps<OsdHeadlineSet>) {
+  const usedLetters = new Set(Object.values(answers));
+  return (
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+      <div className="space-y-3">
+        {set.tasks.map((t) => {
+          const selected = answers[t.id];
+          return (
+            <div key={t.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-800 text-sm font-black text-white">{t.id}</span>
+                <span className="text-sm font-bold text-slate-600">Überschrift:</span>
+                <span
+                  className={`min-w-[2.5rem] rounded-md border-b-2 px-2 text-center text-lg font-black ${
+                    checked
+                      ? selected === t.answer
+                        ? "border-emerald-500 text-emerald-700"
+                        : "border-rose-400 text-rose-600 line-through"
+                      : selected
+                      ? "border-blue-600 text-blue-700"
+                      : "border-slate-300 text-slate-300"
+                  }`}
+                >
+                  {selected || "?"}
+                </span>
+              </div>
+              <p className="mt-3 font-serif text-[15px] leading-7 text-slate-800">{t.text}</p>
+              <p className="mt-1 text-right text-xs italic text-slate-500">[{t.source}]</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {set.headlines.map((h) => (
+                  <button
+                    key={h.key}
+                    type="button"
+                    disabled={checked}
+                    onClick={() => onAnswer(t.id, h.key)}
+                    title={h.text}
+                    className={`h-9 w-9 rounded-lg border text-sm font-black transition ${choiceClass(selected === h.key, checked, h.key === t.answer)} ${
+                      !checked && selected !== h.key && usedLetters.has(h.key) ? "opacity-40" : ""
+                    }`}
+                  >
+                    {h.key}
+                  </button>
+                ))}
+              </div>
+              {checked && (
+                <Feedback
+                  correct={selected === t.answer}
+                  explanation={t.explanation}
+                  rightLabel={`${t.answer} („${set.headlines.find((h) => h.key === t.answer)?.text}“)`}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div>
+        <div className="sticky top-4 overflow-hidden rounded-3xl border-2 border-slate-800 bg-white shadow">
+          <div className="bg-slate-800 px-5 py-3 text-center text-lg font-black text-white">Überschriften</div>
+          <div className="divide-y divide-slate-200">
+            {set.headlines.map((h) => {
+              const usedFor = Object.entries(answers)
+                .filter(([, v]) => v === h.key)
+                .map(([id]) => id);
+              return (
+                <div key={h.key} className={`flex items-center gap-3 px-4 py-2.5 ${usedFor.length && !checked ? "bg-blue-50" : ""}`}>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 border-slate-800 text-sm font-black text-slate-900">{h.key}</span>
+                  <span className="flex-1 text-sm font-semibold text-slate-800">{h.text}</span>
+                  {usedFor.length > 0 && !checked && <span className="text-xs font-bold text-blue-600">→ {usedFor.join(", ")}</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
