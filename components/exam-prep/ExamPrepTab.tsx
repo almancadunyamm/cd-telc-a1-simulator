@@ -167,6 +167,15 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
         </div>
       </div>
 
+      <div className="mt-4 flex items-start gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3">
+        <span className="text-xl leading-6">💻</span>
+        <p className="text-sm leading-6 text-slate-700">
+          <b>Gerçek sınav deneyimi için bu çalışmaları bilgisayardan (laptop / masaüstü) yapmanı tavsiye ederiz.</b>{" "}
+          Dijital sınavda da soruları bilgisayarda çözeceksin; bilgisayarda metin ve sorular sınavdaki gibi yan yana
+          görünür.<span className="lg:hidden"> Telefonda ilanlar ve metinler soruların altında kalır, bu yüzden biraz kaydırman gerekir.</span>
+        </p>
+      </div>
+
       {!levelReady ? (
         <div className="mt-6 rounded-3xl border border-blue-200 bg-blue-50 p-6 text-center">
           <p className="text-4xl">⏳</p>
@@ -422,6 +431,10 @@ function PracticeShell({ teil, setIndex, total, onBack, onNext, onScore }: Shell
           {showTr && <p className="mt-1 rounded-xl bg-blue-50 px-3 py-2 text-sm text-slate-700">{instr.tr}</p>}
         </div>
       </div>
+
+      <p className="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-xs leading-5 text-indigo-800 lg:hidden">
+        💻 Telefondasın: {teil === 1 ? "bilgi panosu" : teil === 2 ? "metin" : "ilanlar"} soruların altında. Gerçek sınav deneyimi için bilgisayardan çalışmanı tavsiye ederiz.
+      </p>
 
       {checked && (
         <div
