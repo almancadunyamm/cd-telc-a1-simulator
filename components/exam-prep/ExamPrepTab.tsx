@@ -34,6 +34,16 @@ import {
   type ClozeMcSet,
   type ClozeBankSet,
 } from "@/app/data/exam-prep/telc_b1_lesen";
+import {
+  GOETHE_B1_INSTRUCTIONS,
+  GOETHE_B1_TEIL1_SETS,
+  GOETHE_B1_TEIL2_SETS,
+  GOETHE_B1_TEIL3_SETS,
+  GOETHE_B1_TEIL4_SETS,
+  GOETHE_B1_TEIL5_SETS,
+  type DoubleTextSet,
+  type YesNoSet,
+} from "@/app/data/exam-prep/goethe_b1_lesen";
 
 type Level = "A1" | "A2" | "B1";
 type ExamKey = "telc" | "goethe" | "osd";
@@ -53,7 +63,9 @@ type TeilConfig =
   | { kind: "mc"; sets: McTextSet[] }
   | { kind: "headlines"; sets: OsdHeadlineSet[] }
   | { kind: "clozeMc"; sets: ClozeMcSet[] }
-  | { kind: "clozeBank"; sets: ClozeBankSet[] };
+  | { kind: "clozeBank"; sets: ClozeBankSet[] }
+  | { kind: "double"; sets: DoubleTextSet[] }
+  | { kind: "yesno"; sets: YesNoSet[] };
 
 type Teil = TeilConfig & {
   no: number;
@@ -63,6 +75,7 @@ type Teil = TeilConfig & {
   instructions: { de: string[]; tr: string };
   upperKeys?: boolean; // seçenek harflerini A/B/C olarak göster (ÖSD)
   points?: string; // sınavdaki puan bilgisi
+  noneLabel?: string; // match: "ilan yok" etiketi (telc "X", Goethe "0")
 };
 
 type ExamConfig = {
@@ -346,14 +359,93 @@ const EXAMS_B1: ExamConfig[] = [
     key: "goethe",
     name: "Goethe",
     full: "Goethe-Zertifikat B1",
-    ready: false,
+    ready: true,
     color: "from-emerald-600 to-teal-700",
     accent: "bg-emerald-800",
     partLabel: "Teil",
-    header: "Goethe-Zertifikat B1 · Lesen",
-    intro: "",
+    summary: "Lesen Teil 1 · 2 · 3 · 4 · 5",
+    header: "Goethe-Zertifikat B1 · Lesen · 65 Minuten",
+    intro:
+      "Goethe-Zertifikat B1 sınavında Lesen modülü 65 dakikadır ve beş bölümde toplam 30 görevden oluşur. Sonuç 100 puana çevrilir; modülü geçmek için en az 60 puan gerekir. Önerilen süre: Teil 1 10 dk, Teil 2 20 dk, Teil 3 10 dk, Teil 4 15 dk, Teil 5 10 dk. Jugendliche sürümü de aynı yapıdadır; yalnızca konular gençlere yöneliktir.",
     progressSlug: "goethe-b1-lesen",
-    teile: [],
+    teile: [
+      {
+        no: 1,
+        kind: "rf",
+        sets: GOETHE_B1_TEIL1_SETS,
+        title: "Lesen, Teil 1",
+        desc: "Blog / e-posta · 6 cümle (1–6) · Richtig / Falsch",
+        points: "6 görev · ~10 dakika",
+        tips: [
+          "Önce 6 cümleyi oku; cümleler metindeki sırayla gelir. Her cümle için metinde ilgili yeri bul.",
+          "Metinde hiç geçmeyen bilgi de Falsch'tır (Goethe'de „steht nicht im Text“ seçeneği yok).",
+          "Zaman ve sıra ifadelerine dikkat: eigentlich, zuerst, erst, am Anfang, inzwischen, schließlich.",
+          "„wollte / sollte / hatte geplant“ ile anlatılan şey gerçekleşmemiş olabilir.",
+        ],
+        instructions: GOETHE_B1_INSTRUCTIONS.teil1,
+      },
+      {
+        no: 2,
+        kind: "double",
+        sets: GOETHE_B1_TEIL2_SETS,
+        title: "Lesen, Teil 2",
+        desc: "İki basın metni · görev 7–9 ve 10–12 · a, b, c",
+        points: "6 görev · ~20 dakika",
+        tips: [
+          "Her metnin ilk görevi çoğunlukla „In diesem Text geht es um …“: başlığa ve alt başlığa bak.",
+          "Seçenekler metindeki kelimeleri kullanır ama anlamı değiştirir. Kim, ne zaman, neden?",
+          "„nur“, „alle“, „immer“, „nie“ içeren seçenekler genellikle fazla kesindir.",
+          "İki metin için toplam 20 dakikan var: her metne yaklaşık 10 dakika ayır.",
+        ],
+        instructions: GOETHE_B1_INSTRUCTIONS.teil2,
+      },
+      {
+        no: 3,
+        kind: "match",
+        sets: GOETHE_B1_TEIL3_SETS,
+        title: "Lesen, Teil 3",
+        desc: "7 durum (13–19) · 10 ilan (a–j) · bir durum için 0",
+        points: "7 görev · ~10 dakika",
+        noneLabel: "0",
+        tips: [
+          "Örnekteki ilan artık kullanılamaz; 10 ilandan 7'si kullanılır, 3'ü boşta kalır.",
+          "Kişinin tam ihtiyacının altını çiz: ne? kim için? ne zaman? ücretsiz mi?",
+          "Konu tutan ama bir detayı uymayan ilan (yaş, mutfak türü, gün, yer) tipik tuzaktır → 0.",
+          "Yalnızca bir durumun cevabı 0'dır. Birden fazla 0 bulduysan tekrar kontrol et.",
+        ],
+        instructions: GOETHE_B1_INSTRUCTIONS.teil3,
+      },
+      {
+        no: 4,
+        kind: "yesno",
+        sets: GOETHE_B1_TEIL4_SETS,
+        title: "Lesen, Teil 4",
+        desc: "7 okur yorumu (20–26) · Ist die Person dafür? Ja / Nein",
+        points: "7 görev · ~15 dakika",
+        tips: [
+          "Kişinin genel görüşüne bak: yorumun sonunda genellikle bir sonuç cümlesi vardır (Mein Fazit …, Deshalb …).",
+          "„zwar … aber“, „natürlich … aber“, „trotzdem“ yapılarına dikkat: önemli olan „aber / trotzdem“ sonrasıdır.",
+          "Soruyu iyi oku: „für ein Verbot?“ sorusunda yasağa karşı olan biri = Nein.",
+          "Kişi alternatif bir çözüm öneriyorsa (bessere Regeln, erst einmal …) genellikle sorudaki öneriye karşıdır.",
+        ],
+        instructions: GOETHE_B1_INSTRUCTIONS.teil4,
+      },
+      {
+        no: 5,
+        kind: "mc",
+        sets: GOETHE_B1_TEIL5_SETS,
+        title: "Lesen, Teil 5",
+        desc: "Kurallar metni (Hausordnung vb.) · görev 27–30 · a, b, c",
+        points: "4 görev · ~10 dakika",
+        tips: [
+          "Önce görevleri oku, sonra metinde ilgili başlığı bul (Anmeldung, Gebühren, Rücktritt …).",
+          "Modal fiiller önemli: muss / darf nicht / kann / ist erlaubt / ist untersagt.",
+          "İstisnalara dikkat: ausnahmsweise, außer, nur, jedoch.",
+          "Ücretler: kostenlos, Gebühr, Pfand (geri alınan depozito), Ermäßigung.",
+        ],
+        instructions: GOETHE_B1_INSTRUCTIONS.teil5,
+      },
+    ],
   },
   {
     key: "osd",
@@ -737,7 +829,7 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
   };
 
   const sourceWord =
-    teil.kind === "board" ? "bilgi panosu" : teil.kind === "match" ? "ilanlar" : teil.kind === "headlines" ? "başlıklar" : teil.kind === "clozeMc" || teil.kind === "clozeBank" ? "seçenekler" : teil.kind === "mc" && (teil.sets[setIndex] as McTextSet).text.kind === "email" ? "e-posta" : "metin";
+    teil.kind === "yesno" ? "yorumlar" : teil.kind === "double" ? "metinler" : teil.kind === "board" ? "bilgi panosu" : teil.kind === "match" ? "ilanlar" : teil.kind === "headlines" ? "başlıklar" : teil.kind === "clozeMc" || teil.kind === "clozeBank" ? "seçenekler" : teil.kind === "mc" && (teil.sets[setIndex] as McTextSet).text.kind === "email" ? "e-posta" : "metin";
 
   return (
     <div className="mt-4">
@@ -790,11 +882,13 @@ function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellP
       <div className="mt-4">
         {teil.kind === "board" && <BoardView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "rf" && <RfView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
-        {teil.kind === "match" && <MatchView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "match" && <MatchView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} noneLabel={teil.noneLabel} />}
         {teil.kind === "mc" && <McView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} upper={teil.upperKeys} />}
         {teil.kind === "headlines" && <HeadlinesView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "clozeMc" && <ClozeMcView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
         {teil.kind === "clozeBank" && <ClozeBankView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "double" && <DoubleView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "yesno" && <YesNoView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -1059,7 +1153,7 @@ function RfView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil2Set>) 
 
 // ───────────────────────── İlanlar (match) ─────────────────────────
 
-function MatchView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set>) {
+function MatchView({ set, answers, checked, onAnswer, noneLabel = "X" }: ViewProps<TelcA2Teil3Set> & { noneLabel?: string }) {
   const letters = [...set.ads.map((a) => a.key), "x"];
   const usedBy = (letter: string) => Object.entries(answers).find(([, v]) => v === letter && letter !== "x")?.[0];
 
@@ -1091,7 +1185,7 @@ function MatchView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set
                     exampleLetter ? "cursor-not-allowed opacity-30" : takenElsewhere ? "opacity-40" : ""
                   }`}
                 >
-                  {l === "x" ? "X" : l}
+                  {l === "x" ? noneLabel : l}
                 </button>
               );
             })}
@@ -1101,7 +1195,7 @@ function MatchView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set
           <Feedback
             correct={answers[task.id] === task.answer}
             explanation={task.explanation}
-            rightLabel={task.answer === "x" ? "X (uygun ilan yok)" : `Anzeige ${task.answer}`}
+            rightLabel={task.answer === "x" ? `${noneLabel} (uygun ilan yok)` : `Anzeige ${task.answer}`}
           />
         )}
       </div>
@@ -1376,6 +1470,83 @@ function ClozeBankView({ set, answers, checked, onAnswer }: ViewProps<ClozeBankS
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────── İki metin + a/b/c (double, Goethe B1 Teil 2) ─────────────────────────
+
+function DoubleView({ set, answers, checked, onAnswer }: ViewProps<DoubleTextSet>) {
+  return (
+    <div className="space-y-8">
+      {set.parts.map((part, i) => {
+        const ids = part.tasks.map((t) => t.id);
+        return (
+          <div key={part.id}>
+            <p className="mb-3 inline-block rounded-full bg-slate-800 px-3 py-1 text-xs font-black text-white">
+              Text {i + 1} · Aufgaben {ids[0]}–{ids[ids.length - 1]}
+            </p>
+            <McView set={part} answers={answers} checked={checked} onAnswer={onAnswer} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ───────────────────────── Okur yorumları Ja/Nein (yesno, Goethe B1 Teil 4) ─────────────────────────
+
+function YesNoView({ set, answers, checked, onAnswer }: ViewProps<YesNoSet>) {
+  const card = (
+    item: { id: number; name: string; text: string; answer: "ja" | "nein"; explanation?: string },
+    isExample: boolean,
+  ) => {
+    const selected = isExample ? item.answer : answers[item.id];
+    return (
+      <div key={item.id} className={`rounded-2xl border p-4 ${isExample ? "border-dashed border-slate-300 bg-slate-50" : "border-slate-200 bg-white"}`}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400">{isExample ? "Beispiel" : `Text ${item.id}`}</p>
+            <p className="mt-1 font-serif text-[15px] leading-7 text-slate-800">{item.text}</p>
+            <p className="mt-1 text-sm font-bold italic text-slate-600">{item.name}</p>
+          </div>
+          <div className="flex shrink-0 gap-2 sm:flex-col">
+            {(["ja", "nein"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                disabled={isExample || checked}
+                onClick={() => onAnswer(item.id, v)}
+                className={`w-20 rounded-xl border px-3 py-2 text-sm font-black transition ${
+                  isExample
+                    ? v === item.answer
+                      ? "border-slate-500 bg-slate-200 text-slate-800"
+                      : "border-slate-200 bg-white text-slate-400"
+                    : choiceClass(selected === v, checked, v === item.answer)
+                }`}
+              >
+                {v === "ja" ? "Ja" : "Nein"}
+              </button>
+            ))}
+          </div>
+        </div>
+        {!isExample && checked && item.explanation && (
+          <Feedback correct={answers[item.id] === item.answer} explanation={item.explanation} rightLabel={item.answer === "ja" ? "Ja" : "Nein"} />
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl border border-slate-300 bg-[#fdfcf8] p-4">
+        <p className="text-sm text-slate-700">{set.context}</p>
+        <p className="mt-2 text-lg font-black text-slate-900">{set.question}</p>
+      </div>
+      <div className="grid gap-3 lg:grid-cols-2">
+        {card(set.example, true)}
+        {set.tasks.map((t) => card(t, false))}
       </div>
     </div>
   );
