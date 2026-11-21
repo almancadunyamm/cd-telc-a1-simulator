@@ -10,10 +10,49 @@ import {
   type TelcA2Teil2Set,
   type TelcA2Teil3Set,
 } from "@/app/data/exam-prep/telc_a2_lesen";
+import {
+  GOETHE_A2_LESEN_INSTRUCTIONS,
+  GOETHE_A2_TEIL1_SETS,
+  GOETHE_A2_TEIL2_SETS,
+  GOETHE_A2_TEIL3_SETS,
+  GOETHE_A2_TEIL4_SETS,
+  type McTextSet,
+} from "@/app/data/exam-prep/goethe_a2_lesen";
 
 type Level = "A1" | "A2" | "B1";
 type ExamKey = "telc" | "goethe" | "osd";
-type TeilNo = 1 | 2 | 3;
+
+// Görev türleri:
+//  board → bilgi panosu + a/b/c (telc Teil 1, Goethe Teil 2)
+//  rf    → metin + richtig/falsch (telc Teil 2)
+//  match → ilanlar + harf / X (telc Teil 3, Goethe Teil 4)
+//  mc    → makale veya e-posta + a/b/c (Goethe Teil 1 ve 3)
+type TeilConfig =
+  | { kind: "board"; sets: TelcA2Teil1Set[] }
+  | { kind: "rf"; sets: TelcA2Teil2Set[] }
+  | { kind: "match"; sets: TelcA2Teil3Set[] }
+  | { kind: "mc"; sets: McTextSet[] };
+
+type Teil = TeilConfig & {
+  no: number;
+  title: string;
+  desc: string;
+  tips: string[];
+  instructions: { de: string[]; tr: string };
+};
+
+type ExamConfig = {
+  key: ExamKey;
+  name: string;
+  full: string;
+  ready: boolean;
+  color: string;
+  accent: string;
+  header: string;
+  intro: string;
+  progressSlug: string;
+  teile: Teil[];
+};
 
 type Props = {
   level: Level;
@@ -26,71 +65,172 @@ type Props = {
 // Sınav Hazırlık içeriği hazır olan seviyeler.
 const READY_LEVELS: Level[] = ["A2"];
 
-const EXAMS: { key: ExamKey; name: string; full: string; ready: boolean; color: string }[] = [
-  { key: "telc", name: "telc", full: "telc Deutsch A2", ready: true, color: "from-sky-600 to-blue-700" },
-  { key: "goethe", name: "Goethe", full: "Goethe-Zertifikat A2", ready: false, color: "from-emerald-600 to-teal-700" },
-  { key: "osd", name: "ÖSD", full: "ÖSD Zertifikat A2", ready: false, color: "from-rose-600 to-red-700" },
+const BOARD_TIPS = [
+  "Önce görevi oku ve anahtar kelimenin altını çiz (ör. Geldbörse verloren → Fundbüro).",
+  "Panoda aynı kelime olmayabilir; eş anlamlısını ara: Ladekabel → Zubehör, Pass → Bürgerbüro.",
+  "Aradığın yer a ve b'deki seçeneklerde değilse cevap c (anderes Stockwerk / andere Halle …).",
+  "Tuzak: Konu tanıdık gelen yer her zaman doğru değildir (ceketi satın almıyorsan Mode değil, Fundbüro!).",
 ];
 
-const TEIL_INFO: Record<TeilNo, { title: string; desc: string; tips: string[] }> = {
-  1: {
-    title: "Lesen, Teil 1",
-    desc: "Bilgi panosu / kat rehberi · 5 görev · a, b veya c",
-    tips: [
-      "Önce görevi oku ve anahtar kelimenin altını çiz (ör. Geldbörse verloren → Fundbüro).",
-      "Panoda aynı kelime olmayabilir; eş anlamlısını ara: Ladekabel → Zubehör, Pass → Bürgerbüro.",
-      "Aradığın yer a ve b'deki katlarda değilse cevap c (anderes Stockwerk).",
-      "Tuzak: Konu tanıdık gelen kat her zaman doğru değildir (ceketi satın almıyorsan Mode değil, Fundbüro!).",
+const MATCH_TIPS = [
+  "Her durumda kişinin tam olarak ne istediğini bul: ne? ne zaman? kim için?",
+  "Her ilan yalnızca bir kez kullanılır; örnekteki ilan tekrar seçilemez.",
+  "Konu tutsa bile bir detay uymuyorsa (yaş, gün, yer, grup büyüklüğü) ilan doğru değildir → büyük ihtimalle X.",
+  "Emin olduğun eşleşmelerden başla, en sona kalan durum için X'i düşün.",
+];
+
+const MC_TIPS = [
+  "Önce soruları oku; soruların sırası metindeki sırayla aynıdır.",
+  "Metinde aynı kelimeleri değil, aynı anlamı ara (seltener krank = weniger oft krank).",
+  "Yanlış seçenekler çoğu zaman metinde geçen kelimeleri kullanır ama anlamı değiştirir. Dikkat: früher ↔ jetzt, nur ↔ alle, nie ↔ manchmal.",
+  "Kim söylüyor? Bir kişinin görüşünü başka bir kişiyle karıştırma.",
+];
+
+const EXAMS: ExamConfig[] = [
+  {
+    key: "telc",
+    name: "telc",
+    full: "telc Deutsch A2",
+    ready: true,
+    color: "from-sky-600 to-blue-700",
+    accent: "bg-slate-800",
+    header: "telc Deutsch A2 · 50 Minuten Lesen und Schreiben",
+    intro:
+      "Sınavda Lesen ve Schreiben birlikte 50 dakikadır. Lesen üç bölümden oluşur, her bölümde 5 görev vardır. Aşağıdaki alıştırmalar gerçek sınavla aynı yapıda hazırlandı.",
+    progressSlug: "telc-a2-lesen",
+    teile: [
+      {
+        no: 1,
+        kind: "board",
+        sets: TELC_A2_TEIL1_SETS,
+        title: "Lesen, Teil 1",
+        desc: "Bilgi panosu / kat rehberi · 5 görev · a, b veya c",
+        tips: BOARD_TIPS,
+        instructions: TELC_A2_LESEN_INSTRUCTIONS.teil1,
+      },
+      {
+        no: 2,
+        kind: "rf",
+        sets: TELC_A2_TEIL2_SETS,
+        title: "Lesen, Teil 2",
+        desc: "Gazete haberi · 5 cümle · richtig (+) / falsch (–)",
+        tips: [
+          "Önce 5 cümleyi oku, sonra metinde ilgili yeri bul. Cümlelerin sırası metindeki sırayla aynıdır.",
+          "Sayılara, zamanlara ve kişilere dikkat: kim? ne zaman? kaç?",
+          "nicht, kein, nie, nur, alle, beide gibi küçük kelimeler cevabı değiştirir.",
+          "Metinde planlanan bir şey (will, möchte, im nächsten Jahr) henüz olmamıştır.",
+        ],
+        instructions: TELC_A2_LESEN_INSTRUCTIONS.teil2,
+      },
+      {
+        no: 3,
+        kind: "match",
+        sets: TELC_A2_TEIL3_SETS,
+        title: "Lesen, Teil 3",
+        desc: "8 ilan (a–h) · 5 durum · bir durum için ilan yok → X",
+        tips: MATCH_TIPS,
+        instructions: TELC_A2_LESEN_INSTRUCTIONS.teil3,
+      },
     ],
   },
-  2: {
-    title: "Lesen, Teil 2",
-    desc: "Gazete haberi · 5 cümle · richtig (+) / falsch (–)",
-    tips: [
-      "Önce 5 cümleyi oku, sonra metinde ilgili yeri bul. Cümlelerin sırası metindeki sırayla aynıdır.",
-      "Sayılara, zamanlara ve kişilere dikkat: kim? ne zaman? kaç?",
-      "nicht, kein, nie, nur, alle, beide gibi küçük kelimeler cevabı değiştirir.",
-      "Metinde planlanan bir şey (will, möchte, im nächsten Jahr) henüz olmamıştır.",
+  {
+    key: "goethe",
+    name: "Goethe",
+    full: "Goethe-Zertifikat A2",
+    ready: true,
+    color: "from-emerald-600 to-teal-700",
+    accent: "bg-emerald-800",
+    header: "Goethe-Zertifikat A2 · Lesen · 30 Minuten",
+    intro:
+      "Goethe A2 sınavında Lesen bölümü 30 dakikadır ve dört bölümden oluşur: gazete makalesi, bilgi panosu, e-posta ve ilanlar. Her bölümde 5 görev vardır, toplam 20 puan. Aşağıdaki alıştırmalar gerçek sınavla aynı yapıda hazırlandı.",
+    progressSlug: "goethe-a2-lesen",
+    teile: [
+      {
+        no: 1,
+        kind: "mc",
+        sets: GOETHE_A2_TEIL1_SETS,
+        title: "Lesen, Teil 1",
+        desc: "Gazete makalesi · 5 görev · a, b veya c",
+        tips: MC_TIPS,
+        instructions: GOETHE_A2_LESEN_INSTRUCTIONS.teil1,
+      },
+      {
+        no: 2,
+        kind: "board",
+        sets: GOETHE_A2_TEIL2_SETS,
+        title: "Lesen, Teil 2",
+        desc: "Bilgi panosu / program · Wohin gehen Sie? · a, b veya c",
+        tips: BOARD_TIPS,
+        instructions: GOETHE_A2_LESEN_INSTRUCTIONS.teil2,
+      },
+      {
+        no: 3,
+        kind: "mc",
+        sets: GOETHE_A2_TEIL3_SETS,
+        title: "Lesen, Teil 3",
+        desc: "E-posta · 5 görev · a, b veya c",
+        tips: MC_TIPS,
+        instructions: GOETHE_A2_LESEN_INSTRUCTIONS.teil3,
+      },
+      {
+        no: 4,
+        kind: "match",
+        sets: GOETHE_A2_TEIL4_SETS,
+        title: "Lesen, Teil 4",
+        desc: "6 ilan (a–f) · 5 kişi · bir kişi için ilan yok → X",
+        tips: MATCH_TIPS,
+        instructions: GOETHE_A2_LESEN_INSTRUCTIONS.teil4,
+      },
     ],
   },
-  3: {
-    title: "Lesen, Teil 3",
-    desc: "8 ilan (a–h) · 5 durum · bir durum için ilan yok → X",
-    tips: [
-      "Her durumda kişinin tam olarak ne istediğini bul: ne? ne zaman? kim için?",
-      "Her ilan yalnızca bir kez kullanılır; örnekteki ilanı tekrar kullanma.",
-      "Konu tutsa bile bir detay uymuyorsa (gün, yer, yaz/kış) ilan doğru değildir → büyük ihtimalle X.",
-      "Emin olduğun eşleşmelerden başla, en sona kalan durum için X'i düşün.",
-    ],
+  {
+    key: "osd",
+    name: "ÖSD",
+    full: "ÖSD Zertifikat A2",
+    ready: false,
+    color: "from-rose-600 to-red-700",
+    accent: "bg-rose-800",
+    header: "ÖSD Zertifikat A2 · Lesen",
+    intro: "",
+    progressSlug: "osd-a2-lesen",
+    teile: [],
   },
-};
+];
 
 type Progress = Record<string, number>; // setId → en iyi skor (0–5)
 
-function progressKey(username?: string | null) {
-  return `examprep:${username || "guest"}:telc-a2-lesen`;
+function progressKey(username: string | null | undefined, slug: string) {
+  return `examprep:${username || "guest"}:${slug}`;
 }
 
-function loadProgress(username?: string | null): Progress {
-  try {
-    const raw = window.localStorage.getItem(progressKey(username));
-    return raw ? (JSON.parse(raw) as Progress) : {};
-  } catch {
-    return {};
+function loadProgress(username: string | null | undefined): Progress {
+  const all: Progress = {};
+  for (const exam of EXAMS) {
+    try {
+      const raw = window.localStorage.getItem(progressKey(username, exam.progressSlug));
+      if (raw) Object.assign(all, JSON.parse(raw) as Progress);
+    } catch {
+      /* depolama kullanılamıyorsa sessizce geç */
+    }
   }
+  return all;
 }
 
-function saveProgress(username: string | null | undefined, progress: Progress) {
+function saveProgress(username: string | null | undefined, exam: ExamConfig, progress: Progress) {
   try {
-    window.localStorage.setItem(progressKey(username), JSON.stringify(progress));
+    const own: Progress = {};
+    for (const teil of exam.teile) {
+      for (const s of teil.sets) if (progress[s.id] !== undefined) own[s.id] = progress[s.id];
+    }
+    window.localStorage.setItem(progressKey(username, exam.progressSlug), JSON.stringify(own));
   } catch {
     /* depolama kullanılamıyorsa sessizce geç */
   }
 }
 
 export default function ExamPrepTab({ level, onLevelChange, accessLevels, accessExpired, username }: Props) {
-  const [exam, setExam] = useState<ExamKey | null>(null);
-  const [teil, setTeil] = useState<TeilNo | null>(null);
+  const [examKey, setExamKey] = useState<ExamKey | null>(null);
+  const [teilIndex, setTeilIndex] = useState<number | null>(null);
   const [setIndex, setSetIndex] = useState<number | null>(null);
   const [progress, setProgress] = useState<Progress>({});
 
@@ -99,15 +239,19 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
   }, [username]);
 
   useEffect(() => {
-    setExam(null);
-    setTeil(null);
+    setExamKey(null);
+    setTeilIndex(null);
     setSetIndex(null);
   }, [level]);
 
+  const exam = EXAMS.find((e) => e.key === examKey) || null;
+  const teil = exam && teilIndex !== null ? exam.teile[teilIndex] : null;
+
   const recordScore = (setId: string, score: number) => {
+    if (!exam) return;
     setProgress((prev) => {
       const next = { ...prev, [setId]: Math.max(prev[setId] ?? 0, score) };
-      saveProgress(username, next);
+      saveProgress(username, exam, next);
       return next;
     });
   };
@@ -115,20 +259,17 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
   const levelReady = READY_LEVELS.includes(level);
   const hasAccess = accessLevels.includes(level) && !accessExpired;
 
-  const setsForTeil = (t: TeilNo) =>
-    t === 1 ? TELC_A2_TEIL1_SETS : t === 2 ? TELC_A2_TEIL2_SETS : TELC_A2_TEIL3_SETS;
-
-  const totalSets = TELC_A2_TEIL1_SETS.length + TELC_A2_TEIL2_SETS.length + TELC_A2_TEIL3_SETS.length;
-  const doneSets = [...TELC_A2_TEIL1_SETS, ...TELC_A2_TEIL2_SETS, ...TELC_A2_TEIL3_SETS].filter(
-    (s) => progress[s.id] !== undefined,
-  ).length;
+  const examStats = (e: ExamConfig) => {
+    const sets = e.teile.flatMap((t) => t.sets as { id: string }[]);
+    return { total: sets.length, done: sets.filter((s) => progress[s.id] !== undefined).length };
+  };
 
   // ── Breadcrumb ──
   const crumbs: { label: string; onClick?: () => void }[] = [
-    { label: "Sınav Hazırlık", onClick: () => { setExam(null); setTeil(null); setSetIndex(null); } },
+    { label: "Sınav Hazırlık", onClick: () => { setExamKey(null); setTeilIndex(null); setSetIndex(null); } },
   ];
-  if (exam) crumbs.push({ label: EXAMS.find((e) => e.key === exam)?.full || "", onClick: () => { setTeil(null); setSetIndex(null); } });
-  if (teil) crumbs.push({ label: TEIL_INFO[teil].title, onClick: () => setSetIndex(null) });
+  if (exam) crumbs.push({ label: exam.full, onClick: () => { setTeilIndex(null); setSetIndex(null); } });
+  if (teil) crumbs.push({ label: teil.title, onClick: () => setSetIndex(null) });
   if (teil && setIndex !== null) crumbs.push({ label: `Alıştırma ${setIndex + 1}` });
 
   return (
@@ -231,64 +372,67 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
           {/* 1) Sınav seçimi */}
           {!exam && (
             <div className="mt-4 grid gap-4 md:grid-cols-3">
-              {EXAMS.map((e) => (
-                <button
-                  key={e.key}
-                  type="button"
-                  disabled={!e.ready}
-                  onClick={() => setExam(e.key)}
-                  className={`group overflow-hidden rounded-3xl border text-left shadow-sm transition ${
-                    e.ready ? "border-slate-200 hover:-translate-y-0.5 hover:shadow-lg" : "cursor-not-allowed border-slate-200 opacity-70"
-                  }`}
-                >
-                  <div className={`bg-gradient-to-r ${e.color} px-5 py-4 text-white`}>
-                    <p className="text-xs font-black uppercase tracking-widest opacity-80">Sınav</p>
-                    <p className="text-2xl font-black">{e.name}</p>
-                  </div>
-                  <div className="p-5">
-                    <p className="font-black text-slate-900">{e.full}</p>
-                    <p className="mt-1 text-sm text-slate-600">Lesen Teil 1 · Teil 2 · Teil 3</p>
-                    {e.ready ? (
-                      <p className="mt-3 inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
-                        {doneSets}/{totalSets} alıştırma çözüldü
+              {EXAMS.map((e) => {
+                const stats = examStats(e);
+                return (
+                  <button
+                    key={e.key}
+                    type="button"
+                    disabled={!e.ready}
+                    onClick={() => setExamKey(e.key)}
+                    className={`group overflow-hidden rounded-3xl border text-left shadow-sm transition ${
+                      e.ready ? "border-slate-200 hover:-translate-y-0.5 hover:shadow-lg" : "cursor-not-allowed border-slate-200 opacity-70"
+                    }`}
+                  >
+                    <div className={`bg-gradient-to-r ${e.color} px-5 py-4 text-white`}>
+                      <p className="text-xs font-black uppercase tracking-widest opacity-80">Sınav</p>
+                      <p className="text-2xl font-black">{e.name}</p>
+                    </div>
+                    <div className="p-5">
+                      <p className="font-black text-slate-900">{e.full}</p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {e.ready ? e.teile.map((t) => `Teil ${t.no}`).join(" · ") : "Lesen"}
                       </p>
-                    ) : (
-                      <p className="mt-3 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
-                        ⏳ Hazırlanıyor
-                      </p>
-                    )}
-                  </div>
-                </button>
-              ))}
+                      {e.ready ? (
+                        <p className="mt-3 inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
+                          {stats.done}/{stats.total} alıştırma çözüldü
+                        </p>
+                      ) : (
+                        <p className="mt-3 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
+                          ⏳ Hazırlanıyor
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
 
           {/* 2) Teil seçimi */}
-          {exam === "telc" && !teil && (
+          {exam && !teil && (
             <div className="mt-4">
               <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
-                <b>telc Deutsch A2 · Lesen:</b> Sınavda Lesen ve Schreiben birlikte <b>50 dakika</b>dır. Lesen üç bölümden
-                oluşur, her bölümde 5 görev vardır. Aşağıdaki alıştırmalar gerçek sınavla aynı yapıda hazırlandı.
+                <b>{exam.full} · Lesen:</b> {exam.intro}
               </div>
-              <div className="mt-4 grid gap-4 md:grid-cols-3">
-                {([1, 2, 3] as TeilNo[]).map((t) => {
-                  const sets = setsForTeil(t);
-                  const done = sets.filter((s) => progress[s.id] !== undefined).length;
+              <div className={`mt-4 grid gap-4 ${exam.teile.length === 4 ? "sm:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-3"}`}>
+                {exam.teile.map((t, i) => {
+                  const done = (t.sets as { id: string }[]).filter((s) => progress[s.id] !== undefined).length;
                   return (
                     <button
-                      key={t}
+                      key={t.no}
                       type="button"
-                      onClick={() => setTeil(t)}
+                      onClick={() => setTeilIndex(i)}
                       className="rounded-3xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg"
                     >
-                      <p className="text-xs font-black uppercase tracking-widest text-blue-600">telc A2</p>
-                      <p className="mt-1 text-xl font-black text-slate-900">{TEIL_INFO[t].title}</p>
-                      <p className="mt-2 text-sm text-slate-600">{TEIL_INFO[t].desc}</p>
+                      <p className="text-xs font-black uppercase tracking-widest text-blue-600">{exam.name} A2</p>
+                      <p className="mt-1 text-xl font-black text-slate-900">{t.title}</p>
+                      <p className="mt-2 text-sm text-slate-600">{t.desc}</p>
                       <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-                        <div className="h-full rounded-full bg-blue-500" style={{ width: `${(done / sets.length) * 100}%` }} />
+                        <div className="h-full rounded-full bg-blue-500" style={{ width: `${(done / t.sets.length) * 100}%` }} />
                       </div>
                       <p className="mt-2 text-xs font-bold text-slate-500">
-                        {done}/{sets.length} alıştırma
+                        {done}/{t.sets.length} alıştırma
                       </p>
                     </button>
                   );
@@ -298,10 +442,10 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
           )}
 
           {/* 3) Alıştırma listesi */}
-          {exam === "telc" && teil && setIndex === null && (
+          {exam && teil && setIndex === null && (
             <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_320px]">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {setsForTeil(teil).map((s, i) => {
+              <div className="grid content-start gap-3 sm:grid-cols-2">
+                {(teil.sets as { id: string; title: string }[]).map((s, i) => {
                   const best = progress[s.id];
                   return (
                     <button
@@ -334,14 +478,14 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
           )}
 
           {/* 4) Alıştırma */}
-          {exam === "telc" && teil && setIndex !== null && (
+          {exam && teil && setIndex !== null && (
             <PracticeShell
-              key={`${teil}-${setIndex}`}
+              key={`${exam.key}-${teil.no}-${setIndex}`}
+              exam={exam}
               teil={teil}
               setIndex={setIndex}
-              total={setsForTeil(teil).length}
               onBack={() => setSetIndex(null)}
-              onNext={() => setSetIndex((i) => (i === null ? 0 : (i + 1) % setsForTeil(teil).length))}
+              onNext={() => setSetIndex((i) => (i === null ? 0 : (i + 1) % teil.sets.length))}
               onScore={recordScore}
             />
           )}
@@ -351,12 +495,12 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
   );
 }
 
-function TipsBox({ teil }: { teil: TeilNo }) {
+function TipsBox({ teil }: { teil: Teil }) {
   return (
     <aside className="rounded-3xl border border-amber-200 bg-amber-50 p-5">
-      <p className="text-xs font-black uppercase tracking-widest text-amber-700">💡 Strateji · {TEIL_INFO[teil].title}</p>
+      <p className="text-xs font-black uppercase tracking-widest text-amber-700">💡 Strateji · {teil.title}</p>
       <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
-        {TEIL_INFO[teil].tips.map((t) => (
+        {teil.tips.map((t) => (
           <li key={t} className="flex gap-2">
             <span className="text-amber-500">•</span>
             <span>{t}</span>
@@ -370,27 +514,24 @@ function TipsBox({ teil }: { teil: TeilNo }) {
 // ───────────────────────── Alıştırma çerçevesi ─────────────────────────
 
 type ShellProps = {
-  teil: TeilNo;
+  exam: ExamConfig;
+  teil: Teil;
   setIndex: number;
-  total: number;
   onBack: () => void;
   onNext: () => void;
   onScore: (setId: string, score: number) => void;
 };
 
-function PracticeShell({ teil, setIndex, total, onBack, onNext, onScore }: ShellProps) {
+function PracticeShell({ exam, teil, setIndex, onBack, onNext, onScore }: ShellProps) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
   const [showTr, setShowTr] = useState(false);
 
-  const data: TelcA2Teil1Set | TelcA2Teil2Set | TelcA2Teil3Set =
-    teil === 1 ? TELC_A2_TEIL1_SETS[setIndex] : teil === 2 ? TELC_A2_TEIL2_SETS[setIndex] : TELC_A2_TEIL3_SETS[setIndex];
-
-  const tasks = data.tasks as { id: number; answer: string }[];
+  const data = teil.sets[setIndex] as { id: string; title: string; tasks: { id: number; answer: string }[] };
+  const tasks = data.tasks;
+  const total = teil.sets.length;
   const allAnswered = tasks.every((t) => answers[t.id]);
   const score = useMemo(() => tasks.filter((t) => answers[t.id] === t.answer).length, [answers, tasks]);
-
-  const instr = teil === 1 ? TELC_A2_LESEN_INSTRUCTIONS.teil1 : teil === 2 ? TELC_A2_LESEN_INSTRUCTIONS.teil2 : TELC_A2_LESEN_INSTRUCTIONS.teil3;
 
   const setAnswer = (id: number, value: string) => {
     if (checked) return;
@@ -408,19 +549,22 @@ function PracticeShell({ teil, setIndex, total, onBack, onNext, onScore }: Shell
     setChecked(false);
   };
 
+  const sourceWord =
+    teil.kind === "board" ? "bilgi panosu" : teil.kind === "match" ? "ilanlar" : teil.kind === "mc" && (teil.sets[setIndex] as McTextSet).text.kind === "email" ? "e-posta" : "metin";
+
   return (
     <div className="mt-4">
       {/* Sınav kâğıdı başlığı */}
       <div className="overflow-hidden rounded-3xl border border-slate-300 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-800 px-5 py-3 text-white">
-          <p className="text-sm font-black tracking-wide">telc Deutsch A2 · 50 Minuten Lesen und Schreiben</p>
+        <div className={`flex flex-wrap items-center justify-between gap-2 ${exam.accent} px-5 py-3 text-white`}>
+          <p className="text-sm font-black tracking-wide">{exam.header}</p>
           <p className="text-xs font-bold opacity-80">
             Alıştırma {setIndex + 1}/{total} · {data.title}
           </p>
         </div>
         <div className="bg-white px-5 py-4">
-          <p className="text-lg font-black text-slate-900">{TEIL_INFO[teil].title}</p>
-          {instr.de.map((line) => (
+          <p className="text-lg font-black text-slate-900">{teil.title}</p>
+          {teil.instructions.de.map((line) => (
             <p key={line} className="text-[15px] font-semibold text-slate-800">
               {line}
             </p>
@@ -428,12 +572,12 @@ function PracticeShell({ teil, setIndex, total, onBack, onNext, onScore }: Shell
           <button type="button" onClick={() => setShowTr((v) => !v)} className="mt-2 text-xs font-bold text-blue-600 hover:underline">
             {showTr ? "Türkçe açıklamayı gizle" : "🇹🇷 Türkçe açıklama"}
           </button>
-          {showTr && <p className="mt-1 rounded-xl bg-blue-50 px-3 py-2 text-sm text-slate-700">{instr.tr}</p>}
+          {showTr && <p className="mt-1 rounded-xl bg-blue-50 px-3 py-2 text-sm text-slate-700">{teil.instructions.tr}</p>}
         </div>
       </div>
 
       <p className="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-xs leading-5 text-indigo-800 lg:hidden">
-        💻 Telefondasın: {teil === 1 ? "bilgi panosu" : teil === 2 ? "metin" : "ilanlar"} soruların altında. Gerçek sınav deneyimi için bilgisayardan çalışmanı tavsiye ederiz.
+        💻 Telefondasın: {sourceWord} soruların altında. Gerçek sınav deneyimi için bilgisayardan çalışmanı tavsiye ederiz.
       </p>
 
       {checked && (
@@ -456,9 +600,10 @@ function PracticeShell({ teil, setIndex, total, onBack, onNext, onScore }: Shell
       )}
 
       <div className="mt-4">
-        {teil === 1 && <Teil1View set={data as TelcA2Teil1Set} answers={answers} checked={checked} onAnswer={setAnswer} />}
-        {teil === 2 && <Teil2View set={data as TelcA2Teil2Set} answers={answers} checked={checked} onAnswer={setAnswer} />}
-        {teil === 3 && <Teil3View set={data as TelcA2Teil3Set} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "board" && <BoardView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "rf" && <RfView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "match" && <MatchView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
+        {teil.kind === "mc" && <McView set={teil.sets[setIndex]} answers={answers} checked={checked} onAnswer={setAnswer} />}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -517,58 +662,76 @@ type ViewProps<T> = {
   onAnswer: (id: number, value: string) => void;
 };
 
-// ───────────────────────── Teil 1 ─────────────────────────
+type AbcTask = { id: number; options: { key: string; text: string }[]; answer: string; explanation: string };
 
-function Teil1View({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil1Set>) {
-  const renderTask = (task: TelcA2Teil1Set["example"], isExample = false) => {
-    const selected = isExample ? task.answer : answers[task.id];
-    return (
-      <div key={task.id} className={`rounded-2xl border p-4 ${isExample ? "border-dashed border-slate-300 bg-slate-50" : "border-slate-200 bg-white"}`}>
-        {isExample && <p className="mb-1 text-xs font-black uppercase tracking-widest text-slate-500">Beispiel</p>}
-        <p className="font-semibold text-slate-900">
-          <span className="mr-2 font-black text-slate-500">{task.id}</span>
-          {task.situation}
-        </p>
-        <div className="mt-3 space-y-2">
-          {task.options.map((o) => (
-            <button
-              key={o.key}
-              type="button"
-              disabled={isExample || checked}
-              onClick={() => onAnswer(task.id, o.key)}
-              className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition ${
-                isExample
-                  ? o.key === task.answer
-                    ? "border-slate-500 bg-slate-200 text-slate-800"
-                    : "border-slate-200 bg-white text-slate-500"
-                  : choiceClass(selected === o.key, checked, o.key === task.answer)
-              }`}
-            >
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-current text-xs font-black">
-                {(isExample && o.key === task.answer) || (!isExample && selected === o.key) ? "✕" : o.key}
-              </span>
-              {o.text}
-            </button>
-          ))}
-        </div>
-        {!isExample && checked && (
-          <Feedback
-            correct={answers[task.id] === task.answer}
-            explanation={task.explanation}
-            rightLabel={`${task.answer} (${task.options.find((o) => o.key === task.answer)?.text})`}
-          />
-        )}
+// a / b / c seçenekli tek görev (board ve mc görünümleri ortak kullanır)
+function AbcTaskCard({
+  task,
+  label,
+  isExample,
+  selected,
+  checked,
+  onAnswer,
+}: {
+  task: AbcTask;
+  label: string;
+  isExample: boolean;
+  selected?: string;
+  checked: boolean;
+  onAnswer: (id: number, value: string) => void;
+}) {
+  return (
+    <div className={`rounded-2xl border p-4 ${isExample ? "border-dashed border-slate-300 bg-slate-50" : "border-slate-200 bg-white"}`}>
+      {isExample && <p className="mb-1 text-xs font-black uppercase tracking-widest text-slate-500">Beispiel</p>}
+      <p className="font-semibold text-slate-900">
+        <span className="mr-2 font-black text-slate-500">{task.id}</span>
+        {label}
+      </p>
+      <div className="mt-3 space-y-2">
+        {task.options.map((o) => (
+          <button
+            key={o.key}
+            type="button"
+            disabled={isExample || checked}
+            onClick={() => onAnswer(task.id, o.key)}
+            className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition ${
+              isExample
+                ? o.key === task.answer
+                  ? "border-slate-500 bg-slate-200 text-slate-800"
+                  : "border-slate-200 bg-white text-slate-500"
+                : choiceClass(selected === o.key, checked, o.key === task.answer)
+            }`}
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-current text-xs font-black">
+              {(isExample && o.key === task.answer) || (!isExample && selected === o.key) ? "✕" : o.key}
+            </span>
+            {o.text}
+          </button>
+        ))}
       </div>
-    );
-  };
+      {!isExample && checked && (
+        <Feedback
+          correct={selected === task.answer}
+          explanation={task.explanation}
+          rightLabel={`${task.answer} (${task.options.find((o) => o.key === task.answer)?.text})`}
+        />
+      )}
+    </div>
+  );
+}
 
+// ───────────────────────── Bilgi panosu (board) ─────────────────────────
+
+function BoardView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil1Set>) {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
-      <div className="space-y-3 lg:order-1">
-        {renderTask(set.example, true)}
-        {set.tasks.map((t) => renderTask(t))}
+      <div className="space-y-3">
+        <AbcTaskCard task={set.example} label={set.example.situation} isExample checked={checked} onAnswer={onAnswer} />
+        {set.tasks.map((t) => (
+          <AbcTaskCard key={t.id} task={t} label={t.situation} isExample={false} selected={answers[t.id]} checked={checked} onAnswer={onAnswer} />
+        ))}
       </div>
-      <div className="lg:order-2">
+      <div>
         <div className="sticky top-4 overflow-hidden rounded-3xl border-2 border-slate-800 bg-white shadow">
           <div className="bg-slate-800 px-5 py-3 text-center text-lg font-black text-white">{set.board.title}</div>
           <div className="divide-y divide-slate-200">
@@ -585,9 +748,60 @@ function Teil1View({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil1Set
   );
 }
 
-// ───────────────────────── Teil 2 ─────────────────────────
+// ───────────────────────── Metin + a/b/c (mc) ─────────────────────────
 
-function Teil2View({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil2Set>) {
+function McView({ set, answers, checked, onAnswer }: ViewProps<McTextSet>) {
+  const { text } = set;
+  return (
+    <div className="grid gap-5 lg:grid-cols-2">
+      <div className="space-y-3">
+        {set.example && <AbcTaskCard task={set.example} label={set.example.stem} isExample checked={checked} onAnswer={onAnswer} />}
+        {set.tasks.map((t) => (
+          <AbcTaskCard key={t.id} task={t} label={t.stem} isExample={false} selected={answers[t.id]} checked={checked} onAnswer={onAnswer} />
+        ))}
+      </div>
+      <div>
+        {text.kind === "article" ? (
+          <article className="sticky top-4 rounded-3xl border border-slate-300 bg-[#fdfcf8] p-5 shadow">
+            <h3 className="text-center font-serif text-2xl font-black text-slate-900">{text.headline}</h3>
+            {text.subline && <p className="mt-1 border-b-2 border-slate-800 pb-3 text-center font-serif text-sm font-bold text-slate-600">{text.subline}</p>}
+            <div className="mt-3 font-serif text-[15px] leading-7 text-slate-800">
+              {text.paragraphs.map((p, i) => (
+                <p key={i} className="mb-3">
+                  {p}
+                </p>
+              ))}
+            </div>
+          </article>
+        ) : (
+          <div className="sticky top-4 overflow-hidden rounded-3xl border border-slate-300 bg-white shadow">
+            <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-100 px-4 py-2 text-xs font-bold text-slate-500">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              <span className="ml-2">E-Mail</span>
+            </div>
+            <div className="p-5 text-[15px] leading-7 text-slate-800">
+              {text.greeting && <p className="mb-3">{text.greeting}</p>}
+              {text.paragraphs.map((p, i) => (
+                <p key={i} className="mb-3">
+                  {p}
+                </p>
+              ))}
+              {text.closing?.map((l) => (
+                <p key={l}>{l}</p>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────── Metin + richtig/falsch (rf) ─────────────────────────
+
+function RfView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil2Set>) {
   const renderTask = (task: TelcA2Teil2Set["example"], isExample = false) => {
     const selected = isExample ? task.answer : answers[task.id];
     return (
@@ -649,12 +863,11 @@ function Teil2View({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil2Set
   );
 }
 
-// ───────────────────────── Teil 3 ─────────────────────────
+// ───────────────────────── İlanlar (match) ─────────────────────────
 
-function Teil3View({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set>) {
+function MatchView({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set>) {
   const letters = [...set.ads.map((a) => a.key), "x"];
-  const usedBy = (letter: string) =>
-    Object.entries(answers).find(([, v]) => v === letter && letter !== "x")?.[0];
+  const usedBy = (letter: string) => Object.entries(answers).find(([, v]) => v === letter && letter !== "x")?.[0];
 
   const renderTask = (task: TelcA2Teil3Set["example"], isExample = false) => {
     const selected = isExample ? task.answer : answers[task.id];
@@ -677,11 +890,11 @@ function Teil3View({ set, answers, checked, onAnswer }: ViewProps<TelcA2Teil3Set
                 <button
                   key={l}
                   type="button"
-                  disabled={checked}
+                  disabled={checked || exampleLetter}
                   onClick={() => onAnswer(task.id, l)}
                   title={exampleLetter ? "Bu ilan örnekte kullanıldı" : takenElsewhere ? `Görev ${takenBy} için seçildi` : undefined}
                   className={`h-9 w-9 rounded-lg border text-sm font-black transition ${choiceClass(selected === l, checked, l === task.answer)} ${
-                    takenElsewhere || (exampleLetter && selected !== l && !checked) ? "opacity-40" : ""
+                    exampleLetter ? "cursor-not-allowed opacity-30" : takenElsewhere ? "opacity-40" : ""
                   }`}
                 >
                   {l === "x" ? "X" : l}
