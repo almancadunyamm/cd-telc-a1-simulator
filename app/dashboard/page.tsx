@@ -2863,8 +2863,8 @@ const pendingOrders =
 
   const visibleLessons = useMemo(() => {
   return [...selectedLevelLessons].sort((a, b) => {
-    const aNum = Number(String(a.title).match(/^(\d+)/)?.[1] || 999);
-    const bNum = Number(String(b.title).match(/^(\d+)/)?.[1] || 999);
+    const aNum = Number(String(a.title).match(/^\s*(?:ders\s*)?(\d+)/i)?.[1] || 999);
+    const bNum = Number(String(b.title).match(/^\s*(?:ders\s*)?(\d+)/i)?.[1] || 999);
 
     return aNum - bNum;
   });
@@ -2890,8 +2890,8 @@ const lessonsForList = selectedLevelHasAccess
   ? visibleLessons
   : selectedLevelLessons;
   const sortedLessonsForList = [...lessonsForList].sort((a, b) => {
-  const aNum = Number(String(a.title).match(/^(\d+)/)?.[1] || 999);
-  const bNum = Number(String(b.title).match(/^(\d+)/)?.[1] || 999);
+  const aNum = Number(String(a.title).match(/^\s*(?:ders\s*)?(\d+)/i)?.[1] || 999);
+  const bNum = Number(String(b.title).match(/^\s*(?:ders\s*)?(\d+)/i)?.[1] || 999);
 
   return aNum - bNum;
 });
@@ -4967,8 +4967,8 @@ if (packageGroup === "practice") {
     if (groupLessons.length === 0) return null;
 
 const sortedGroupLessons = [...groupLessons].sort((a, b) => {
-  const aNum = Number(String(a.title).trim().match(/^(\d+)/)?.[1] || 999);
-  const bNum = Number(String(b.title).trim().match(/^(\d+)/)?.[1] || 999);
+  const aNum = Number(String(a.title).trim().match(/^\s*(?:ders\s*)?(\d+)/i)?.[1] || 999);
+  const bNum = Number(String(b.title).trim().match(/^\s*(?:ders\s*)?(\d+)/i)?.[1] || 999);
 
   return aNum - bNum;
 });
@@ -7822,13 +7822,13 @@ if (!isPreviousThemeCompleted) {
   const aNum = Number(
     String(a.lessonTitle || a.title)
       .trim()
-      .match(/^(\d+)/)?.[1] || 999
+      .match(/^\s*(?:ders\s*)?(\d+)/i)?.[1] || 999
   );
 
   const bNum = Number(
     String(b.lessonTitle || b.title)
       .trim()
-      .match(/^(\d+)/)?.[1] || 999
+      .match(/^\s*(?:ders\s*)?(\d+)/i)?.[1] || 999
   );
 
   return aNum - bNum;
