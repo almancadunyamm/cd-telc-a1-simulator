@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { DIGITAL_SIMULATOR_VISIBLE, LIVE_ACADEMY_VISIBLE } from "@/lib/site-flags";
@@ -104,8 +104,6 @@ const isFreeStarter =
   const [step, setStep] = useState<"select" | "form">(
     forceSelect
       ? "select"
-      : getFreshSelectedSlug()
-      ? "form"
       : searchParams.get("free") === "true"
       ? "form"
       : "select"
@@ -113,7 +111,16 @@ const isFreeStarter =
   const [selectedType, setSelectedType] = useState<"live" | "digital" | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<"A1" | "A2" | "B1" | null>(null);
 
-  const selectedProduct = getFreshSelectedSlug();
+  const [storedProduct, setStoredProduct] = useState("");
+  useEffect(() => {
+    const fresh = getFreshSelectedSlug();
+    setStoredProduct(fresh);
+    // Taze bir paket seçimi varsa doğrudan forma geç (localStorage sunucuda okunamadığı için burada).
+    if (fresh && !forceSelect) setStep("form");
+  }, [forceSelect]);
+  // Ücretsiz başlangıç linkiyle gelindiyse paket URL'den, aksi halde son seçimden gelir.
+  const selectedProduct = isFreeStarter ? `${freeStarterLevel.toLowerCase()}-starter` : storedProduct;
+  const selectedIsFree = selectedProduct.endsWith("-starter");
 
   async function handleRegister() {
     if (!name.trim() || !email.trim() || !password.trim()) {
@@ -123,6 +130,12 @@ const isFreeStarter =
 
     if (password.trim().length < 6) {
       alert("Şifre en az 6 karakter olmalı.");
+      return;
+    }
+
+    if (!selectedProduct) {
+      alert("Lütfen önce bir paket ve seviye seçin.");
+      window.location.href = "/register?adim=secim";
       return;
     }
 
@@ -409,14 +422,33 @@ return (
               </p>
             </div>
 
-            {selectedProduct && (
-              <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-4">
-                <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                  Seçilen paket
+            {selectedProduct ? (
+              <div className="mt-6 rounded-2xl border-2 border-blue-200 bg-blue-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-blue-600">Seçilen paket</p>
+                    <p className="mt-1 text-lg font-black text-slate-900">{getProductLabel(selectedProduct)}</p>
+                  </div>
+                  {selectedIsFree && (
+                    <span className="shrink-0 rounded-full bg-emerald-500 px-3 py-1 text-xs font-black text-white">Ücretsiz</span>
+                  )}
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-600">
+                  {selectedIsFree
+                    ? "Kayıt olduğunda hesabın hemen açılır; kredi kartı gerekmez. Seviye: " + getLevelFromSlug(selectedProduct)
+                    : "Kayıttan sonra ödeme adımına yönlendirileceksin. Seviye: " + getLevelFromSlug(selectedProduct)}
                 </p>
-                <p className="mt-1 text-base font-black text-slate-900">
-                  {getProductLabel(selectedProduct)}
-                </p>
+                <a href="/register?adim=secim" className="mt-2 inline-block text-xs font-bold text-blue-700 underline">
+                  Paketi / seviyeyi değiştir
+                </a>
+              </div>
+            ) : (
+              <div className="mt-6 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4">
+                <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Paket seçilmedi</p>
+                <p className="mt-1 text-sm text-slate-700">Kayıt olmadan önce seviyeni ve paketini seç.</p>
+                <a href="/register?adim=secim" className="mt-2 inline-block rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-white hover:bg-amber-600">
+                  Paket seç
+                </a>
               </div>
             )}
 
