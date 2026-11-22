@@ -97,9 +97,9 @@ export default function PublicPractice({ level, examKey, teilIndex }: Props) {
                   <p lang="de" className="mt-1 font-black text-slate-900">{s.title}</p>
                 </div>
                 {i === 0 ? (
-                  <span className="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">Ücretsiz</span>
+                  <span className="shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">▶ Hemen Çöz</span>
                 ) : (
-                  <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">🔒 Üyelikle</span>
+                  <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">🎁 Ücretsiz Üye Ol</span>
                 )}
               </button>
             ))}

@@ -328,7 +328,7 @@ setTeachers([newTeacher, ...teachers]);
                         </p>
 
                         <p className="mt-1 text-sm text-slate-500">
-                          Şifre: {teacher.password}
+                          Şifre: {String(teacher.password || "").startsWith("scrypt$") ? "•••••• (güvenli saklanıyor)" : teacher.password}
                         </p>
                         <p className="mt-1 text-sm text-slate-600">
   WhatsApp: {teacher.whatsapp || "Eklenmedi"}

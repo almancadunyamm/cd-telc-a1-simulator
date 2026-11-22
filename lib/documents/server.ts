@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { verifyPassword } from "@/lib/auth/password";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getLevelsFromProductSlug } from "@/lib/billing/levels";
 import {
@@ -65,7 +66,7 @@ export async function verifyStudentPassword(username: string, password: string):
     .eq("email", username)
     .maybeSingle();
   if (error || !data) return false;
-  return safeEqual(String(data.password || "").trim(), String(password).trim());
+  return verifyPassword(String(password), data.password);
 }
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // karışan 0/O/1/I yok

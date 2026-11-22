@@ -19,14 +19,28 @@ export default function LoginPage() {
 
     const normalizedEmail = email.toLowerCase().trim();
 
+    // Sunucu tarafı giriş (şifreler özetli saklanır). Sunucu anahtarı yoksa eski yönteme düşülür.
+    let serverResult: any = null;
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, password }),
+      });
+      serverResult = await res.json().catch(() => null);
+    } catch {
+      serverResult = null;
+    }
+
     // ADMIN
-    if (normalizedEmail === "admin@test.com" && password === "123456") {
+    if (serverResult?.status === "success" && serverResult.admin) {
       localStorage.setItem(
         "mock_logged_user",
         JSON.stringify({
-          username: "admin",
+          username: serverResult.admin.username,
           role: "admin",
-          label: "Admin",
+          label: serverResult.admin.label,
+          ...(serverResult.admin.name ? { name: serverResult.admin.name } : {}),
         })
       );
 
@@ -68,33 +82,30 @@ export default function LoginPage() {
 
     // STUDENT - sadece kayıtlı öğrenci girebilir
 
-if (normalizedEmail === "almancadunyamm@gmail.com" && password.trim() === "123456") {
-  localStorage.setItem(
-    "mock_logged_user",
-    JSON.stringify({
-      username: "almancadunyamm@gmail.com",
-      role: "admin",
-      label: "Almanca Dünyam Admin",
-      name: "Almanca Dünyam",
-    })
-  );
+let foundStudent: any = null;
 
-  router.push("/admin");
+if (serverResult?.status === "success" && serverResult.user) {
+  foundStudent = serverResult.user;
+} else if (serverResult && serverResult.status !== "fallback") {
+  alert(serverResult.reason || "Giriş kontrolü yapılamadı.");
   return;
-}
-const { data: foundUsers, error } = await supabase
-  .from("users")
-  .select("*")
-  .eq("email", normalizedEmail)
-  .eq("password", password)
-  .limit(1);
+} else {
+  // Yedek yol: sunucu girişi kullanılamıyorsa (eski açık metin kayıtlar için)
+  const { data: foundUsers, error } = await supabase
+    .from("users")
+    .select("email, name, role")
+    .eq("email", normalizedEmail)
+    .eq("password", password)
+    .limit(1);
 
-if (error) {
-  alert("Giriş kontrolü yapılamadı.");
-  return;
+  if (error) {
+    alert("Giriş kontrolü yapılamadı.");
+    return;
+  }
+  foundStudent = foundUsers?.[0];
 }
 
-const foundStudent = foundUsers?.[0];
+
 
     if (!foundStudent) {
       alert("Kayıt bulunamadı. Lütfen önce kayıt olun veya bilgilerinizi kontrol edin.");

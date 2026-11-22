@@ -128,33 +128,53 @@ const isFreeStarter =
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const { data: existingUsers, error: existingError } = await supabase
-  .from("users")
-  .select("*")
-  .eq("email", normalizedEmail);
+    // Kayıt sunucuda yapılır; şifre scrypt özetiyle saklanır.
+    let registerResult: any = null;
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), email: normalizedEmail, password: password.trim(), isActive: isFreeStarter }),
+      });
+      registerResult = await res.json().catch(() => null);
+    } catch {
+      registerResult = null;
+    }
 
-if (existingError) {
-  alert("Kullanıcı kontrolü yapılamadı.");
-  return;
-}
+    if (registerResult?.status !== "success") {
+      if (registerResult && registerResult.status !== "fallback") {
+        alert(registerResult.reason || "Kayıt oluşturulamadı.");
+        return;
+      }
+      // Yedek yol: sunucu kaydı kullanılamıyorsa eski yöntem
+      const { data: existingUsers, error: existingError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", normalizedEmail);
 
-if (existingUsers && existingUsers.length > 0) {
-  alert("Bu email ile daha önce kayıt yapılmış.");
-  return;
-}
+      if (existingError) {
+        alert("Kullanıcı kontrolü yapılamadı.");
+        return;
+      }
 
-    const { error: insertError } = await supabase.from("users").insert({
-  name: name.trim(),
-  email: normalizedEmail,
-  password: password.trim(),
-  role: "student",
-  is_active: isFreeStarter,
-});
+      if (existingUsers && existingUsers.length > 0) {
+        alert("Bu email ile daha önce kayıt yapılmış.");
+        return;
+      }
 
-if (insertError) {
-  alert("Kayıt oluşturulamadı.");
-  return;
-}
+      const { error: insertError } = await supabase.from("users").insert({
+        name: name.trim(),
+        email: normalizedEmail,
+        password: password.trim(),
+        role: "student",
+        is_active: isFreeStarter,
+      });
+
+      if (insertError) {
+        alert("Kayıt oluşturulamadı.");
+        return;
+      }
+    }
 
     const selectedSlug = isFreeStarter
   ? `${freeStarterLevel.toLowerCase()}-starter`
