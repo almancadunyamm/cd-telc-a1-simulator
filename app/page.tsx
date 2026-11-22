@@ -223,19 +223,13 @@ export default function HomePage() {
     <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 via-white to-orange-50 opacity-90" />
     <div className="absolute bottom-0 right-10 h-40 w-40 rounded-full bg-orange-300/20 blur-3xl" />
     <div className="relative z-10 flex h-full flex-col">
-      <div className="grid h-52 grid-cols-3 gap-3 rounded-[30px] bg-gradient-to-br from-orange-500 to-rose-600 p-5 text-white shadow-2xl">
-        {[
-          ["telc", "A2 · B1"],
-          ["Goethe", "A2 · B1"],
-          ["ÖSD", "A2 · B1"],
-        ].map(([name, levels]) => (
-          <div key={name} className="flex flex-col items-center justify-center rounded-2xl bg-white/15 text-center ring-1 ring-white/25">
-            <span className="text-2xl font-black">{name}</span>
-            <span className="mt-1 text-xs font-bold opacity-90">{levels}</span>
-            <span className="mt-3 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">Lesen</span>
-          </div>
-        ))}
-      </div>
+      <a href="/sinav-hazirlik" className="block overflow-hidden rounded-[30px] shadow-2xl">
+        <img
+          src="/images/sinav-hazirlik-kart.jpg"
+          alt="telc, Goethe ve ÖSD Almanca sınav hazırlığı alıştırmaları"
+          className="h-52 w-full object-cover object-[center_15%] transition duration-500 group-hover:scale-[1.03]"
+        />
+      </a>
       <div className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-yellow-100 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-700">
         <span className="h-2 w-2 rounded-full bg-yellow-500" />
         Sınav Hazırlık
