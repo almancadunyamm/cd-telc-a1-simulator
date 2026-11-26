@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PublicShell, { SITE_URL } from "@/components/exam-prep/PublicShell";
 import { findPublicExam, teilSlug } from "@/components/exam-prep/exams-config";
+import OfficialResources from "@/components/exam-prep/OfficialResources";
 
 type Params = Promise<{ level: string; exam: string }>;
 
@@ -59,6 +60,7 @@ export default async function ExamPage({ params }: { params: Params }) {
           </a>
         ))}
       </div>
+      <OfficialResources level={level} only={exam.key} />
     </PublicShell>
   );
 }

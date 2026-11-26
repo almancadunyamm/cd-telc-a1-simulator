@@ -565,3 +565,71 @@ export function findPublicExam(levelSlug: string, examSlug: string): { level: Le
   const exam = EXAMS_BY_LEVEL[level].find((e) => e.key === examSlug && e.ready);
   return exam ? { level, exam } : null;
 }
+
+// ───────── Resmî ücretsiz deneme sınavları (dış linkler; içerik sınav kurumlarına aittir) ─────────
+export type OfficialResource = {
+  exam: ExamKey;
+  title: string;
+  desc: string;
+  links: { label: string; url: string }[];
+};
+
+export const OFFICIAL_RESOURCES: Record<Level, OfficialResource[]> = {
+  A1: [],
+  A2: [
+    {
+      exam: "telc",
+      title: "telc Deutsch A2 (Start Deutsch 2) – Übungstest 1",
+      desc: "Tam deneme sınavı + Hören ses dosyaları, ücretsiz indirme (ZIP).",
+      links: [
+        { label: "Sınav sayfası", url: "https://www.telc.net/sprachpruefungen/deutsch/start-deutsch-2-telc-deutsch-a2/" },
+        { label: "İndir (ZIP)", url: "https://www.telc.net/fileadmin/user_upload/mock_exams/Deutsch/telc_deutsch_a2_01.zip" },
+      ],
+    },
+    {
+      exam: "goethe",
+      title: "Goethe-Zertifikat A2 – Prüfungstraining",
+      desc: "Modellsatz PDF, Hören ses dosyaları ve online (tıklayarak çözülen) deneme sınavı.",
+      links: [{ label: "Goethe-Institut sayfası", url: "https://www.goethe.de/de/spr/prf/ueb/pa2.html" }],
+    },
+    {
+      exam: "osd",
+      title: "ÖSD Zertifikat A2 – Modellsatz",
+      desc: "Modellsatz PDF ücretsiz; Hören dosyaları ÖSD web mağazasından (testsam.at) ücretsiz alınır.",
+      links: [
+        { label: "Modellsatz (PDF)", url: "https://osd.at/wp-content/uploads/2023/07/ZA2-Modellsatz.pdf" },
+        { label: "Sınav sayfası", url: "https://osd.at/en/?p=34364" },
+      ],
+    },
+  ],
+  B1: [
+    {
+      exam: "telc",
+      title: "telc Deutsch B1 – Übungstest 1",
+      desc: "Tam deneme sınavı + Hören ses dosyaları ücretsiz. B1 Schule (gençler) sürümü aynı formatta ve doğrudan indirilebilir.",
+      links: [
+        { label: "telc Almanca sınavları", url: "https://www.telc.net/en/language-examinations/certificate-exams/german/" },
+        { label: "B1 Schule – İndir (ZIP)", url: "https://www.telc.net/fileadmin/user_upload/mock_exams/Deutsch/telc_deutsch_b1_schule.zip" },
+      ],
+    },
+    {
+      exam: "goethe",
+      title: "Goethe-Zertifikat B1 – Modellsatz & Übungssatz",
+      desc: "Kandidatenblätter PDF, Hören modülü (yaklaşık 37–40 dk, doğrudan dinlenebilir) ve online deneme sınavı.",
+      links: [
+        { label: "Goethe-Institut sayfası", url: "https://www.goethe.de/de/spr/prf/ueb/pb1.html" },
+        { label: "Online Modellsatz", url: "https://bfu.goethe.de/b1_mod/index.php" },
+      ],
+    },
+    {
+      exam: "osd",
+      title: "ÖSD Zertifikat B1 (ZB1) & Zertifikat Deutsch Österreich B1 (ZDÖ)",
+      desc: "Modellsätze PDF ücretsiz; Hören dosyaları ÖSD web mağazasından (testsam.at) ücretsiz alınır (kod PDF içinde).",
+      links: [
+        { label: "ZB1 Übungsmaterialien (PDF)", url: "https://osd.at/wp-content/uploads/2026/09/ZB1-Uebungsmaterialien-Band-1_WEB.pdf" },
+        { label: "ZDÖ B1 Modellsatz (PDF)", url: "https://osd.at/wp-content/uploads/2026/08/ZDOe-B1-Modellsatz-Homepage-LV.pdf" },
+        { label: "ZDÖ B1 sınav sayfası", url: "https://www.osd.at/en/?p=9655" },
+      ],
+    },
+  ],
+};

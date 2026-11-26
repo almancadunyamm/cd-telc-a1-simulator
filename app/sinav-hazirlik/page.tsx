@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PublicShell, { SITE_URL } from "@/components/exam-prep/PublicShell";
 import { EXAMS_BY_LEVEL, teilSlug, type Level } from "@/components/exam-prep/exams-config";
+import OfficialResources from "@/components/exam-prep/OfficialResources";
 
 export const metadata: Metadata = {
   title: "telc, Goethe ve ÖSD Lesen Alıştırmaları (A2 · B1) – Ücretsiz Online | Almanca Okulum",
@@ -64,6 +65,7 @@ export default function SinavHazirlikHub() {
               );
             })}
           </div>
+          <OfficialResources level={level} />
         </section>
       ))}
 

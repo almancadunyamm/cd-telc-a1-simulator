@@ -52,6 +52,7 @@ import {
   OSD_B1_SB1_SETS,
   OSD_B1_SB2_SETS,
 } from "@/app/data/exam-prep/osd_b1_lesen";
+import OfficialResources from "./OfficialResources";
 import { EXAMS_BY_LEVEL, ALL_EXAMS, READY_LEVELS, type Level, type ExamKey, type Teil, type ExamConfig } from "./exams-config";
 
 type Props = {
@@ -280,6 +281,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
               })}
             </div>
           )}
+          {!exam && <OfficialResources level={level} />}
 
           {/* 2) Teil seçimi */}
           {exam && !teil && (
