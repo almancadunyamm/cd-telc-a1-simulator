@@ -1,6 +1,7 @@
 // Sınav Hazırlık: sınav / bölüm ayarları. Hem öğrenci paneli (ExamPrepTab) hem herkese açık
 // /sinav-hazirlik sayfaları kullanır. "use client" YOK: sunucu bileşenlerinden de okunabilir.
 
+import { GOETHE_B1_HOEREN_SETS, type HoerenSet } from "@/app/data/exam-prep/goethe_b1_hoeren";
 import {
   TELC_A2_LESEN_INSTRUCTIONS,
   TELC_A2_TEIL1_SETS,
@@ -100,6 +101,7 @@ export type ExamConfig = {
   intro: string;
   progressSlug: string;
   teile: Teil[];
+  hoeren?: HoerenSet[]; // resmî kayıt + özgün sorular
 };
 
 
@@ -369,6 +371,7 @@ const EXAMS_B1: ExamConfig[] = [
     intro:
       "Goethe-Zertifikat B1 sınavında Lesen modülü 65 dakikadır ve beş bölümde toplam 30 görevden oluşur. Sonuç 100 puana çevrilir; modülü geçmek için en az 60 puan gerekir. Önerilen süre: Teil 1 10 dk, Teil 2 20 dk, Teil 3 10 dk, Teil 4 15 dk, Teil 5 10 dk. Jugendliche sürümü de aynı yapıdadır; yalnızca konular gençlere yöneliktir.",
     progressSlug: "goethe-b1-lesen",
+    hoeren: GOETHE_B1_HOEREN_SETS,
     teile: [
       {
         no: 1,

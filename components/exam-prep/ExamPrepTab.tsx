@@ -53,6 +53,7 @@ import {
   OSD_B1_SB2_SETS,
 } from "@/app/data/exam-prep/osd_b1_lesen";
 import OfficialResources from "./OfficialResources";
+import HoerenPractice from "./HoerenPractice";
 import { EXAMS_BY_LEVEL, ALL_EXAMS, READY_LEVELS, type Level, type ExamKey, type Teil, type ExamConfig } from "./exams-config";
 
 type Props = {
@@ -104,6 +105,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
   const [examKey, setExamKey] = useState<ExamKey | null>(null);
   const [teilIndex, setTeilIndex] = useState<number | null>(null);
   const [setIndex, setSetIndex] = useState<number | null>(null);
+  const [hoerenIndex, setHoerenIndex] = useState<number | null>(null);
   const [progress, setProgress] = useState<Progress>({});
 
   useEffect(() => {
@@ -114,6 +116,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
     setExamKey(null);
     setTeilIndex(null);
     setSetIndex(null);
+    setHoerenIndex(null);
   }, [level]);
 
   const levelExams = EXAMS_BY_LEVEL[level];
@@ -139,9 +142,10 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
 
   // ── Breadcrumb ──
   const crumbs: { label: string; onClick?: () => void }[] = [
-    { label: "Sınav Hazırlık", onClick: () => { setExamKey(null); setTeilIndex(null); setSetIndex(null); } },
+    { label: "Sınav Hazırlık", onClick: () => { setExamKey(null); setTeilIndex(null); setSetIndex(null); setHoerenIndex(null); } },
   ];
-  if (exam) crumbs.push({ label: exam.full, onClick: () => { setTeilIndex(null); setSetIndex(null); } });
+  if (exam) crumbs.push({ label: exam.full, onClick: () => { setTeilIndex(null); setSetIndex(null); setHoerenIndex(null); } });
+  if (exam && hoerenIndex !== null && exam.hoeren) crumbs.push({ label: `Hören · ${exam.hoeren[hoerenIndex].title}` });
   if (teil) crumbs.push({ label: teil.title, onClick: () => setSetIndex(null) });
   if (teil && setIndex !== null) crumbs.push({ label: `Alıştırma ${setIndex + 1}` });
 
@@ -284,7 +288,7 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
           {!exam && <OfficialResources level={level} />}
 
           {/* 2) Teil seçimi */}
-          {exam && !teil && (
+          {exam && !teil && hoerenIndex === null && (
             <div className="mt-4">
               <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
                 <b>{exam.full} · Lesen:</b> {exam.intro}
@@ -313,7 +317,49 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
                   );
                 })}
               </div>
+              {exam.hoeren && exam.hoeren.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-black text-slate-900">🎧 Hören – resmî sınav kaydıyla</h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Goethe-Institut&apos;un resmî Hören kaydını burada dinle, soruları aynı anda sistemde çöz. Sonuç ve Türkçe
+                    açıklamalar anında gelir.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {exam.hoeren.map((h, i) => {
+                      const best = progress[h.id];
+                      const max = h.teile.reduce((n, t) => n + t.questions.filter((q) => !q.example).length, 0);
+                      return (
+                        <button
+                          key={h.id}
+                          type="button"
+                          onClick={() => setHoerenIndex(i)}
+                          className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-left shadow-sm transition hover:border-emerald-400 hover:shadow-md"
+                        >
+                          <div>
+                            <p className="text-xs font-black uppercase tracking-widest text-emerald-700">Hören · Teil 1–4 · {h.minutes} dk</p>
+                            <p className="mt-1 font-black text-slate-900">{h.title}</p>
+                          </div>
+                          {best !== undefined ? (
+                            <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-black text-emerald-700">{best}/{max}</span>
+                          ) : (
+                            <span className="shrink-0 rounded-full bg-emerald-600 px-3 py-1 text-xs font-black text-white">Dinle</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
+          )}
+
+          {exam && !teil && hoerenIndex !== null && exam.hoeren && (
+            <HoerenPractice
+              key={exam.hoeren[hoerenIndex].id}
+              set={exam.hoeren[hoerenIndex]}
+              onBack={() => setHoerenIndex(null)}
+              onScore={recordScore}
+            />
           )}
 
           {/* 3) Alıştırma listesi */}
