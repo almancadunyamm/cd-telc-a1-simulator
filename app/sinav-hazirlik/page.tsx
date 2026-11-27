@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import PublicShell, { SITE_URL } from "@/components/exam-prep/PublicShell";
 import { EXAMS_BY_LEVEL, teilSlug, type Level } from "@/components/exam-prep/exams-config";
-import OfficialResources from "@/components/exam-prep/OfficialResources";
 
 export const metadata: Metadata = {
   title: "telc, Goethe ve ÖSD Lesen Alıştırmaları (A2 · B1) – Ücretsiz Online | Almanca Okulum",
@@ -60,12 +59,19 @@ export default function SinavHazirlikHub() {
                         </a>
                       </li>
                     ))}
+                    {exam.hoeren && exam.hoeren.length > 0 && (
+                      <li>
+                        <a href={`${href}/hoeren`} className="flex items-center justify-between gap-2 bg-emerald-50 px-5 py-3 text-sm hover:bg-emerald-100">
+                          <span lang="de" className="font-black text-emerald-800">🎧 Hören (resmî kayıt)</span>
+                          <span className="shrink-0 text-xs font-black text-emerald-700">Dinle →</span>
+                        </a>
+                      </li>
+                    )}
                   </ul>
                 </div>
               );
             })}
           </div>
-          <OfficialResources level={level} />
         </section>
       ))}
 

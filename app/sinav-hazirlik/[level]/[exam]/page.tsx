@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PublicShell, { SITE_URL } from "@/components/exam-prep/PublicShell";
 import { findPublicExam, teilSlug } from "@/components/exam-prep/exams-config";
-import OfficialResources from "@/components/exam-prep/OfficialResources";
 
 type Params = Promise<{ level: string; exam: string }>;
 
@@ -60,7 +59,17 @@ export default async function ExamPage({ params }: { params: Params }) {
           </a>
         ))}
       </div>
-      <OfficialResources level={level} only={exam.key} />
+      {exam.hoeren && exam.hoeren.length > 0 && (
+        <a
+          href={`${base}/hoeren`}
+          className="mt-6 block rounded-3xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 to-teal-50 p-5 shadow-sm transition hover:shadow-lg"
+        >
+          <p className="text-xs font-black uppercase tracking-widest text-emerald-700">Yeni · Hören</p>
+          <h2 className="mt-1 text-xl font-black text-slate-900">🎧 {exam.name} {level} Hören – resmî sınav kaydıyla</h2>
+          <p className="mt-1 text-sm text-slate-600">Kaydı burada dinle, Teil 1–4 sorularını çöz, puanını ve Türkçe açıklamaları anında gör.</p>
+          <span className="mt-3 inline-block rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-black text-white">▶ Dinle ve çöz</span>
+        </a>
+      )}
     </PublicShell>
   );
 }

@@ -23,6 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       const base = `${SITE_URL}/sinav-hazirlik/${level.toLowerCase()}/${exam.key}`;
       examPages.push({ url: base, lastModified: now, priority: 0.8 });
       for (const t of exam.teile) examPages.push({ url: `${base}/${teilSlug(t)}`, lastModified: now, priority: 0.7 });
+      if (exam.hoeren?.length) examPages.push({ url: `${base}/hoeren`, lastModified: now, priority: 0.7 });
     }
   }
   return [...staticPages, ...examPages];

@@ -52,7 +52,6 @@ import {
   OSD_B1_SB1_SETS,
   OSD_B1_SB2_SETS,
 } from "@/app/data/exam-prep/osd_b1_lesen";
-import OfficialResources from "./OfficialResources";
 import HoerenPractice from "./HoerenPractice";
 import { EXAMS_BY_LEVEL, ALL_EXAMS, READY_LEVELS, type Level, type ExamKey, type Teil, type ExamConfig } from "./exams-config";
 
@@ -285,7 +284,37 @@ export default function ExamPrepTab({ level, onLevelChange, accessLevels, access
               })}
             </div>
           )}
-          {!exam && <OfficialResources level={level} />}
+
+          {!exam && levelExams.some((e) => e.ready && e.hoeren && e.hoeren.length > 0) && (
+            <div className="mt-6 rounded-3xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 to-teal-50 p-5">
+              <p className="text-xs font-black uppercase tracking-widest text-emerald-700">Yeni · Hören</p>
+              <h3 className="mt-1 text-lg font-black text-slate-900">🎧 Dinleme (Hören) alıştırmaları</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Resmî sınav kaydını burada dinle, soruları aynı sayfada çöz; puanın ve Türkçe açıklamalar anında gelsin.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {levelExams
+                  .filter((e) => e.ready && e.hoeren && e.hoeren.length > 0)
+                  .flatMap((e) =>
+                    e.hoeren!.map((h, i) => (
+                      <button
+                        key={h.id}
+                        type="button"
+                        onClick={() => {
+                          setExamKey(e.key);
+                          setTeilIndex(null);
+                          setSetIndex(null);
+                          setHoerenIndex(i);
+                        }}
+                        className="rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white shadow hover:bg-emerald-700"
+                      >
+                        ▶ {e.name} {level} Hören · {h.title}
+                      </button>
+                    ))
+                  )}
+              </div>
+            </div>
+          )}
 
           {/* 2) Teil seçimi */}
           {exam && !teil && hoerenIndex === null && (
